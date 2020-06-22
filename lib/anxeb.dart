@@ -23,3 +23,4 @@ export 'widgets/fields/lookup.dart';
 export 'misc/key_value.dart';
 export 'middleware/api.dart';
 export 'middleware/model.dart';
+export 'widgets/parts/footer.dart';
