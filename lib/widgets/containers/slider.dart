@@ -42,6 +42,7 @@ class SliderContainer extends StatefulWidget {
     this.slides,
     this.gradient,
     this.options,
+    this.image,
   })  : assert(slides != null),
         super() {
     for (var i = 0; i < this.slides.length; i++) {
@@ -54,6 +55,7 @@ class SliderContainer extends StatefulWidget {
   final List<Slide> slides;
   final Gradient gradient;
   final SliderOptions options;
+  final Image image;
 
   @override
   _SliderContainerState createState() => _SliderContainerState(body: this.body, gradient: this.gradient, slides: this.slides);
@@ -77,7 +79,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
   AnimationController _positionController;
   Animation<Offset> _positionAnimation;
   bool _isVisible = false;
-  
+
   _SlideState(Slide definition) {
     _opacityController = AnimationController(
       duration: definition.options.fadeinDuration ?? Duration(milliseconds: 400),
@@ -239,6 +241,9 @@ class _SliderContainerState extends State<SliderContainer> {
                 decoration: BoxDecoration(gradient: gradient),
               )
             : Container(),
+        Container(
+          child: widget.image,
+        ),
         this.body,
       ],
     );

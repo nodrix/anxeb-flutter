@@ -1,18 +1,26 @@
 library anxeb_flutter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-class AnxebEntry extends StatelessWidget {
-  final ThemeData theme;
-  final Widget home;
+import 'view.dart';
 
-  AnxebEntry({this.theme, this.home}) : assert(theme != null, home != null);
+class Entry extends StatelessWidget {
+  final ViewWidget home;
+  final ThemeData theme;
+
+  Entry({this.home, this.theme}) : assert(home != null);
 
   @override
   Widget build(BuildContext context) {
     var app = MaterialApp(
         home: this.home,
-        theme: this.theme,
+        theme: this.theme ??
+            ThemeData(
+              primaryColor: this.home.application.settings.colors.primary,
+              accentColor: this.home.application.settings.colors.accent,
+              fontFamily: 'Montserrat',
+            ),
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
