@@ -55,7 +55,7 @@ class SliderContainer extends StatefulWidget {
   final List<Slide> slides;
   final Gradient gradient;
   final SliderOptions options;
-  final Image image;
+  final ImageProvider image;
 
   @override
   _SliderContainerState createState() => _SliderContainerState(body: this.body, gradient: this.gradient, slides: this.slides);
@@ -227,6 +227,9 @@ class _SliderContainerState extends State<SliderContainer> {
 
   @override
   Widget build(BuildContext context) {
+    precacheImage(widget.image, context);
+    var size = MediaQuery.of(context).size;
+
     return Stack(
       children: <Widget>[
         Stack(
@@ -242,7 +245,13 @@ class _SliderContainerState extends State<SliderContainer> {
               )
             : Container(),
         Container(
-          child: widget.image,
+          child: Image(
+            image: widget.image,
+            fit: BoxFit.fill,
+            width: size.width,
+            height: size.height,
+            alignment: Alignment.topCenter,
+          ),
         ),
         this.body,
       ],
