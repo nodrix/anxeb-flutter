@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:anxeb_flutter/middleware/alert.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart' hide Dialog;
@@ -25,7 +27,7 @@ class SnackAlert extends Alert {
         onTap: () => this.dispose(),
         child: message == null
             ? Container(
-                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen ? 46 : 0),
+                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 46 : 0),
                 child: Row(
                   children: icon != null
                       ? <Widget>[
@@ -54,7 +56,7 @@ class SnackAlert extends Alert {
                 ),
               )
             : Container(
-                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen ? 46 : 0),
+                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 46 : 0),
                 child: Row(
                   children: <Widget>[
                     Expanded(

@@ -23,25 +23,28 @@ class GradientContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Stack(
-        children: <Widget>[
-          Container(
-            decoration: gradient != null
-                ? BoxDecoration(
-                    gradient: gradient,
-                  )
-                : null,
-          ),
-          image ?? Container(),
-          Padding(
-            padding: padding ?? EdgeInsets.zero,
-            child: Container(
-              padding: Utils.convert.toFraction(fadding, scope.window.size),
-              child: this.child,
+    return SingleChildScrollView(
+      child: Container(
+        height: scope.window.size.height,
+        child: Stack(
+          children: <Widget>[
+            Container(
+              decoration: gradient != null
+                  ? BoxDecoration(
+                      gradient: gradient,
+                    )
+                  : null,
             ),
-          ),
-        ],
+            image ?? Container(),
+            Padding(
+              padding: padding ?? EdgeInsets.zero,
+              child: Container(
+                padding: Utils.convert.toFraction(fadding, scope.window.size),
+                child: this.child,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

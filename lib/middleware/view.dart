@@ -9,22 +9,43 @@ import 'package:after_init/after_init.dart';
 import 'application.dart';
 import 'scope.dart';
 
+enum ViewTransitionType {
+  fromBottom,
+  fromLeft,
+  fromRight,
+  fromTop,
+  fade,
+}
+
 class ViewWidget extends StatefulWidget {
   final String name;
   final String title;
   final Application application;
+  final Key key;
 
   ViewWidget(
     this.name, {
     this.title,
     this.application,
-  }) : assert(name != null);
+    this.key,
+  })  : assert(name != null),
+        super(key: key);
 
   @override
   View createState() => View();
 }
 
-abstract class ViewState<T extends ViewWidget> extends State<T> {}
+abstract class ViewState<T extends ViewWidget> extends State<T> {
+  String name;
+
+  Scope scope;
+
+  Future<bool> dismiss();
+
+  Future<bool> submit([value]);
+
+  Future<bool> pop(result, {bool force});
+}
 
 class View<T extends ViewWidget, A extends Application> extends ViewState<T> with AfterInitMixin<T> {
   GlobalKey<ScaffoldState> _scaffold;
@@ -32,12 +53,10 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _scope;
   Scope _parent;
   Application _application;
-  bool _initialized;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
     _locator = ViewActionLocator();
-    _initialized = false;
   }
 
   void rasterize() {
@@ -82,46 +101,47 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   @override
   Widget build(BuildContext context) {
     prebuild();
+    var $drawer = drawer();
+
     var scaffoldContent = Scaffold(
       key: _scaffold,
       appBar: header(),
-      drawer: drawer(),
+      drawer: $drawer == true ? application.navigator.drawer() : ($drawer is Drawer ? $drawer : null),
       floatingActionButton: action(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: footer(),
       extendBody: _scope.window.overlay.extendBody,
       extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
-      body: SafeArea(
-        top: false,
-        bottom: false,
-        child: WillPopScope(
-          onWillPop: () {
-            if (_scope.isBusy) {
-              return Future.value(false);
-            } else {
-              if (_scope.alerts.isAny) {
-                _scope.alerts.dispose();
-                return Future.value(false);
-              }
-              return beforePop();
+      body: WillPopScope(
+        onWillPop: () async {
+          if (_scope.isBusy) {
+            return false;
+          } else {
+            if (_scope.alerts.isAny) {
+              _scope.alerts.dispose();
+              return false;
+            } else if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
+              scaffold.currentState.openEndDrawer();
+              return false;
             }
-          },
-          child: Container(
-            child: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
-              _scope.window.update(constraints: viewportConstraints);
-              /*if (keyboardActive != true) {
-                viewport.available = Size(viewportConstraints.maxWidth, viewportConstraints.maxHeight);
-              }*/
-              return GestureDetector(
-                onTap: () {
-                  //FocusScope.of(context).requestFocus(new FocusNode());
-                  _scope.unfocus();
-                  _scope.alerts.dispose();
-                },
-                child: content(),
-              );
-            }),
-          ),
+            var result = await beforePop();
+            if (result == true) {
+              await closing();
+            }
+            return result;
+          }
+        },
+        child: Container(
+          child: LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
+            _scope.window.update(constraints: viewportConstraints);
+            return GestureDetector(
+              onTap: () {
+                _scope.unfocus();
+                _scope.alerts.dispose();
+              },
+              child: content(),
+            );
+          }),
         ),
       ),
     );
@@ -135,9 +155,8 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   @protected
   PreferredSizeWidget header() => null;
 
-  //TODO: RECONSIDER TO GENERATE THIS FROM APPLICATION.NAVIGATION
   @protected
-  Widget drawer() => null;
+  dynamic drawer() => null;
 
   @protected
   Widget content() => Container();
@@ -151,40 +170,98 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   @protected
   Future<bool> beforePop() async => !_scope.isBusy;
 
-  void dismiss() {
-    pop(null);
-  }
+  @protected
+  Future closing() async {}
 
-  void submit([value]) {
-    pop(value, force: true);
-  }
+  Future<bool> dismiss() async => await pop(null);
 
-  void pop(result, {bool force}) async {
+  Future<bool> submit([value]) async => await pop(value, force: true);
+
+  Future<bool> pop(result, {bool force}) async {
     scope.idle();
     scope.alerts.dispose(quick: true);
+
     if (force == true) {
       Navigator.of(_scope.context).pop(result);
+      return true;
     } else {
       try {
         var value = await beforePop();
         if (value == true) {
+          if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
+            scaffold.currentState.openEndDrawer();
+          }
+          await closing();
           Navigator.of(_scope.context).pop(result);
+          return true;
         }
       } catch (err) {}
     }
+    return false;
   }
 
-  Future<T> push<T>(ViewWidget view) async {
+  Future<T> push<T>(ViewWidget view, {ViewTransitionType transition, int delay}) async {
     scope.idle();
     scope.alerts.dispose(quick: true);
-    var result = await Navigator.of(_scope.context).push(MaterialPageRoute(
-      builder: (BuildContext context) => view,
-      settings: RouteSettings(
-          arguments: _PushedViewArguments<A>(
-        application: application,
-        scope: _scope,
-      )),
+
+    var settings = RouteSettings(
+        arguments: _PushedViewArguments<A>(
+      application: application,
+      scope: _scope,
     ));
+
+    var result = await Navigator.of(_scope.context).push(
+      transition != null
+          ? PageRouteBuilder(
+              pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
+              settings: settings,
+              transitionDuration: Duration(milliseconds: delay ?? 300),
+              transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+                if (transition == ViewTransitionType.fade) {
+                  return FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(animation),
+                    child: FadeTransition(opacity: Tween<double>(begin: 1, end: 0).animate(secondaryAnimation), child: child),
+                  );
+                } else {
+                  Offset from = Offset.zero;
+                  Offset to = Offset.zero;
+
+                  switch (transition) {
+                    case ViewTransitionType.fromBottom:
+                      from = Offset(0, 1);
+                      to = Offset(0, -.5);
+                      break;
+                    case ViewTransitionType.fromLeft:
+                      from = Offset(-1, 0);
+                      to = Offset(.5, 0);
+                      break;
+                    case ViewTransitionType.fromRight:
+                      from = Offset(1, 0);
+                      to = Offset(-.5, 0);
+                      break;
+                    case ViewTransitionType.fromTop:
+                      from = Offset(0, -1);
+                      to = Offset(0, .5);
+                      break;
+                    case ViewTransitionType.fade:
+                  }
+
+                  return SlideTransition(
+                    position: Tween<Offset>(begin: from, end: Offset.zero).animate(animation),
+                    child: SlideTransition(
+                      position: Tween<Offset>(begin: Offset.zero, end: to).animate(secondaryAnimation),
+                      child: FadeTransition(
+                        opacity: Tween<double>(begin: 1, end: 0.5).animate(secondaryAnimation),
+                        child: child,
+                      ),
+                    ),
+                  );
+                }
+              },
+            )
+          : MaterialPageRoute(builder: (BuildContext context) => view, settings: settings),
+    );
+
     setup();
     _scope.window.overlay.apply();
     Future.delayed(Duration(milliseconds: 150), rasterize);
@@ -211,15 +288,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
 
   String get title => widget?.title ?? application.title;
-
-//TODO: THIS SHOULD BE IN APPLICATION CLASS
-/*void toggleDrawer() {
-    if (_scaffold.currentState.isDrawerOpen) {
-      _scaffold.currentState.openEndDrawer();
-    } else {
-      _scaffold.currentState.openDrawer();
-    }
-  }*/
 }
 
 class _PushedViewArguments<A extends Application> {

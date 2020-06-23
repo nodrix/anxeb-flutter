@@ -10,34 +10,33 @@ enum ApiMethods { PUT, GET, POST, DELETE }
 
 class Api {
   String _uri;
-  String _token;
   Dio _dio;
-  
-  Api(String uri, {String token}) {
+  String token;
+
+  Api(String uri, {this.token}) {
     _uri = uri;
-    _token = token;
-    
+
     _dio = Dio(BaseOptions(
       baseUrl: _uri,
       connectTimeout: 7000,
       receiveTimeout: 7000,
     ));
-    
+
     _dio.interceptors.add(InterceptorsWrapper(onRequest: (RequestOptions options) {
-      if (_token != null) {
-        options.headers['Authorization'] = 'Bearer $_token';
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
       }
-      
+
       options.headers['origin-service-key'] = 'control';
       options.headers['content-type'] = 'application/json';
-      
+
       return options;
     }, onResponse: (Response response) {
       return response;
     }, onError: (DioError e) {
       return e;
     }));
-    
+
     (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
       client.badCertificateCallback = (X509Certificate cert, String host, int port) {
         //TODO: Validate PEM Certificate
@@ -45,22 +44,18 @@ class Api {
       };
     };
   }
-  
+
   Interceptors get interceptors => _dio.interceptors;
-  
-  void auth(String token) {
-    _token = token;
-  }
-  
+
   Future<Data> _process(ApiMethods method, String route, {data}) async {
     var res = await request(method, route, data: data);
     return Data(res.data);
   }
-  
+
   Future<Response> request(ApiMethods method, String route, {data}) {
     var promise = new Completer<Response>();
     var body;
-    
+
     var $method;
     switch (method) {
       case ApiMethods.GET:
@@ -76,7 +71,7 @@ class Api {
         $method = _dio.put;
         break;
     }
-    
+
     if (data != null) {
       if (data is Data) {
         body = data.toObjects();
@@ -86,9 +81,9 @@ class Api {
         body = data;
       }
     }
-    
+
     Future<Response> call = $method == _dio.get ? $method(route) : $method(route, data: body);
-    
+
     call.then((res) {
       promise.complete(res);
     }).catchError((err) {
@@ -101,34 +96,26 @@ class Api {
     });
     return promise.future;
   }
-  
-  String getUri(String path) {
-    return _uri + path;
-  }
-  
-  Future<Data> delete(String route) {
-    return _process(ApiMethods.DELETE, route);
-  }
-  
-  Future<Data> post(String route, data) {
-    return _process(ApiMethods.POST, route, data: data);
-  }
-  
-  Future<Data> put(String route, data) {
-    return _process(ApiMethods.PUT, route, data: data);
-  }
-  
-  Future<Data> get(String route) {
-    return _process(ApiMethods.GET, route);
-  }
+
+  String getUri(String path) => _uri + path;
+
+  Future<Data> delete(String route) => _process(ApiMethods.DELETE, route);
+
+  Future<Data> post(String route, data) => _process(ApiMethods.POST, route, data: data);
+
+  Future<Data> put(String route, data) => _process(ApiMethods.PUT, route, data: data);
+
+  Future<Data> get(String route) => _process(ApiMethods.GET, route);
+
+  String get uri => _uri;
 }
 
 class ApiException implements Exception {
   final String message;
   final int code;
-  
+
   ApiException(this.message, this.code);
-  
+
   factory ApiException.fromErr(err) {
     if (err is DioError) {
       if (err.type == DioErrorType.CONNECT_TIMEOUT) {
@@ -152,7 +139,7 @@ class ApiException implements Exception {
       return null;
     }
   }
-  
+
   String toString() {
     return message;
   }

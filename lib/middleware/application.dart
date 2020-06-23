@@ -1,19 +1,24 @@
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Navigator;
 
 import 'api.dart';
 import 'disk.dart';
+import 'navigator.dart';
 
 class Application {
   Settings _settings;
   Api _api;
   String _title;
   Disk _disk;
+  Navigator _navigator;
 
   Application() {
     _settings = Settings();
     _title = 'Anxeb';
     _disk = Disk();
+    _navigator = Navigator(this);
+
     init();
   }
 
@@ -38,8 +43,12 @@ class Application {
     _title = value;
   }
 
-  Disk get disk => _disk;
+  Navigator get navigator => _navigator;
 
-//navigator (Drawer) shoud be somewhere here
-//data shoud be called each view call.. must send as parameter the view key amomg the scope etc..
+  @protected
+  set navigator(value) {
+    _navigator = value;
+  }
+
+  Disk get disk => _disk;
 }

@@ -8,6 +8,7 @@ class ScrollableContainer extends StatelessWidget {
   final EdgeInsets padding;
   final ScrollController controller;
   final Scope scope;
+  final bool fixedHeight;
 
   ScrollableContainer({
     Key key,
@@ -16,6 +17,7 @@ class ScrollableContainer extends StatelessWidget {
     this.fadding,
     this.padding,
     this.controller,
+    this.fixedHeight,
   })  : assert(child != null),
         super(key: key);
 
@@ -25,6 +27,7 @@ class ScrollableContainer extends StatelessWidget {
       child: SingleChildScrollView(
         controller: controller,
         child: Container(
+          height: fixedHeight == true ? scope.window.size.height : null,
           padding: Utils.convert.toFraction(fadding, scope.window.size),
           child: Padding(
             padding: padding != null ? padding : const EdgeInsets.all(0),

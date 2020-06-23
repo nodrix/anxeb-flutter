@@ -2,7 +2,7 @@ import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/common.dart';
 import 'package:anxeb_flutter/misc/key_value.dart';
-import 'package:anxeb_flutter/widgets/buttons/text_button.dart';
+import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
 class MessageDialog extends Dialog {

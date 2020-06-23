@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
 
@@ -20,11 +22,13 @@ class _FooterPartState extends State<FooterPart> {
       elevation: 20,
       clipBehavior: Clip.hardEdge,
       child: Container(
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(width: 1.0, color: Colors.white),
-          ),
-        ),
+        decoration: Platform.isAndroid
+            ? BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(width: 1.0, color: Colors.white),
+                ),
+              )
+            : null,
         child: widget.child,
       ),
       shape: CircularNotchedRectangle(),

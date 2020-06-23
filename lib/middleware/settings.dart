@@ -18,7 +18,7 @@ class _Colors {
   Color header = Color(0xff195279);
   Color focus = Color(0x15111111);
   Color input = Color(0x10111111);
-  Color navigation = Color(0xff000000);
+  Color navigation = Color(0xff053954);
 }
 
 class Settings {
