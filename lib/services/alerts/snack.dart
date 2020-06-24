@@ -4,8 +4,8 @@ import 'package:anxeb_flutter/middleware/alert.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
-const TextStyle _DEFAULT_MESSAGE_STYLE = TextStyle(fontWeight: FontWeight.w300);
-const TextStyle _DEFAULT_TITLE_STYLE = TextStyle(fontSize: 17, fontWeight: FontWeight.w400);
+const TextStyle _DEFAULT_MESSAGE_STYLE = TextStyle(fontSize: 16, fontWeight: FontWeight.w300);
+const TextStyle _DEFAULT_TITLE_STYLE = TextStyle(fontSize: 18, fontWeight: FontWeight.w400);
 
 class SnackAlert extends Alert {
   final String title;
@@ -27,7 +27,7 @@ class SnackAlert extends Alert {
         onTap: () => this.dispose(),
         child: message == null
             ? Container(
-                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 46 : 0),
+                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 50 : 0),
                 child: Row(
                   children: icon != null
                       ? <Widget>[
@@ -56,7 +56,7 @@ class SnackAlert extends Alert {
                 ),
               )
             : Container(
-                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 46 : 0),
+                padding: EdgeInsets.only(bottom: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? 50 : 0),
                 child: Row(
                   children: <Widget>[
                     Expanded(

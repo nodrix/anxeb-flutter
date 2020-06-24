@@ -25,10 +25,50 @@ class Navigator {
     this.role = role;
   }
 
-  void dismiss() {
+  Future end() async {
+    if (_currentView != null) {
+      await _currentView.pop(null, force: true);
+    }
+
     _sourceView = null;
     this.header = null;
     this.role = null;
+  }
+
+  Future<bool> exit() async => _sourceView != null ? await _sourceView.dismiss() : false;
+
+  Future<bool> push(Future<ViewWidget> Function(Key key) getView) async {
+    if (_sourceView != null) {
+      var dismissed = _currentView != null ? await _currentView.dismiss() : true;
+
+      if (dismissed) {
+        if (_currentView == null) {
+          if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
+            _sourceView.scaffold.currentState.openEndDrawer();
+          }
+        }
+        _currentViewKey = GlobalKey<ViewState>();
+        var view = await getView(_currentViewKey);
+        _sourceView.push(
+          view,
+          transition: ViewTransitionType.fade,
+        );
+        return true;
+      }
+    }
+    return false;
+  }
+
+  MenuGroup add(MenuGroup group, {List<MenuItem> items}) {
+    if (items != null) {
+      group.setup(items);
+    }
+    _groups.add(group);
+    return group;
+  }
+
+  Drawer drawer() {
+    return build(groups);
   }
 
   Drawer _buildDrawer(List<MenuGroup> $groups) {
@@ -59,29 +99,7 @@ class Navigator {
     }
   }
 
-  Future<bool> push(Future<ViewWidget> Function(Key key) getView) async {
-    if (_sourceView != null) {
-      var dismissed = _currentView != null ? await _currentView.dismiss() : true;
-
-      if (dismissed) {
-        if (_currentView == null) {
-          if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
-            _sourceView.scaffold.currentState.openEndDrawer();
-          }
-        }
-        _currentViewKey = GlobalKey<ViewState>();
-        var view = await getView(_currentViewKey);
-        _sourceView.push(
-          view,
-          transition: ViewTransitionType.fade,
-        );
-        return true;
-      }
-    }
-    return false;
-  }
-
-  Widget _buildItem(MenuItem $item) {
+  Widget _buildItem(MenuItem $item, [MenuItem parent]) {
     var $hidden = $item.visible == false || ($item.isVisible != null && $item.isVisible() == false);
     var $unauthorized = (_sourceView == null) || (role != null && $item.roles != null && !$item.roles.contains(role));
 
@@ -90,16 +108,9 @@ class Navigator {
     }
 
     var $enabled = $item.enabled != null ? $item.enabled : ($item.isEnabled != null ? $item.isEnabled() : null);
-    var $active = $item.active != null ? $item.active : ($item.isActive != null ? $item.isActive() : null);
     var $error = $item.error ?? ($item.isError != null ? $item.isError() : null);
 
-    if ($active == null) {
-      if (_currentView != null && _currentView.name == $item.name) {
-        $active = true;
-      } else if (_currentView == null && $item.home == true) {
-        $active = true;
-      }
-    }
+    var $active = _isItemActive($item);
 
     Color $activeColor = _application.settings.colors.primary;
     double $fontSize = 18;
@@ -131,14 +142,14 @@ class Navigator {
       );
     }
 
-    var item = ListTile(
-      dense: $error != null,
-      contentPadding: EdgeInsets.all(0),
-      enabled: $enabled != false,
-      title: Row(
+    var menuItemContent = Container(
+      padding: EdgeInsets.only(top: 10, bottom: 10),
+      child: Row(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(right: 14, bottom: $item.iconOffset != null && $item.iconOffset > 0 ? $item.iconOffset : 0, top: $item.iconOffset != null && $item.iconOffset < 0 ? -$item.iconOffset : 0),
+            padding: EdgeInsets.only(right: 16, bottom: $item.iconOffset != null && $item.iconOffset > 0 ? $item.iconOffset : 0, top: $item.iconOffset != null && $item.iconOffset < 0 ? -$item.iconOffset : 0),
+            alignment: Alignment.center,
+            width: 42,
             child: Icon(
               $item.icon,
               color: $navigationColor,
@@ -165,26 +176,10 @@ class Navigator {
           ),
         ],
       ),
-      onTap: () async {
-        if ($item.onTab != null) {
-          var result = await $item.onTab();
-          if (result == false) {
-            return;
-          }
-        }
-
-        if ($item.home == true) {
-          var dismissed = _currentView != null ? await _currentView.dismiss() : true;
-          if (dismissed) {
-            _currentViewKey = null;
-          }
-        }
-
-        if ($item.view != null) {
-          push((key) => $item.view(key));
-        }
-      },
     );
+
+    var $group = $item is MenuGroup ? $item : null;
+    var $anyChildActive = $group != null && $group.items != null && $group.items.length > 0 && $group.items.any(($item) => _isItemActive($item) == true);
 
     return Column(
       children: <Widget>[
@@ -197,25 +192,69 @@ class Navigator {
                   )
                 : null,
           ),
-          child: ExpansionTile(
-            title: item,
-            //children: [],
-          ),
+          child: $group != null && $group.items.length > 0
+              ? Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.3)),
+                    ),
+                  ),
+                  child: ExpansionTile(
+                    initiallyExpanded: $anyChildActive,
+                    title: menuItemContent,
+                    children: $group.items.map(($subItem) {
+                      return _buildItem($subItem, $group);
+                    }).toList(),
+                  ),
+                )
+              : Container(
+                  decoration: parent != null
+                      ? null
+                      : BoxDecoration(
+                          border: Border(
+                            right: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.2)),
+                          ),
+                        ),
+                  child: ListTile(
+                    dense: $error != null,
+                    enabled: $enabled != false,
+                    title: menuItemContent,
+                    onTap: () async {
+                      if ($item.onTab != null) {
+                        var result = await $item.onTab();
+                        if (result == false) {
+                          return;
+                        }
+                      }
+
+                      if ($item.home == true) {
+                        var dismissed = _currentView != null ? await _currentView.dismiss() : true;
+                        if (dismissed) {
+                          _currentViewKey = null;
+                        }
+                      }
+
+                      if ($item.view != null) {
+                        push((key) => $item.view(key));
+                      }
+                    },
+                  ),
+                ),
         ),
       ],
     );
   }
 
-  Drawer drawer() {
-    return build(groups);
-  }
-
-  MenuGroup add(MenuGroup group, {List<MenuItem> items}) {
-    if (items != null) {
-      group.setup(items);
+  bool _isItemActive(MenuItem $item) {
+    var result = $item.active != null ? $item.active : ($item.isActive != null ? $item.isActive() : null);
+    if (result == null) {
+      if (_currentView != null && _currentView.name == $item.name) {
+        result = true;
+      } else if (_currentView == null && $item.home == true) {
+        result = true;
+      }
     }
-    _groups.add(group);
-    return group;
+    return result;
   }
 
   ViewState get _currentView => _currentViewKey?.currentState;

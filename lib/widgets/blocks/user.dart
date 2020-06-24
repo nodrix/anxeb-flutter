@@ -41,7 +41,7 @@ class UserBlock extends StatelessWidget {
           child: Row(
             children: <Widget>[
               ImageButton(
-                width: 80,
+                width: 90,
                 url: imageUrl,
                 headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
                 color: Colors.white,
@@ -55,7 +55,7 @@ class UserBlock extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Container(
-                        padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 6.0, top: 8),
+                        padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 6.0, top: 12),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -70,7 +70,8 @@ class UserBlock extends StatelessWidget {
                               userName,
                               style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w300,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 18
                               ),
                             ),
                           ],
@@ -79,10 +80,12 @@ class UserBlock extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 15.0, top: 7),
                         child: Text(
-                          userTitle,
+                          userTitle.toUpperCase(),
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.w300,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 12,
+                            letterSpacing: 0.1
                           ),
                         ),
                       ),

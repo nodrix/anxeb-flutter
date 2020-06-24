@@ -111,8 +111,8 @@ class ScopeDialogs {
       body: body,
       iconColor: _scope.application.settings.colors.info,
       buttons: [
-        KeyValue('OK', () => true),
-        KeyValue('NO', () => false),
+        KeyValue('Sí', () => true),
+        KeyValue('No', () => false),
       ],
     );
   }

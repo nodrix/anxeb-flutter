@@ -182,17 +182,13 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     scope.alerts.dispose(quick: true);
 
     if (force == true) {
-      Navigator.of(_scope.context).pop(result);
+      await _beginPop(result);
       return true;
     } else {
       try {
         var value = await beforePop();
         if (value == true) {
-          if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
-            scaffold.currentState.openEndDrawer();
-          }
-          await closing();
-          Navigator.of(_scope.context).pop(result);
+          await _beginPop(result);
           return true;
         }
       } catch (err) {}
@@ -267,6 +263,14 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     Future.delayed(Duration(milliseconds: 150), rasterize);
     Future.delayed(Duration(milliseconds: 250), rasterize);
     return result as T;
+  }
+
+  Future _beginPop(result) async {
+    if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
+      scaffold.currentState.openEndDrawer();
+    }
+    await closing();
+    Navigator.of(_scope.context).pop(result);
   }
 
   bool equals(String name) {

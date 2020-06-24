@@ -32,7 +32,9 @@ class Alert {
   Future show() async {
     if (_disposed == false) {
       await scope.idle();
-      return await scope.scaffold.currentState.showSnackBar(build()).closed;
+      var result = await scope.scaffold.currentState.showSnackBar(build()).closed;
+      _disposed = true;
+      return result;
     } else {
       return null;
     }

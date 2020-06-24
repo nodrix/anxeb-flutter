@@ -4,7 +4,7 @@ class _Colors {
   Color primary = Color(0xff2e7db2);
   Color secudary = Color(0xff026299);
   Color accent = Color(0xffef6c00);
-  Color success = Color(0xff00C851);
+  Color success = Color(0xff4a934a);
   Color neutral = Color(0xff0c7272);
   Color info = Color(0xff333377);
   Color warning = Color(0xffffbb33);
