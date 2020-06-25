@@ -5,8 +5,10 @@ import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'application.dart';
+import 'pane.dart';
 import 'scope.dart';
 
 enum ViewTransitionType {
@@ -53,10 +55,12 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _scope;
   Scope _parent;
   Application _application;
+  PanelController _paneController;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
     _locator = ViewActionLocator();
+    _paneController = PanelController();
   }
 
   void rasterize() {
@@ -102,6 +106,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Widget build(BuildContext context) {
     prebuild();
     var $drawer = drawer();
+    var $pane = pane();
 
     var scaffoldContent = Scaffold(
       key: _scaffold,
@@ -139,7 +144,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: content(),
+              child: $pane != null ? _getPane($pane, content()) : content(),
             );
           }),
         ),
@@ -160,6 +165,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @protected
   Widget content() => Container();
+
+  @protected
+  ViewPane pane() => null;
 
   @protected
   Widget footer() => null;
@@ -271,6 +279,60 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     }
     await closing();
     Navigator.of(_scope.context).pop(result);
+  }
+
+  _getPane(ViewPane pane, Widget content) {
+    return SlidingUpPanel(
+      controller: _paneController,
+      panel: Container(
+        width: window.available.width,
+        color: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Container(
+              child: AnimatedOpacity(
+                opacity: _paneController.isAttached && _paneController.isPanelClosed ? 1 : 0,
+                duration: Duration(milliseconds: 200),
+                child: Container(
+                  height: 10,
+                  width: 100,
+                  margin: EdgeInsets.only(bottom: 40, top: 20),
+                  decoration: BoxDecoration(
+                    color: settings.colors.primary,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.elliptical(30, 9),
+                      topRight: Radius.elliptical(30, 9),
+                      bottomLeft: Radius.circular(3),
+                      bottomRight: Radius.circular(3),
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      margin: EdgeInsets.all(4),
+                      width: 50,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            pane.body,
+          ],
+        ),
+      ),
+      backdropEnabled: true,
+      renderPanelSheet: false,
+      backdropTapClosesPanel: true,
+      backdropOpacity: 0.36,
+      body: content,
+      minHeight: 48,
+      maxHeight: pane.height ?? 200,
+    );
   }
 
   bool equals(String name) {
