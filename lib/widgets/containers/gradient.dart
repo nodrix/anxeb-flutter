@@ -25,7 +25,7 @@ class GradientContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
-        height: scope.window.size.height,
+        height: scope.window.available.height,
         child: Stack(
           children: <Widget>[
             Container(

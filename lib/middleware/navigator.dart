@@ -196,7 +196,7 @@ class Navigator {
               ? Container(
                   decoration: BoxDecoration(
                     border: Border(
-                      right: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.3)),
+                      left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.4)),
                     ),
                   ),
                   child: ExpansionTile(
@@ -212,7 +212,7 @@ class Navigator {
                       ? null
                       : BoxDecoration(
                           border: Border(
-                            right: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.2)),
+                            left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.3)),
                           ),
                         ),
                   child: ListTile(
@@ -228,10 +228,7 @@ class Navigator {
                       }
 
                       if ($item.home == true) {
-                        var dismissed = _currentView != null ? await _currentView.dismiss() : true;
-                        if (dismissed) {
-                          _currentViewKey = null;
-                        }
+                        await home();
                       }
 
                       if ($item.view != null) {
@@ -243,6 +240,21 @@ class Navigator {
         ),
       ],
     );
+  }
+
+  Future<bool> home() async {
+    if (_currentViewKey != null) {
+      var dismissed = _currentView != null ? await _currentView.dismiss() : true;
+      if (dismissed) {
+        _currentViewKey = null;
+      }
+      return dismissed;
+    } else {
+      if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
+        _sourceView.scaffold.currentState.openEndDrawer();
+      }
+      return true;
+    }
   }
 
   bool _isItemActive(MenuItem $item) {

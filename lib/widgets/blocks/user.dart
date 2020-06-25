@@ -40,13 +40,18 @@ class UserBlock extends StatelessWidget {
           padding: Utils.convert.toFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
           child: Row(
             children: <Widget>[
-              ImageButton(
-                width: 90,
-                url: imageUrl,
-                headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
-                color: Colors.white,
-                selected: true,
-                onTap: onTab,
+              Container(
+                child: ImageButton(
+                  height: 90,
+                  width: 90,
+                  imageUrl: imageUrl,
+                  innerPadding: EdgeInsets.all(5),
+                  headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
+                  outerBorderColor: Colors.white,
+                  failedIcon: Icons.account_circle,
+                  outerThickness: 3,
+                  onTap: onTab,
+                ),
               ),
               Expanded(
                 child: Container(
@@ -68,11 +73,7 @@ class UserBlock extends StatelessWidget {
                           children: <Widget>[
                             Text(
                               userName,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18
-                              ),
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 18),
                             ),
                           ],
                         ),
@@ -81,12 +82,7 @@ class UserBlock extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 15.0, top: 7),
                         child: Text(
                           userTitle.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                            letterSpacing: 0.1
-                          ),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 12, letterSpacing: 0.1),
                         ),
                       ),
                     ],

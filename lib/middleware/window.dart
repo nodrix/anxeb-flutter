@@ -26,7 +26,7 @@ class Window {
       },
     );
 
-    _available = constraints != null ? Size(constraints.maxWidth, constraints.maxHeight) : size;
+    _available = constraints != null ? Size(constraints.maxWidth, constraints.maxHeight + (insets?.bottom ?? 0)) : size;
     return this;
   }
 
@@ -43,7 +43,9 @@ class Window {
   }
 
   Size get size => context != null ? MediaQuery.of(context).size : Size.zero;
-  
+
+  EdgeInsets get insets => context != null ? MediaQuery.of(context).viewInsets : null;
+
   Overlay get overlay => _overlay;
 
   BuildContext get context => _scope.context;

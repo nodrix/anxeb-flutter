@@ -27,7 +27,7 @@ class ScrollableContainer extends StatelessWidget {
       child: SingleChildScrollView(
         controller: controller,
         child: Container(
-          height: fixedHeight == true ? scope.window.size.height : null,
+          height: fixedHeight == true ? scope.window.available.height : null,
           padding: Utils.convert.toFraction(fadding, scope.window.size),
           child: Padding(
             padding: padding != null ? padding : const EdgeInsets.all(0),

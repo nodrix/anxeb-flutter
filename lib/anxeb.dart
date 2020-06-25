@@ -27,3 +27,5 @@ export 'widgets/parts/footer.dart';
 export 'middleware/menu.dart';
 export 'middleware/navigator.dart';
 export 'widgets/blocks/user.dart';
+export 'widgets/components/secured_image.dart';
+export 'widgets/buttons/image.dart';
