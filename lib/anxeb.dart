@@ -30,4 +30,6 @@ export 'widgets/blocks/user.dart';
 export 'widgets/components/secured_image.dart';
 export 'widgets/buttons/image.dart';
 export 'widgets/parts/header.dart';
-export 'middleware/pane.dart';
+export 'middleware/panel.dart';
+export 'services/panels/board.dart';
+export 'services/panels/menu.dart';

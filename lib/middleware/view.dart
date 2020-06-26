@@ -8,7 +8,7 @@ import 'package:after_init/after_init.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'application.dart';
-import 'pane.dart';
+import 'panel.dart';
 import 'scope.dart';
 
 enum ViewTransitionType {
@@ -55,12 +55,13 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _scope;
   Scope _parent;
   Application _application;
-  PanelController _paneController;
+  ViewPanel _panel;
+  PanelController _panelController;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
     _locator = ViewActionLocator();
-    _paneController = PanelController();
+    _panelController = PanelController();
   }
 
   void rasterize() {
@@ -104,9 +105,10 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @override
   Widget build(BuildContext context) {
+    _panel = _panel ?? panel(_panelController);
+
     prebuild();
     var $drawer = drawer();
-    var $pane = pane();
 
     var scaffoldContent = Scaffold(
       key: _scaffold,
@@ -144,7 +146,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: $pane != null ? _getPane($pane, content()) : content(),
+              child: _panel != null ? _getPanel(_panel, content()) : content(),
             );
           }),
         ),
@@ -167,7 +169,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Widget content() => Container();
 
   @protected
-  ViewPane pane() => null;
+  ViewPanel panel(PanelController controller) => null;
 
   @protected
   Widget footer() => null;
@@ -219,12 +221,12 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
           ? PageRouteBuilder(
               pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
               settings: settings,
-              transitionDuration: Duration(milliseconds: delay ?? 300),
+              transitionDuration: Duration(milliseconds: delay ?? 200),
               transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
                 if (transition == ViewTransitionType.fade) {
                   return FadeTransition(
                     opacity: Tween<double>(begin: 0, end: 1).animate(animation),
-                    child: FadeTransition(opacity: Tween<double>(begin: 1, end: 0).animate(secondaryAnimation), child: child),
+                    child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
                   );
                 } else {
                   Offset from = Offset.zero;
@@ -281,9 +283,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     Navigator.of(_scope.context).pop(result);
   }
 
-  _getPane(ViewPane pane, Widget content) {
+  _getPanel(ViewPanel panel, Widget content) {
     return SlidingUpPanel(
-      controller: _paneController,
+      controller: _panelController,
       panel: Container(
         width: window.available.width,
         color: Colors.transparent,
@@ -292,7 +294,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
           children: <Widget>[
             Container(
               child: AnimatedOpacity(
-                opacity: _paneController.isAttached && _paneController.isPanelClosed ? 1 : 0,
+                opacity: _panelController.isAttached && _panelController.isPanelClosed ? 1 : 0,
                 duration: Duration(milliseconds: 200),
                 child: Container(
                   height: 10,
@@ -321,7 +323,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 ),
               ),
             ),
-            pane.body,
+            panel.build(),
           ],
         ),
       ),
@@ -331,7 +333,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       backdropOpacity: 0.36,
       body: content,
       minHeight: 48,
-      maxHeight: pane.height ?? 200,
+      maxHeight: panel.height ?? 200,
     );
   }
 

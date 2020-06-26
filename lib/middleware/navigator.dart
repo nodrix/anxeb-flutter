@@ -37,7 +37,7 @@ class Navigator {
 
   Future<bool> exit() async => _sourceView != null ? await _sourceView.dismiss() : false;
 
-  Future<bool> push(Future<ViewWidget> Function(Key key) getView) async {
+  Future<dynamic> push(Future<ViewWidget> Function(Key key) getView) async {
     if (_sourceView != null) {
       var dismissed = _currentView != null ? await _currentView.dismiss() : true;
 
@@ -48,15 +48,20 @@ class Navigator {
           }
         }
         _currentViewKey = GlobalKey<ViewState>();
+
         var view = await getView(_currentViewKey);
-        _sourceView.push(
+        var $openedKey = _currentViewKey;
+        var result = await _sourceView.push(
           view,
           transition: ViewTransitionType.fade,
         );
-        return true;
+        if (_currentViewKey == $openedKey) {
+          _currentViewKey = null;
+        }
+        return result;
       }
     }
-    return false;
+    return null;
   }
 
   MenuGroup add(MenuGroup group, {List<MenuItem> items}) {
@@ -269,7 +274,7 @@ class Navigator {
     return result;
   }
 
-  ViewState get _currentView => _currentViewKey?.currentState;
+  ViewState get _currentView => _currentViewKey?.currentState?.mounted == true ? _currentViewKey.currentState : null;
 
   List<MenuGroup> get groups => _groups;
 }
