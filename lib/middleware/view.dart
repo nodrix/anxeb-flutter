@@ -9,6 +9,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'application.dart';
 import 'panel.dart';
+import 'refresher.dart';
 import 'scope.dart';
 
 enum ViewTransitionType {
@@ -56,6 +57,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _parent;
   Application _application;
   ViewPanel _panel;
+  ViewRefresher _refresher;
   PanelController _panelController;
 
   View() {
@@ -89,6 +91,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Future _init() async {
     await init();
     setup();
+    _refresher = refresher();
     _scope.window.overlay.apply();
   }
 
@@ -110,7 +113,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     if (_panel?.rebuild == true) {
       _panel = panel(_panelController);
     }
-    
+
     prebuild();
     var $drawer = drawer();
 
@@ -150,7 +153,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: _panel != null ? _getPanel(_panel, content()) : content(),
+              child: _panel != null ? _getPanel(_panel, _getContent()) : _getContent(),
             );
           }),
         ),
@@ -174,6 +177,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @protected
   ViewPanel panel(PanelController controller) => null;
+
+  @protected
+  ViewRefresher refresher() => null;
 
   @protected
   Widget footer() => null;
@@ -277,6 +283,10 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     Future.delayed(Duration(milliseconds: 150), rasterize);
     Future.delayed(Duration(milliseconds: 250), rasterize);
     return result as T;
+  }
+
+  Widget _getContent() {
+    return _refresher != null ? _refresher.wrap(content()) : content();
   }
 
   Future _beginPop(result) async {

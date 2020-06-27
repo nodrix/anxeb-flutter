@@ -107,6 +107,35 @@ class Api {
 
   Future<Data> get(String route) => _process(ApiMethods.GET, route);
 
+  Future<File> download(String url, {String location, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+    try {
+      Response response = await _dio.get(
+        url,
+        onReceiveProgress: (count, total) => progress(count, total),
+        cancelToken: cancelToken,
+        queryParameters: query,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          validateStatus: (status) => status < 500,
+        ),
+      );
+
+      File file = File(location);
+      var raf = file.openSync(mode: FileMode.write);
+      raf.writeFromSync(response.data);
+      await raf.close();
+      return file;
+    } catch (err) {
+      var apiException = ApiException.fromErr(err);
+      if (apiException != null) {
+        throw apiException;
+      } else {
+        throw err;
+      }
+    }
+  }
+
   String get uri => _uri;
 }
 
