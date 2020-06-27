@@ -45,6 +45,10 @@ class Data {
     return list != null ? list.map(predicate).toList() : List<T>();
   }
 
+  Data clone() {
+    return Data(toObjects());
+  }
+
   dynamic toObjects() {
     var result = {};
     for (var $items in _items.entries) {
@@ -57,7 +61,7 @@ class Data {
   String toString() {
     return _items.toString();
   }
-  
+
   String toJson() {
     return json.encode(_items);
   }

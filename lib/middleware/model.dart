@@ -31,14 +31,8 @@ class Model<T> {
   @protected
   void init() {}
 
-  Future<T> loadFromDisk(String key) {
-    var promise = new Completer<T>();
-    _diskKey = key;
-    _init(callback: (data) {
-      promise.complete(data);
-    });
-    return promise.future;
-  }
+  @protected
+  void assign() {}
 
   Future _init({ModelLoadedCallback<T> callback, bool forcePush}) async {
     bool mustPush = false;
@@ -58,6 +52,7 @@ class Model<T> {
     if (forcePush == true || mustPush == true) {
       _pushDataToFields();
     }
+    assign();
     if (callback != null) {
       callback(this as T);
     }
@@ -81,10 +76,19 @@ class Model<T> {
     }
   }
 
-  void _pushFieldsToData() {
+  void _pushFieldsToData({bool usePrimaryKeys}) {
     for (var field in _fields) {
-      field.pushToData();
+      field.pushToData(usePrimaryKeys: usePrimaryKeys);
     }
+  }
+
+  Future<T> loadFromDisk(String key) {
+    var promise = new Completer<T>();
+    _diskKey = key;
+    _init(callback: (data) {
+      promise.complete(data);
+    });
+    return promise.future;
   }
 
   void field(dynamic Function() getValue, Function(dynamic value) setValue, String fieldName, {bool primary, dynamic Function() defect, dynamic Function(dynamic raw) instance}) {
@@ -123,8 +127,8 @@ class Model<T> {
     return _primaryField != null ? _data[_primaryField] : _data.toObjects();
   }
 
-  dynamic toObjects() {
-    _pushFieldsToData();
+  dynamic toObjects({bool usePrimaryKeys}) {
+    _pushFieldsToData(usePrimaryKeys: usePrimaryKeys);
     return _data.toObjects();
   }
 
@@ -165,7 +169,12 @@ class _ModelField {
 
     if (instance != null) {
       if ($rawValue != null && $rawValue is Iterable) {
-        setValue(data.list((item) => instance(item), field: fieldName));
+        if ($defValue is List) {
+          for (var item in $rawValue) {
+            $defValue.add(instance(item));
+          }
+        }
+        setValue($defValue);
       } else {
         var $insValue = instance($rawValue);
         if ($defValue is Iterable) {
@@ -179,10 +188,25 @@ class _ModelField {
     }
   }
 
-  void pushToData() {
+  void pushToData({bool usePrimaryKeys}) {
     var propertyValue = getValue();
+
     if (propertyValue is Model) {
-      data[fieldName] = propertyValue.toValue();
+      if (usePrimaryKeys == true) {
+        data[fieldName] = propertyValue.toValue();
+      } else {
+        data[fieldName] = propertyValue.toObjects();
+      }
+    } else if (propertyValue is List<Model>) {
+      var items = List();
+      for (var item in propertyValue) {
+        if (usePrimaryKeys == true) {
+          items.add(item.toValue());
+        } else {
+          items.add(item.toObjects());
+        }
+      }
+      data[fieldName] = items;
     } else {
       data[fieldName] = propertyValue;
     }

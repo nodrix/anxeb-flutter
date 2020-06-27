@@ -7,8 +7,13 @@ import 'board.dart';
 class MenuPanel extends BoardPanel {
   final Scope scope;
   final List<PanelMenuItem> items;
+  double _height;
+  bool _rebuild;
 
-  MenuPanel({this.scope, this.items, PanelController controller}) : super(controller: controller);
+  MenuPanel({this.scope, double height, bool rebuild, this.items, PanelController controller}) : super(controller: controller) {
+    _height = height;
+    _rebuild = rebuild;
+  }
 
   @override
   Widget content() {
@@ -30,7 +35,7 @@ class MenuPanel extends BoardPanel {
                         margin: EdgeInsets.all(8),
                         child: Material(
                           key: GlobalKey(),
-                          color: Colors.white.withOpacity(0.2),
+                          color: $action.fillColor ?? Colors.white.withOpacity(0.2),
                           borderRadius: new BorderRadius.all(Radius.circular(10)),
                           child: InkWell(
                             onTap: () {
@@ -45,28 +50,30 @@ class MenuPanel extends BoardPanel {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
                                   Container(
-                                    height: 66,
+                                    //padding: EdgeInsets.all(5),
                                     alignment: Alignment.center,
                                     child: Icon(
                                       $action.icon,
-                                      color: Colors.white,
+                                      color: $action.iconColor ?? Colors.white,
                                       size: 48.0 * ($action.scale ?? 1),
                                     ),
                                   ),
-                                  Container(
-                                    alignment: Alignment.center,
-                                    padding: EdgeInsets.symmetric(horizontal: 15),
-                                    child: Text(
-                                      $action.label.toUpperCase(),
-                                      textAlign: TextAlign.center,
-                                      textScaleFactor: 1.05,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        letterSpacing: 0.3,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  )
+                                  $action.label != null
+                                      ? Container(
+                                          alignment: Alignment.center,
+                                          padding: EdgeInsets.all(5),
+                                          child: Text(
+                                            $action.label.toUpperCase(),
+                                            textAlign: TextAlign.center,
+                                            textScaleFactor: 1.05,
+                                            style: TextStyle(
+                                              color: $action.textColor ?? Colors.white,
+                                              letterSpacing: 0.3,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        )
+                                      : Container(),
                                 ],
                               ),
                             ),
@@ -81,13 +88,13 @@ class MenuPanel extends BoardPanel {
   }
 
   @protected
-  BoxShadow get shadow => BoxShadow(offset: Offset(0, -5), blurRadius: 5, spreadRadius: 3, color: Color(0x3f555555));
+  BoxShadow get shadow => BoxShadow(offset: Offset(0, 0), blurRadius: 5, spreadRadius: 3, color: Color(0x3f555555));
 
   @override
   Color get fill => scope.application.settings.colors.navigation;
 
   @override
-  double get height => 420;
+  double get height => _height ?? 420;
 
   @override
   double get paddings => 8;
@@ -97,6 +104,9 @@ class MenuPanel extends BoardPanel {
 
   @override
   double get radius => 0;
+
+  @override
+  bool get rebuild => _rebuild ?? super.rebuild;
 }
 
 class PanelMenuItem {
@@ -110,11 +120,17 @@ class PanelMenuAction {
   final String label;
   final VoidCallback onPressed;
   final double scale;
+  final Color iconColor;
+  final Color fillColor;
+  final Color textColor;
 
   PanelMenuAction({
     this.icon,
     this.label,
     this.onPressed,
     this.scale,
+    this.iconColor,
+    this.fillColor,
+    this.textColor,
   });
 }

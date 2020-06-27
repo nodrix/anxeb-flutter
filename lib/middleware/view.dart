@@ -107,6 +107,10 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Widget build(BuildContext context) {
     _panel = _panel ?? panel(_panelController);
 
+    if (_panel?.rebuild == true) {
+      _panel = panel(_panelController);
+    }
+    
     prebuild();
     var $drawer = drawer();
 
