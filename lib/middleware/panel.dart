@@ -5,10 +5,11 @@ import 'scope.dart';
 class ViewPanel {
   final Scope scope;
   final double height;
+  final bool Function() isDisabled;
   PanelController controller;
   bool rebuild = false;
 
-  ViewPanel({this.scope, this.height});
+  ViewPanel({this.scope, this.height, this.isDisabled});
 
   Future collapse() async => await controller?.close();
 
@@ -16,6 +17,9 @@ class ViewPanel {
   Widget content([Widget child]) => child ?? Container();
 
   Widget wrap(Widget parent) {
+    if (isDisabled?.call() == true) {
+      return parent;
+    }
     return SlidingUpPanel(
       controller: controller,
       panel: Container(

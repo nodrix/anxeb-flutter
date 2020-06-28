@@ -3,11 +3,14 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
 
 class BoardPanel extends ViewPanel {
-  Widget _child;
+  final Widget child;
 
-  BoardPanel({Scope scope, Widget child, double height}) : super(scope: scope, height: height ?? 400) {
-    _child = child;
-  }
+  BoardPanel({Scope scope, this.child, double height, bool Function() isDisabled})
+      : super(
+          scope: scope,
+          height: height ?? 400,
+          isDisabled: isDisabled,
+        );
 
   @override
   Widget content([Widget child]) {
@@ -22,7 +25,7 @@ class BoardPanel extends ViewPanel {
         borderRadius: radius != null ? BorderRadius.only(topLeft: Radius.circular(radius), topRight: Radius.circular(radius)) : null,
         color: fill,
       ),
-      child: _child ?? child,
+      child: this.child ?? child,
     ));
   }
 

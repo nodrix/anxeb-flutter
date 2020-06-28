@@ -87,6 +87,7 @@ class Scope {
           _busyContext = null;
           _idling = false;
           (idlePromise as Completer).complete();
+          rasterize();
         });
       });
 

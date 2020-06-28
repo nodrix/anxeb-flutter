@@ -5,7 +5,12 @@ import 'board.dart';
 class MenuPanel extends BoardPanel {
   final List<PanelMenuItem> items;
 
-  MenuPanel({Scope scope, this.items, double height, bool rebuild}) : super(scope: scope, height: height ?? 400) {
+  MenuPanel({Scope scope, this.items, double height, bool rebuild, bool Function() isDisabled})
+      : super(
+          scope: scope,
+          height: height ?? 400,
+          isDisabled: isDisabled,
+        ) {
     super.rebuild = rebuild;
   }
 
