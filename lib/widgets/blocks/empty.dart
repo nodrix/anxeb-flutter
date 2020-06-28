@@ -38,33 +38,36 @@ class EmptyBlock extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Padding(
-                    padding: iconPadding != null ? iconPadding : EdgeInsets.only(bottom: 5),
-                    child: Icon(
-                      icon,
-                      size: iconSize != null ? iconSize : 160,
-                      color: Color(0x332e7db2),
-                    ),
+                  Icon(
+                    icon,
+                    size: iconSize != null ? iconSize : 160,
+                    color: Color(0x332e7db2),
                   ),
                   text != null && text.isNotEmpty
-                      ? ParagraphBlock(
-                          alignment: TextAlign.center,
-                          content: <TextSpan>[
-                            TextSpan(style: TextStyle(), text: text),
-                          ],
+                      ? Container(
+                          margin: EdgeInsets.only(top: 5),
+                          child: ParagraphBlock(
+                            alignment: TextAlign.center,
+                            content: <TextSpan>[
+                              TextSpan(style: TextStyle(), text: text),
+                            ],
+                          ),
                         )
                       : Container(),
                   actionText != null
                       ? GestureDetector(
                           onTap: actionCallback,
                           child: Container(
-                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                            padding: EdgeInsets.only(top: 5, bottom: 10),
                             child: ParagraphBlock(
                               content: <TextSpan>[
                                 TextSpan(
-                                  text: actionText,
+                                  text: actionText.toUpperCase(),
                                   style: TextStyle(
-                                    color: Color(0xff0055ff),
+                                    fontSize: 15,
+                                    letterSpacing: 0.15,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff0055f0),
                                   ),
                                 ),
                               ],

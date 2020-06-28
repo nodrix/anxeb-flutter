@@ -9,17 +9,17 @@ import 'scope.dart';
 
 class Dialog {
   final Scope scope;
-
+  
   @protected
   bool dismissible = false;
-
+  
   Dialog(this.scope) : assert(scope != null);
-
+  
   @protected
   Widget build(BuildContext context) {
     return Container();
   }
-
+  
   Future show() {
     return showDialog(
       context: scope.context,
@@ -33,11 +33,11 @@ class Dialog {
 
 class ScopeDialogs {
   Scope _scope;
-
+  
   ScopeDialogs(Scope scope) {
     _scope = scope;
   }
-
+  
   OptionsDialog options(String title, {IconData icon, List<KeyValue> options, String selectedValue}) {
     return OptionsDialog(
       _scope,
@@ -47,7 +47,7 @@ class ScopeDialogs {
       selectedValue: selectedValue,
     );
   }
-
+  
   MessageDialog information(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
     return MessageDialog(
       _scope,
@@ -60,7 +60,7 @@ class ScopeDialogs {
       buttons: buttons,
     );
   }
-
+  
   MessageDialog success(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
     return MessageDialog(
       _scope,
@@ -73,7 +73,7 @@ class ScopeDialogs {
       buttons: buttons,
     );
   }
-
+  
   MessageDialog exception(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
     return MessageDialog(
       _scope,
@@ -86,7 +86,7 @@ class ScopeDialogs {
       buttons: buttons,
     );
   }
-
+  
   MessageDialog error(error, {List<KeyValue<ResultCallback>> buttons}) {
     return MessageDialog(
       _scope,
@@ -98,7 +98,7 @@ class ScopeDialogs {
       buttons: buttons,
     );
   }
-
+  
   MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget body}) {
     return MessageDialog(
       _scope,
@@ -111,12 +111,12 @@ class ScopeDialogs {
       body: body,
       iconColor: _scope.application.settings.colors.info,
       buttons: [
-        KeyValue('Sí', () => true),
-        KeyValue('No', () => false),
+        KeyValue(yesLabel ?? 'Sí', () => true),
+        KeyValue(noLabel ?? 'No', () => false),
       ],
     );
   }
-
+  
   DateTimeDialog dateTime([DateTime value]) {
     return DateTimeDialog(_scope, value: value);
   }

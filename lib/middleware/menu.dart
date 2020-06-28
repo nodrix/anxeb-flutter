@@ -5,6 +5,7 @@ import 'view.dart';
 typedef MenuCallback = Future<dynamic> Function();
 typedef ActiveStateCallback = bool Function();
 typedef EnabledStateCallback = bool Function();
+typedef DisabledStateCallback = bool Function();
 typedef VisibleStateCallback = bool Function();
 typedef ErrorStateCallback = String Function();
 
@@ -16,6 +17,7 @@ class MenuItem {
   final MenuCallback onTab;
   final ActiveStateCallback isActive;
   final EnabledStateCallback isEnabled;
+  final DisabledStateCallback isDisabled;
   final VisibleStateCallback isVisible;
   final ErrorStateCallback isError;
   final List<String> roles;
@@ -43,6 +45,7 @@ class MenuItem {
     this.isError,
     this.enabled,
     this.isEnabled,
+    this.isDisabled,
     this.visible,
     this.isVisible,
     this.divider,
@@ -69,6 +72,7 @@ class MenuGroup extends MenuItem {
     ErrorStateCallback isError,
     bool enabled,
     EnabledStateCallback isEnabled,
+    DisabledStateCallback isDisabled,
     bool visible,
     VisibleStateCallback isVisible,
     bool divider,
@@ -89,6 +93,7 @@ class MenuGroup extends MenuItem {
           isError: isError,
           enabled: enabled,
           isEnabled: isEnabled,
+          isDisabled: isDisabled,
           visible: visible,
           isVisible: isVisible,
           divider: divider,
