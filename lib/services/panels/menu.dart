@@ -1,23 +1,17 @@
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-
 import 'board.dart';
 
 class MenuPanel extends BoardPanel {
-  final Scope scope;
   final List<PanelMenuItem> items;
-  double _height;
-  bool _rebuild;
 
-  MenuPanel({this.scope, double height, bool rebuild, this.items, PanelController controller}) : super(controller: controller) {
-    _height = height;
-    _rebuild = rebuild;
+  MenuPanel({Scope scope, this.items, double height, bool rebuild}) : super(scope: scope, height: height ?? 400) {
+    super.rebuild = rebuild;
   }
 
   @override
-  Widget content() {
-    return Container(
+  Widget content([Widget child]) {
+    return super.content(Container(
       margin: EdgeInsets.only(top: 5),
       child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -50,7 +44,6 @@ class MenuPanel extends BoardPanel {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
                                   Container(
-                                    //padding: EdgeInsets.all(5),
                                     alignment: Alignment.center,
                                     child: Icon(
                                       $action.icon,
@@ -84,7 +77,7 @@ class MenuPanel extends BoardPanel {
                   }).toList()),
             );
           }).toList()),
-    );
+    ));
   }
 
   @protected
@@ -94,9 +87,6 @@ class MenuPanel extends BoardPanel {
   Color get fill => scope.application.settings.colors.navigation;
 
   @override
-  double get height => _height ?? 420;
-
-  @override
   double get paddings => 8;
 
   @override
@@ -104,9 +94,6 @@ class MenuPanel extends BoardPanel {
 
   @override
   double get radius => 0;
-
-  @override
-  bool get rebuild => _rebuild ?? super.rebuild;
 }
 
 class PanelMenuItem {

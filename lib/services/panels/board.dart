@@ -1,28 +1,19 @@
 import 'package:anxeb_flutter/middleware/panel.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class BoardPanel extends ViewPanel {
-  final Scope scope;
-  double _height;
+  Widget _child;
 
-  BoardPanel({this.scope, double height, PanelController controller}) : super(controller: controller) {
-    _height = height ?? 400;
+  BoardPanel({Scope scope, Widget child, double height}) : super(scope: scope, height: height ?? 400) {
+    _child = child;
   }
 
   @override
-  double get height => _height - 70;
-
-  @protected
-  Widget content() {
-    return Container();
-  }
-
-  @override
-  Widget build() {
-    return Container(
+  Widget content([Widget child]) {
+    return super.content(Container(
       height: height - 70,
+      width: scope.window.available.width,
       margin: EdgeInsets.symmetric(horizontal: margins),
       padding: EdgeInsets.all(paddings),
       decoration: BoxDecoration(
@@ -31,8 +22,8 @@ class BoardPanel extends ViewPanel {
         borderRadius: radius != null ? BorderRadius.only(topLeft: Radius.circular(radius), topRight: Radius.circular(radius)) : null,
         color: fill,
       ),
-      child: content(),
-    );
+      child: _child ?? child,
+    ));
   }
 
   @protected

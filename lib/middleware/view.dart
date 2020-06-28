@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:anxeb_flutter/middleware/searcher.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/middleware/window.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
@@ -6,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-
 import 'application.dart';
 import 'panel.dart';
 import 'refresher.dart';
@@ -56,9 +56,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _scope;
   Scope _parent;
   Application _application;
+  PanelController _panelController;
   ViewPanel _panel;
   ViewRefresher _refresher;
-  PanelController _panelController;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
@@ -79,19 +79,18 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @override
   void didInitState() {
-    var arguments = ModalRoute.of(context).settings.arguments;
-    if (arguments is _PushedViewArguments) {
-      _application = arguments.application;
-      _parent = arguments.scope;
-    }
-    _scope = Scope(context, this);
     _init();
   }
 
   Future _init() async {
+    _application = arguments?.application;
+    _parent = arguments?.scope;
+    _scope = Scope(context, this);
+    _refresher = refresher();
+    _panel = panel();
+    _panel?.controller = _panelController;
     await init();
     setup();
-    _refresher = refresher();
     _scope.window.overlay.apply();
   }
 
@@ -108,12 +107,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @override
   Widget build(BuildContext context) {
-    _panel = _panel ?? panel(_panelController);
-
-    if (_panel?.rebuild == true) {
-      _panel = panel(_panelController);
-    }
-
     prebuild();
     var $drawer = drawer();
 
@@ -153,7 +146,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: _panel != null ? _getPanel(_panel, _getContent()) : _getContent(),
+              child: _getWrappedContent(),
             );
           }),
         ),
@@ -176,10 +169,13 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Widget content() => Container();
 
   @protected
-  ViewPanel panel(PanelController controller) => null;
+  ViewPanel panel() => null;
 
   @protected
   ViewRefresher refresher() => null;
+
+  @protected
+  ViewSearcher searcher() => null;
 
   @protected
   Widget footer() => null;
@@ -285,8 +281,16 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     return result as T;
   }
 
-  Widget _getContent() {
-    return _refresher != null ? _refresher.wrap(content()) : content();
+  Widget _getWrappedContent() {
+    if (_panel?.rebuild == true) {
+      _panel = panel();
+      _panel?.controller = _panelController;
+    }
+
+    var $content = content();
+    $content = _refresher != null ? _refresher.wrap($content) : $content;
+    $content = _panel != null ? _panel.wrap($content) : $content;
+    return $content;
   }
 
   Future _beginPop(result) async {
@@ -295,60 +299,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     }
     await closing();
     Navigator.of(_scope.context).pop(result);
-  }
-
-  _getPanel(ViewPanel panel, Widget content) {
-    return SlidingUpPanel(
-      controller: _panelController,
-      panel: Container(
-        width: window.available.width,
-        color: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            Container(
-              child: AnimatedOpacity(
-                opacity: _panelController.isAttached && _panelController.isPanelClosed ? 1 : 0,
-                duration: Duration(milliseconds: 200),
-                child: Container(
-                  height: 10,
-                  width: 100,
-                  margin: EdgeInsets.only(bottom: 40, top: 20),
-                  decoration: BoxDecoration(
-                    color: settings.colors.primary,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.elliptical(30, 9),
-                      topRight: Radius.elliptical(30, 9),
-                      bottomLeft: Radius.circular(3),
-                      bottomRight: Radius.circular(3),
-                    ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      margin: EdgeInsets.all(4),
-                      width: 50,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            panel.build(),
-          ],
-        ),
-      ),
-      backdropEnabled: true,
-      renderPanelSheet: false,
-      backdropTapClosesPanel: true,
-      backdropOpacity: 0.36,
-      body: content,
-      minHeight: 48,
-      maxHeight: panel.height ?? 200,
-    );
   }
 
   bool equals(String name) {
@@ -370,6 +320,8 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
 
   String get title => widget?.title ?? application.title;
+
+  _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 }
 
 class _PushedViewArguments<A extends Application> {
