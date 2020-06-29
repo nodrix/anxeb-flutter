@@ -1,13 +1,13 @@
-import 'package:anxeb_flutter/services/sheets/tip.dart';
+import 'package:anxeb_flutter/parts/sheets/tip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'scope.dart';
 
-class Sheet {
+class ScopeSheet {
   final Scope scope;
 
-  Sheet(this.scope);
+  ScopeSheet(this.scope);
 
   @protected
   Widget build(BuildContext context) {

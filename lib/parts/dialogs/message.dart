@@ -5,7 +5,7 @@ import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
-class MessageDialog extends Dialog {
+class MessageDialog extends ScopeDialog {
   final String title;
   final String message;
   final Widget body;

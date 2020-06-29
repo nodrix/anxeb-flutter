@@ -1,4 +1,7 @@
+import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
+import 'package:anxeb_flutter/middleware/footer.dart';
+import 'package:anxeb_flutter/middleware/header.dart';
 import 'package:anxeb_flutter/middleware/view.dart';
 import 'package:flutter/material.dart';
 
@@ -18,13 +21,10 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   Future<bool> beforePop() async => true;
 
   @override
-  PreferredSizeWidget header() {
-    return new AppBar(
-      title: new Text(this.title ?? 'Vista Previa'),
-      automaticallyImplyLeading: false,
-      leading: new BackButton(
-        onPressed: dismiss,
-      ),
+  ViewHeader header() {
+    return ViewHeader(
+      scope: scope,
+      leading: BackButton(onPressed: dismiss),
     );
   }
 
@@ -55,32 +55,26 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   }
 
   @override
-  Widget footer() {
+  ViewFooter footer() {
     if (widget.canRemove != true) {
       return null;
     }
-    return BottomAppBar(
-      color: settings.colors.primary,
-      notchMargin: 8,
-      elevation: 20,
-      clipBehavior: Clip.hardEdge,
-      child: Row(children: <Widget>[
-        IconButton(
-          color: Colors.white,
-          icon: Icon(Icons.delete),
-          onPressed: () => pop(false),
-        ),
-      ]),
-      shape: CircularNotchedRectangle(),
-    );
+    return ViewFooter(
+        scope: scope,
+        child: Row(children: <Widget>[
+          IconButton(
+            color: Colors.white,
+            icon: Icon(Icons.delete),
+            onPressed: () => pop(false),
+          ),
+        ]));
   }
 
   @override
-  Widget action() {
-    return FloatingActionButton(
+  ViewAction action() {
+    return ViewAction(
+      scope: scope,
       onPressed: () => pop(true),
-      backgroundColor: settings.colors.success,
-      child: new Icon(Icons.check),
     );
   }
 }

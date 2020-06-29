@@ -4,7 +4,7 @@ import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
-class OptionsDialog extends Dialog {
+class OptionsDialog extends ScopeDialog {
   final String title;
   final IconData icon;
   final List<KeyValue> options;

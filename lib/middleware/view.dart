@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'package:anxeb_flutter/middleware/searcher.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/middleware/window.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'action.dart';
 import 'application.dart';
+import 'footer.dart';
+import 'header.dart';
 import 'panel.dart';
 import 'refresher.dart';
 import 'scope.dart';
@@ -25,28 +26,28 @@ class ViewWidget extends StatefulWidget {
   final String title;
   final Application application;
   final Key key;
-  
-  ViewWidget(this.name, {
+
+  ViewWidget(
+    this.name, {
     this.title,
     this.application,
     this.key,
-  })
-      : assert(name != null),
+  })  : assert(name != null),
         super(key: key);
-  
+
   @override
   View createState() => View();
 }
 
 abstract class ViewState<T extends ViewWidget> extends State<T> {
   String name;
-  
+
   Scope scope;
-  
+
   Future<bool> dismiss();
-  
+
   Future<bool> submit([value]);
-  
+
   Future<bool> pop(result, {bool force});
 }
 
@@ -56,16 +57,17 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   Scope _scope;
   Scope _parent;
   Application _application;
-  PanelController _panelController;
   ViewPanel _panel;
   ViewRefresher _refresher;
-  
+  ViewHeader _header;
+  ViewFooter _footer;
+  ViewAction _action;
+
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
     _locator = ViewActionLocator();
-    _panelController = PanelController();
   }
-  
+
   void rasterize([VoidCallback fn]) {
     if (!mounted) {
       fn?.call();
@@ -75,53 +77,57 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       });
     }
   }
-  
+
   @protected
   Future init() async {}
-  
+
   @protected
   void setup() => null;
-  
+
   @override
   void didInitState() {
     _init();
   }
-  
+
   Future _init() async {
     _application = arguments?.application;
     _parent = arguments?.scope;
     _scope = Scope(context, this);
+    _header = header();
     _refresher = refresher();
     _panel = panel();
-    _panel?.controller = _panelController;
+    _action = action();
+    _footer = footer();
     await init();
     setup();
     _scope.window.overlay.apply();
   }
-  
+
   @override
   initState() {
     super.initState();
     rasterize();
   }
-  
+
   @override
   dispose() {
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    _checkParts();
+
     prebuild();
     var $drawer = drawer();
-    
+
     var scaffoldContent = Scaffold(
       key: _scaffold,
-      appBar: header(),
+      appBar: _header?.build(),
       drawer: $drawer == true ? application.navigator.drawer() : ($drawer is Drawer ? $drawer : null),
-      floatingActionButton: action(),
+      floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
-      bottomNavigationBar: footer(),
+      bottomNavigationBar: _footer?.build(),
       extendBody: _scope.window.overlay.extendBody,
       extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
       body: WillPopScope(
@@ -157,51 +163,48 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
         ),
       ),
     );
-    
+
     return scaffoldContent;
   }
-  
+
   @protected
   void prebuild() {}
-  
-  @protected
-  PreferredSizeWidget header() => null;
-  
+
   @protected
   dynamic drawer() => null;
-  
+
   @protected
   Widget content() => Container();
-  
+
   @protected
-  ViewPanel panel() => null;
-  
+  ViewHeader header() => null;
+
   @protected
   ViewRefresher refresher() => null;
-  
+
   @protected
-  ViewSearcher searcher() => null;
-  
+  ViewPanel panel() => null;
+
   @protected
-  Widget footer() => null;
-  
+  ViewAction action() => null;
+
   @protected
-  Widget action() => null;
-  
+  ViewFooter footer() => null;
+
   @protected
   Future<bool> beforePop() async => !_scope.isBusy;
-  
+
   @protected
   Future closing() async {}
-  
+
   Future<bool> dismiss() async => await pop(null);
-  
+
   Future<bool> submit([value]) async => await pop(value, force: true);
-  
+
   Future<bool> pop(result, {bool force}) async {
     scope.idle();
     scope.alerts.dispose(quick: true);
-    
+
     if (force == true) {
       await _beginPop(result);
       return true;
@@ -216,88 +219,91 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     }
     return false;
   }
-  
+
   Future<T> push<T>(ViewWidget view, {ViewTransitionType transition, int delay}) async {
     scope.idle();
     scope.alerts.dispose(quick: true);
-    
+
     var settings = RouteSettings(
         arguments: _PushedViewArguments<A>(
-          application: application,
-          scope: _scope,
-        ));
-    
+      application: application,
+      scope: _scope,
+    ));
+
     var result = await Navigator.of(_scope.context).push(
       transition != null
           ? PageRouteBuilder(
-        pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
-        settings: settings,
-        transitionDuration: Duration(milliseconds: delay ?? 200),
-        transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-          if (transition == ViewTransitionType.fade) {
-            return FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(animation),
-              child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
-            );
-          } else {
-            Offset from = Offset.zero;
-            Offset to = Offset.zero;
-            
-            switch (transition) {
-              case ViewTransitionType.fromBottom:
-                from = Offset(0, 1);
-                to = Offset(0, -.5);
-                break;
-              case ViewTransitionType.fromLeft:
-                from = Offset(-1, 0);
-                to = Offset(.5, 0);
-                break;
-              case ViewTransitionType.fromRight:
-                from = Offset(1, 0);
-                to = Offset(-.5, 0);
-                break;
-              case ViewTransitionType.fromTop:
-                from = Offset(0, -1);
-                to = Offset(0, .5);
-                break;
-              case ViewTransitionType.fade:
-            }
-            
-            return SlideTransition(
-              position: Tween<Offset>(begin: from, end: Offset.zero).animate(animation),
-              child: SlideTransition(
-                position: Tween<Offset>(begin: Offset.zero, end: to).animate(secondaryAnimation),
-                child: FadeTransition(
-                  opacity: Tween<double>(begin: 1, end: 0.5).animate(secondaryAnimation),
-                  child: child,
-                ),
-              ),
-            );
-          }
-        },
-      )
+              pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
+              settings: settings,
+              transitionDuration: Duration(milliseconds: delay ?? 200),
+              transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+                if (transition == ViewTransitionType.fade) {
+                  return FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(animation),
+                    child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
+                  );
+                } else {
+                  Offset from = Offset.zero;
+                  Offset to = Offset.zero;
+
+                  switch (transition) {
+                    case ViewTransitionType.fromBottom:
+                      from = Offset(0, 1);
+                      to = Offset(0, -.5);
+                      break;
+                    case ViewTransitionType.fromLeft:
+                      from = Offset(-1, 0);
+                      to = Offset(.5, 0);
+                      break;
+                    case ViewTransitionType.fromRight:
+                      from = Offset(1, 0);
+                      to = Offset(-.5, 0);
+                      break;
+                    case ViewTransitionType.fromTop:
+                      from = Offset(0, -1);
+                      to = Offset(0, .5);
+                      break;
+                    case ViewTransitionType.fade:
+                  }
+
+                  return SlideTransition(
+                    position: Tween<Offset>(begin: from, end: Offset.zero).animate(animation),
+                    child: SlideTransition(
+                      position: Tween<Offset>(begin: Offset.zero, end: to).animate(secondaryAnimation),
+                      child: FadeTransition(
+                        opacity: Tween<double>(begin: 1, end: 0.5).animate(secondaryAnimation),
+                        child: child,
+                      ),
+                    ),
+                  );
+                }
+              },
+            )
           : MaterialPageRoute(builder: (BuildContext context) => view, settings: settings),
     );
-    
+
     setup();
     _scope.window.overlay.apply();
     Future.delayed(Duration(milliseconds: 150), rasterize);
     Future.delayed(Duration(milliseconds: 250), rasterize);
     return result as T;
   }
-  
+
+  void _checkParts() {
+    _header = _header?.rebuild == true ? header() : _header;
+    _refresher = _refresher?.rebuild == true ? refresher() : _refresher;
+    _panel = _panel?.rebuild == true ? panel() : _panel;
+    _action = _action?.rebuild == true ? action() : _action;
+    _footer = _footer?.rebuild == true ? footer() : _footer;
+  }
+
   Widget _getWrappedContent() {
-    if (_panel?.rebuild == true) {
-      _panel = panel();
-      _panel?.controller = _panelController;
-    }
-    
     var $content = content();
     $content = _refresher != null ? _refresher.wrap($content) : $content;
     $content = _panel != null ? _panel.wrap($content) : $content;
     return $content;
   }
-  
+
   Future _beginPop(result) async {
     if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
       scaffold.currentState.openEndDrawer();
@@ -305,38 +311,34 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     await closing();
     Navigator.of(_scope.context).pop(result);
   }
-  
+
   bool equals(String name) {
     return this.name == name;
   }
-  
+
   String get name => widget.name;
-  
+
   Scope get scope => _scope;
-  
+
   Scope get parent => _parent;
-  
+
   Window get window => _scope.window;
-  
+
   A get application => (_application ?? widget.application) as A;
-  
+
   Settings get settings => application?.settings;
-  
+
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
-  
+
   String get title => widget?.title ?? application.title;
-  
-  _PushedViewArguments get arguments =>
-      ModalRoute
-          .of(context)
-          .settings
-          ?.arguments;
+
+  _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 }
 
 class _PushedViewArguments<A extends Application> {
   final A application;
   final Scope scope;
-  
+
   _PushedViewArguments({
     this.application,
     this.scope,

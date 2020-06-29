@@ -1,15 +1,15 @@
-import 'package:anxeb_flutter/services/alerts/snack.dart';
+import 'package:anxeb_flutter/parts/alerts/snack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'scope.dart';
 
-class Alert {
+class ScopeAlert {
   final Scope scope;
 
   bool _disposed = false;
 
-  Alert(this.scope);
+  ScopeAlert(this.scope);
 
   void dispose({bool quick}) {
     if (_disposed == false) {
@@ -43,7 +43,7 @@ class Alert {
 
 class ScopeAlerts {
   Scope _scope;
-  Alert _current;
+  ScopeAlert _current;
 
   ScopeAlerts(Scope scope) {
     _scope = scope;
@@ -59,7 +59,7 @@ class ScopeAlerts {
     return !(_current == null || _current._disposed);
   }
 
-  Alert _initialize(Alert current) {
+  ScopeAlert _initialize(ScopeAlert current) {
     dispose();
     _current = current;
     return current;

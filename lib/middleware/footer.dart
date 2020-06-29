@@ -1,23 +1,22 @@
-import 'dart:io';
-
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
-class FooterPart extends StatefulWidget {
+class ViewFooter {
   final Scope scope;
   final Widget child;
 
-  FooterPart({this.child, this.scope});
+  ViewFooter({
+    this.scope,
+    this.child,
+  });
 
-  @override
-  _FooterPartState createState() => _FooterPartState();
-}
+  @protected
+  Widget content() => child;
 
-class _FooterPartState extends State<FooterPart> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build() {
     return BottomAppBar(
-      color: widget.scope.application.settings.colors.primary,
+      color: scope.application.settings.colors.primary,
       notchMargin: 8,
       elevation: 20,
       clipBehavior: Clip.hardEdge,
@@ -29,9 +28,11 @@ class _FooterPartState extends State<FooterPart> {
                 ),
               )
             : null,
-        child: widget.child,
+        child: content(),
       ),
       shape: CircularNotchedRectangle(),
     );
   }
+
+  bool get rebuild => false;
 }

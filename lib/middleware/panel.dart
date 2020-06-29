@@ -6,12 +6,14 @@ class ViewPanel {
   final Scope scope;
   final double height;
   final bool Function() isDisabled;
-  PanelController controller;
+  PanelController _controller;
   bool rebuild = false;
 
-  ViewPanel({this.scope, this.height, this.isDisabled});
+  ViewPanel({this.scope, this.height, this.isDisabled}) {
+    _controller = PanelController();
+  }
 
-  Future collapse() async => await controller?.close();
+  Future collapse() async => await _controller?.close();
 
   @protected
   Widget content([Widget child]) => child ?? Container();
@@ -21,7 +23,7 @@ class ViewPanel {
       return parent;
     }
     return SlidingUpPanel(
-      controller: controller,
+      controller: _controller,
       panel: Container(
         width: scope.window.available.width,
         color: Colors.transparent,
@@ -30,7 +32,7 @@ class ViewPanel {
           children: <Widget>[
             Container(
               child: AnimatedOpacity(
-                opacity: controller.isAttached && controller.isPanelClosed ? 1 : 0,
+                opacity: _controller.isAttached && _controller.isPanelClosed ? 1 : 0,
                 duration: Duration(milliseconds: 200),
                 child: Container(
                   height: 10,

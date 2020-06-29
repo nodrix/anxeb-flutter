@@ -7,7 +7,7 @@ import 'package:flutter/material.dart' hide Dialog;
 const TextStyle _DEFAULT_MESSAGE_STYLE = TextStyle(fontSize: 16, fontWeight: FontWeight.w300);
 const TextStyle _DEFAULT_TITLE_STYLE = TextStyle(fontSize: 18, fontWeight: FontWeight.w400);
 
-class SnackAlert extends Alert {
+class SnackAlert extends ScopeAlert {
   final String title;
   final String message;
   final Color color;

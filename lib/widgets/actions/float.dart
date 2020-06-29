@@ -5,9 +5,8 @@ class FloatAction extends StatefulWidget {
   final IconData icon;
   final Color color;
   final bool disabled;
-  final bool visible;
 
-  FloatAction({this.color, this.icon, this.onPressed, this.disabled, this.visible});
+  FloatAction({this.color, this.icon, this.onPressed, this.disabled});
 
   @override
   _FloatActionState createState() => _FloatActionState();
@@ -21,11 +20,8 @@ class _FloatActionState extends State<FloatAction> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.visible == false) {
-      return Container();
-    }
     return AbsorbPointer(
-      absorbing: widget.disabled,
+      absorbing: widget.disabled == true,
       child: Opacity(
         opacity: widget.disabled == true ? 0.6 : 1,
         child: FloatingActionButton(

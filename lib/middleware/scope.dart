@@ -113,6 +113,10 @@ class Scope {
     FocusScope.of(context).requestFocus(new FocusNode());
   }
 
+  void focus(FocusNode node) {
+    FocusScope.of(context).requestFocus(node);
+  }
+
   BuildContext get context => _context;
 
   Window get window => _window;

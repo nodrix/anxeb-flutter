@@ -4,7 +4,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
-class TipSheet extends Sheet {
+class TipSheet extends ScopeSheet {
   final String title;
   final String message;
   final Color fill;

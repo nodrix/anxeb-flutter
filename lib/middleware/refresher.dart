@@ -41,4 +41,6 @@ class ViewRefresher {
       child: body,
     );
   }
+
+  bool get rebuild => false;
 }

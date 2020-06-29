@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
+import 'package:anxeb_flutter/middleware/header.dart';
 import 'package:anxeb_flutter/middleware/view.dart';
-import 'package:anxeb_flutter/widgets/actions/float.dart';
+import 'package:anxeb_flutter/misc/action_icon.dart';
+import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:anxeb_flutter/widgets/blocks/empty.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -182,32 +185,22 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   void prebuild() {}
 
   @override
-  PreferredSizeWidget header() {
-    var actions = <Widget>[];
-
-    if (_frontCameraAvailable == true) {
-      actions.add(IconButton(
-        icon: Icon(
-          _frontCameraActive ? Icons.camera_rear : Icons.camera_front,
-          color: Colors.white,
+  ViewHeader header() {
+    return ActionsHeader(
+      scope: scope,
+      leading: ActionBack(),
+      actions: [
+        ActionIcon(
+          icon: () => _frontCameraActive ? Icons.camera_rear : Icons.camera_front,
+          onPressed: _swapCameras,
+          isVisible: () => _frontCameraAvailable == true,
         ),
-        onPressed: _swapCameras,
-      ));
-    }
-
-    actions.add(IconButton(
-      icon: Icon(
-        Icons.image,
-        color: (_noCamera || _diabled == true) ? Colors.white24 : Colors.white,
-      ),
-      onPressed: () => _takePicture(preview: true),
-    ));
-
-    return new AppBar(
-      title: new Text(widget.title),
-      automaticallyImplyLeading: false,
-      leading: BackButton(),
-      actions: actions,
+        ActionIcon(
+          icon: () => Icons.image,
+          onPressed: () => _takePicture(preview: true),
+          isDisabled: () => _noCamera || _diabled == true,
+        ),
+      ],
     );
   }
 
@@ -278,12 +271,12 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   }
 
   @override
-  Widget action() {
-    return FloatAction(
+  ViewAction action() {
+    return ViewAction(
+      scope: scope,
+      icon: () => Icons.camera_alt,
       onPressed: _takePicture,
-      color: settings.colors.success,
-      icon: Icons.camera_alt,
-      disabled: _noCamera,
+      isDisabled: () => _noCamera,
     );
   }
 
