@@ -9,7 +9,7 @@ class Slide {
   final double scale;
   int index = 0;
   SliderOptions options;
-  
+
   Slide({
     this.image,
     this.zoomFrom,
@@ -26,7 +26,7 @@ class SliderOptions {
   final Duration transitionDuration;
   final double scale;
   int index = 0;
-  
+
   SliderOptions({
     this.fadeinDuration,
     this.fadeoutDuration,
@@ -51,13 +51,13 @@ class SliderContainer extends StatefulWidget {
       this.slides[i].options = this.options ?? SliderOptions();
     }
   }
-  
-  final Widget body;
+
+  final Widget Function() body;
   final List<Slide> slides;
   final Gradient gradient;
   final SliderOptions options;
   final ImageProvider image;
-  
+
   @override
   _SliderContainerState createState() => _SliderContainerState(body: this.body, gradient: this.gradient, slides: this.slides);
 }
@@ -65,9 +65,9 @@ class SliderContainer extends StatefulWidget {
 class _Slide extends StatefulWidget {
   final Slide definition;
   final bool visible;
-  
+
   _Slide(this.definition, {this.visible});
-  
+
   @override
   _SlideState createState() => _SlideState(this.definition);
 }
@@ -80,7 +80,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
   AnimationController _positionController;
   Animation<Offset> _positionAnimation;
   bool _isVisible = false;
-  
+
   _SlideState(Slide definition) {
     _opacityController = AnimationController(
       duration: definition.options.fadeinDuration ?? Duration(milliseconds: 400),
@@ -90,19 +90,19 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
       upperBound: 1,
       reverseDuration: definition.options.fadeoutDuration ?? Duration(milliseconds: 600),
     );
-    
+
     _opacityController.addStatusListener((AnimationStatus status) {
       if (status == AnimationStatus.dismissed) {
         _scaleController.reverse();
         _positionController.reverse();
       }
     });
-    
+
     _opacityAnimation = CurvedAnimation(
       parent: _opacityController,
       curve: Curves.linear,
     );
-    
+
     _scaleController = AnimationController(
       duration: definition.options.transformDuration ?? Duration(milliseconds: 4000),
       vsync: this,
@@ -115,7 +115,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
       parent: _scaleController,
       curve: Curves.linear,
     );
-    
+
     _positionController = AnimationController(
       duration: definition.options.transformDuration ?? Duration(milliseconds: 4000),
       vsync: this,
@@ -124,26 +124,26 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
       upperBound: 1,
       reverseDuration: Duration.zero,
     );
-    
+
     _positionAnimation = Tween<Offset>(begin: definition.pushFrom ?? Offset(0, 0), end: definition.pushTo ?? Offset(0, 0)).animate(_positionController);
-    
+
     _opacityController.addListener(() {
       setState(() {});
     });
-    
+
     _positionAnimation.addListener(() {
       setState(() {});
     });
-    
+
     _scaleAnimation.addListener(() {
       setState(() {});
     });
   }
-  
+
   initState() {
     super.initState();
   }
-  
+
   @override
   dispose() {
     _opacityController.dispose();
@@ -151,18 +151,18 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
     _positionController.dispose();
     super.dispose();
   }
-  
+
   double get _scale {
     return widget.definition.scale ?? widget.definition.options.scale ?? 1;
   }
-  
+
   double get _scaleSubstract {
     if (_scale < 0) {
       return 2;
     }
     return 0;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isVisible != this.widget.visible) {
@@ -174,9 +174,9 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
         _opacityController.reverse();
       }
     }
-    
+
     _isVisible = this.widget.visible;
-    
+
     return Transform.scale(
       scale: (_scaleAnimation.value - _scaleSubstract) * _scale,
       child: OverflowBox(
@@ -198,24 +198,26 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
 }
 
 class _SliderContainerState extends State<SliderContainer> {
-  final Widget body;
+  final Widget Function() body;
   final Gradient gradient;
   final List<Slide> slides;
-  
+
   _SliderContainerState({this.body, this.gradient, this.slides}) : assert(slides != null);
   int _currentIndex = 0;
-  
+
   void _nextSlide() {
-    setState(() {
-      _currentIndex++;
-      if (_currentIndex >= slides.length) {
-        _currentIndex = 0;
-      } else if (_currentIndex < 0) {
-        _currentIndex = slides.length - 1;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _currentIndex++;
+        if (_currentIndex >= slides.length) {
+          _currentIndex = 0;
+        } else if (_currentIndex < 0) {
+          _currentIndex = slides.length - 1;
+        }
+      });
+    }
   }
-  
+
   @override
   initState() {
     super.initState();
@@ -223,14 +225,13 @@ class _SliderContainerState extends State<SliderContainer> {
       _nextSlide();
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    precacheImage(widget.image, context);
     var size = MediaQuery
         .of(context)
         .size;
-    
+
     return Stack(
       children: <Widget>[
         Stack(
@@ -254,7 +255,7 @@ class _SliderContainerState extends State<SliderContainer> {
             alignment: Alignment.topCenter,
           ),
         ),
-        this.body,
+        body()
       ],
     );
   }

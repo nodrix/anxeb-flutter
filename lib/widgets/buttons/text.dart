@@ -14,10 +14,27 @@ const double _SMALL_SIZE = 16.0;
 const double _MEDIUM_SIZE = 18.0;
 
 class TextButton extends StatefulWidget {
+  final EdgeInsets margin;
+  final EdgeInsets padding;
+  final String caption;
+  final String subtitle;
+  final IconData icon;
+  final List<BoxShadow> shadow;
+  final Color color;
+  final Color iconColor;
+  final Color textColor;
+  final double fontSize;
+  final double iconSize;
+  final VoidCallback onPressed;
+  final ButtonType type;
+  final ButtonSize size;
+  final bool enabled;
+
   const TextButton({
     this.padding,
     this.margin,
     this.caption,
+    this.subtitle,
     this.icon,
     this.shadow,
     this.color,
@@ -30,21 +47,6 @@ class TextButton extends StatefulWidget {
     this.size,
     this.enabled,
   });
-
-  final EdgeInsets margin;
-  final EdgeInsets padding;
-  final String caption;
-  final IconData icon;
-  final List<BoxShadow> shadow;
-  final Color color;
-  final Color iconColor;
-  final Color textColor;
-  final double fontSize;
-  final double iconSize;
-  final VoidCallback onPressed;
-  final ButtonType type;
-  final ButtonSize size;
-  final bool enabled;
 
   @override
   _TextButtonState createState() => _TextButtonState();
@@ -120,6 +122,7 @@ class _TextButtonState extends State<TextButton> {
     }
 
     var textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.white, fontWeight: FontWeight.normal);
+    var subtitleStyle = TextStyle(fontSize: fontSize - 5, color: (widget.textColor ?? Colors.white).withOpacity(0.9), fontWeight: FontWeight.w300);
     var color = widget.color ?? _BASE_COLOR;
 
     if (widget.type == ButtonType.secundary) {
@@ -143,32 +146,45 @@ class _TextButtonState extends State<TextButton> {
           Radius.circular(borderRadius),
         ),
         child: Padding(
-          padding: $padding ?? EdgeInsets.only(left: 8, right: 8),
-          child: widget.icon != null
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                        size: widget.iconSize != null ? widget.iconSize : 20,
+            padding: $padding ?? EdgeInsets.only(left: 8, right: 8),
+            child: Column(
+              children: <Widget>[
+                widget.icon != null
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Icon(
+                              widget.icon,
+                              color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                              size: widget.iconSize != null ? widget.iconSize : 20,
+                            ),
+                          ),
+                          Text(
+                            widget.caption,
+                            style: textStyle,
+                          ),
+                        ],
+                      )
+                    : Text(
+                        widget.caption,
+                        textAlign: TextAlign.center,
+                        style: textStyle,
                       ),
-                    ),
-                    new Text(
-                      widget.caption,
-                      style: textStyle,
-                    ),
-                  ],
-                )
-              : new Text(
-                  widget.caption,
-                  textAlign: TextAlign.center,
-                  style: textStyle,
-                ),
-        ),
+                widget.subtitle != null
+                    ? Container(
+                        margin: EdgeInsets.only(top: 2),
+                        child: Text(
+                          widget.subtitle.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: subtitleStyle,
+                        ),
+                      )
+                    : Container()
+              ],
+            )),
       ),
     );
 

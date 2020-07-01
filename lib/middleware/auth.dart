@@ -1,15 +1,15 @@
 import 'package:anxeb_flutter/parts/auths/facebook.dart';
 import 'package:anxeb_flutter/parts/auths/google.dart';
 import 'package:anxeb_flutter/parts/auths/twitter.dart';
+import 'application.dart';
 import 'model.dart';
-import 'scope.dart';
 
-class ScopeAuth {
-  final Scope scope;
+class AuthProvider {
+  final Application application;
 
-  ScopeAuth(this.scope);
+  AuthProvider(this.application);
 
-  Future<bool> logout() async => false;
+  Future logout() async => {};
 
   Future<AuthResultModel> login() async => null;
 }
@@ -23,7 +23,7 @@ class AuthResultModel extends Model<AuthResultModel> {
     field(() => firstNames, (v) => firstNames = v, 'first_names');
     field(() => lastNames, (v) => lastNames = v, 'last_names');
     field(() => email, (v) => email = v, 'email');
-    field(() => photoUrl, (v) => photoUrl = v, 'photoUrl');
+    field(() => photo, (v) => photo = v, 'photoUrl');
     field(() => token, (v) => token = v, 'token');
     field(() => provider, (v) => provider = v, 'provider');
     field(() => meta, (v) => meta = v, 'meta');
@@ -33,21 +33,21 @@ class AuthResultModel extends Model<AuthResultModel> {
   String firstNames;
   String lastNames;
   String email;
-  String photoUrl;
+  String photo;
   String token;
   String provider;
   dynamic meta;
 }
 
-class ScopeAuths {
+class AuthProviders {
   GoogleAuth _google;
   TwitterAuth _twitter;
   FacebookAuth _facebook;
 
-  ScopeAuths(Scope scope) {
-    _google = GoogleAuth(scope);
-    _twitter = TwitterAuth(scope);
-    _facebook = FacebookAuth(scope);
+  AuthProviders(Application application) {
+    _google = GoogleAuth(application);
+    _twitter = TwitterAuth(application);
+    _facebook = FacebookAuth(application);
   }
 
   GoogleAuth get google => _google;

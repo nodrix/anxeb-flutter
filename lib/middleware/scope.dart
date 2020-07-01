@@ -23,10 +23,10 @@ class Scope {
   ScopeAlerts _alerts;
   ScopeSheets _sheets;
   ScopeForms _forms;
-  ScopeAuths _auths;
   bool _idling;
   bool _busying;
   int _busyCountDown;
+  int tick;
 
   Scope(BuildContext context, View view) {
     _context = context;
@@ -36,10 +36,10 @@ class Scope {
     _alerts = ScopeAlerts(this);
     _sheets = ScopeSheets(this);
     _forms = ScopeForms(this);
-    _auths = ScopeAuths(this);
     _idling = false;
     _busying = false;
     _busyCountDown = 0;
+    tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
   void rasterize() {
@@ -56,6 +56,10 @@ class Scope {
         _checkBusyCountDown();
       });
     }
+  }
+
+  void retick() {
+    tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
   Future busy({int timeout}) {
@@ -109,6 +113,7 @@ class Scope {
       _idling = true;
       Navigator.of(_busyContext).pop(idlePromise);
     }
+    rasterize();
     return idlePromise.future;
   }
 
@@ -142,7 +147,7 @@ class Scope {
 
   ScopeForms get forms => _forms;
 
-  ScopeAuths get auths => _auths;
+  AuthProviders get auths => application.auths;
 
   bool get isBusy => _busyContext != null;
 

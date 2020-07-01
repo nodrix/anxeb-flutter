@@ -40,7 +40,7 @@ class _AuthsTwitter {
 
 class _AuthsFacebook {
   _AuthsFacebook();
-  
+
   String appId;
   String appSecret;
   String clientToken;

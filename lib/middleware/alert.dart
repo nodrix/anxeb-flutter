@@ -31,6 +31,7 @@ class ScopeAlert {
 
   Future show() async {
     if (_disposed == false) {
+      scope.rasterize();
       await scope.idle();
       var result = await scope.scaffold.currentState.showSnackBar(build()).closed;
       _disposed = true;

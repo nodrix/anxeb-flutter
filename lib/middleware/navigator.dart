@@ -2,6 +2,7 @@ import 'package:anxeb_flutter/middleware/menu.dart';
 import 'package:flutter/material.dart';
 
 import 'application.dart';
+import 'scope.dart';
 import 'view.dart';
 
 class Navigator {
@@ -35,7 +36,13 @@ class Navigator {
     this.role = null;
   }
 
-  Future<bool> exit() async => _sourceView != null ? await _sourceView.dismiss() : false;
+  Future<bool> exit([result]) async => _sourceView != null ? await _sourceView.pop(result) : false;
+
+  void collapse() {
+    if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
+      _sourceView.scaffold.currentState.openEndDrawer();
+    }
+  }
 
   Future<dynamic> push(Future<ViewWidget> Function(Key key) getView) async {
     if (_sourceView != null) {
@@ -43,9 +50,7 @@ class Navigator {
 
       if (dismissed) {
         if (_currentView == null) {
-          if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
-            _sourceView.scaffold.currentState.openEndDrawer();
-          }
+          collapse();
         }
         _currentViewKey = GlobalKey<ViewState>();
 
@@ -261,9 +266,7 @@ class Navigator {
       }
       return dismissed;
     } else {
-      if (_sourceView.scaffold != null && _sourceView.scaffold.currentState != null && _sourceView.scaffold.currentState.isDrawerOpen) {
-        _sourceView.scaffold.currentState.openEndDrawer();
-      }
+      collapse();
       return true;
     }
   }
@@ -283,4 +286,6 @@ class Navigator {
   ViewState get _currentView => _currentViewKey?.currentState?.mounted == true ? _currentViewKey.currentState : null;
 
   List<MenuGroup> get groups => _groups;
+
+  Scope get scope => _currentView?.scope ?? _sourceView?.scope;
 }

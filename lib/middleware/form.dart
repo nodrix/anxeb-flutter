@@ -28,6 +28,10 @@ class FieldsForm {
     return $key;
   }
 
+  void set(String fieldName, dynamic value) {
+    fields[fieldName]?.value = value;
+  }
+
   void update([dynamic data]) {
     validated = false;
 

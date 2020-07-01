@@ -1,29 +1,22 @@
 import 'dart:convert';
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter_twitter/flutter_twitter.dart';
 import 'package:oauth1/oauth1.dart';
 
-class TwitterAuth extends ScopeAuth {
+class TwitterAuth extends AuthProvider {
   TwitterLogin _twitterLogin;
 
-  TwitterAuth(Scope scope) : super(scope) {
+  TwitterAuth(Application application) : super(application) {
     _twitterLogin = TwitterLogin(
-      consumerKey: scope.application.settings.auths.twitter.apiKey,
-      consumerSecret: scope.application.settings.auths.twitter.apiSecret,
+      consumerKey: application.settings.auths.twitter.apiKey,
+      consumerSecret: application.settings.auths.twitter.apiSecret,
     );
   }
 
   @override
-  Future<bool> logout() async {
-    try {
-      await _twitterLogin.logOut();
-      return true;
-    } catch (err) {
-      scope.alerts.exception(err, title: 'Error Autenticador de Twitter');
-    }
-    return false;
+  Future logout() async {
+    await _twitterLogin.logOut();
   }
 
   @override
@@ -46,7 +39,7 @@ class TwitterAuth extends ScopeAuth {
       }
 
       if (session != null) {
-        var clientCredentials = ClientCredentials(scope.application.settings.auths.twitter.apiKey, scope.application.settings.auths.twitter.apiSecret);
+        var clientCredentials = ClientCredentials(application.settings.auths.twitter.apiKey, application.settings.auths.twitter.apiSecret);
         var client = Client(SignatureMethods.hmacSha1, clientCredentials, Credentials(session.token, session.secret));
         var res = await client.get('https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true&skip_status=false&include_entities=false');
         var profileData = json.decode(res.body);
@@ -57,7 +50,7 @@ class TwitterAuth extends ScopeAuth {
         result.firstNames = displayNameParts[0];
         result.lastNames = displayNameParts.length > 1 ? displayNameParts[1] : null;
         result.email = profileData['email'] ?? (profileData['screen_name'] + '@twitter.com');
-        result.photoUrl = profileData['profile_image_url_https']?.toString()?.replaceAll('_normal.jpg', '_200x200.jpg');
+        result.photo = profileData['profile_image_url_https']?.toString()?.replaceAll('_normal.jpg', '_200x200.jpg');
         result.token = session.token;
         result.provider = 'twitter';
         result.meta = {
@@ -67,7 +60,7 @@ class TwitterAuth extends ScopeAuth {
         return result;
       }
     } catch (err) {
-      scope.alerts.exception(err, title: 'Error Autenticador de Twitter');
+      throw err;
     }
     return null;
   }

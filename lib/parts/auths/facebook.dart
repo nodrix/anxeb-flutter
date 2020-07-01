@@ -1,24 +1,17 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
-class FacebookAuth extends ScopeAuth {
+class FacebookAuth extends AuthProvider {
   FacebookLogin _facebook;
 
-  FacebookAuth(Scope scope) : super(scope) {
+  FacebookAuth(Application application) : super(application) {
     _facebook = FacebookLogin();
   }
 
   @override
-  Future<bool> logout() async {
-    try {
-      await _facebook.logOut();
-      return true;
-    } catch (err) {
-      scope.alerts.exception(err, title: 'Error Autenticador de Facebook');
-    }
-    return false;
+  Future logout() async {
+    await _facebook.logOut();
   }
 
   @override
@@ -44,13 +37,13 @@ class FacebookAuth extends ScopeAuth {
         var api = Api('https://graph.facebook.com/v7.0/');
         var profileData = await api.get('me?fields=name,first_name,last_name,email&access_token=${session.token}');
         var photoData = await api.get('me/picture?redirect=0&height=200&width=200&type=normal&access_token=${session.token}');
-        
+
         AuthResultModel result = AuthResultModel();
         result.id = profileData['id'];
         result.firstNames = profileData['first_name'];
         result.lastNames = profileData['last_name'];
         result.email = profileData['email'];
-        result.photoUrl = photoData['data']['url'];
+        result.photo = photoData['data']['url'];
         result.token = session.token;
         result.provider = 'facebook';
         result.meta = {
@@ -62,7 +55,7 @@ class FacebookAuth extends ScopeAuth {
         return result;
       }
     } catch (err) {
-      scope.alerts.exception(err, title: 'Error Autenticador de Facebook');
+      throw err;
     }
     return null;
   }

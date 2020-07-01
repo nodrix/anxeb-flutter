@@ -12,14 +12,15 @@ class Application {
   String _title;
   Disk _disk;
   Navigator _navigator;
+  AuthProviders _auths;
 
   Application() {
     _settings = Settings();
     _title = 'Anxeb';
     _disk = Disk();
     _navigator = Navigator(this);
-
     init();
+    _auths = AuthProviders(this);
   }
 
   @protected
@@ -30,6 +31,8 @@ class Application {
   String get version => 'v0.0.0';
 
   Api get api => _api;
+
+  AuthProviders get auths => _auths;
 
   @protected
   set api(value) {
