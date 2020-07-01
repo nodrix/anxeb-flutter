@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'api.dart';
 import 'application.dart';
+import 'auth.dart';
 import 'dialog.dart';
 import 'disk.dart';
 import 'form.dart';
@@ -22,6 +23,7 @@ class Scope {
   ScopeAlerts _alerts;
   ScopeSheets _sheets;
   ScopeForms _forms;
+  ScopeAuths _auths;
   bool _idling;
   bool _busying;
   int _busyCountDown;
@@ -34,6 +36,7 @@ class Scope {
     _alerts = ScopeAlerts(this);
     _sheets = ScopeSheets(this);
     _forms = ScopeForms(this);
+    _auths = ScopeAuths(this);
     _idling = false;
     _busying = false;
     _busyCountDown = 0;
@@ -138,6 +141,8 @@ class Scope {
   ScopeSheets get sheets => _sheets;
 
   ScopeForms get forms => _forms;
+
+  ScopeAuths get auths => _auths;
 
   bool get isBusy => _busyContext != null;
 

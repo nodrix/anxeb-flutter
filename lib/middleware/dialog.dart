@@ -48,12 +48,12 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog information(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
+  MessageDialog information(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
       message: message,
-      icon: Icons.info,
+      icon: icon ?? Icons.info,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.primary,
       iconColor: _scope.application.settings.colors.primary,
@@ -61,12 +61,12 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog success(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
+  MessageDialog success(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
       message: message,
-      icon: Icons.check_circle,
+      icon: icon ?? Icons.check_circle,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.primary,
       iconColor: _scope.application.settings.colors.success,
@@ -74,12 +74,12 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog exception(String title, {String message, List<KeyValue<ResultCallback>> buttons}) {
+  MessageDialog exception(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
       message: message,
-      icon: Icons.error,
+      icon: icon ?? Icons.error,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.danger,
       iconColor: _scope.application.settings.colors.danger,
@@ -87,11 +87,11 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog error(error, {List<KeyValue<ResultCallback>> buttons}) {
+  MessageDialog error(error, {List<KeyValue<ResultCallback>> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: error is FormatException ? error.message : error.toString(),
-      icon: Icons.error,
+      icon: icon ?? Icons.error,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.danger,
       iconColor: _scope.application.settings.colors.danger,

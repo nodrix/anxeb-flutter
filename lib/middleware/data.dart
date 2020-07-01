@@ -49,6 +49,11 @@ class Data {
     return Data(toObjects());
   }
 
+  void $print() {
+    final pattern = RegExp('.{1,800}');
+    pattern.allMatches(toJson(pretty: true)).forEach((match) => print(match.group(0)));
+  }
+
   dynamic toObjects() {
     var result = {};
     for (var $items in _items.entries) {
@@ -62,7 +67,12 @@ class Data {
     return _items.toString();
   }
 
-  String toJson() {
-    return json.encode(_items);
+  String toJson({bool pretty}) {
+    if (pretty == true) {
+      var encoder = new JsonEncoder.withIndent('  ');
+      return encoder.convert(toObjects());
+    } else {
+      return json.encode(toObjects());
+    }
   }
 }

@@ -298,7 +298,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   }
 
   Widget _getWrappedContent() {
-    var $content = content();
+    var $content = content() ?? Container();
     $content = _refresher != null ? _refresher.wrap($content) : $content;
     $content = _panel != null ? _panel.wrap($content) : $content;
     return $content;
@@ -333,6 +333,15 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   String get title => widget?.title ?? application.title;
 
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
+
+  @protected
+  dynamic get parts => {
+        'header': _header,
+        'refresher': _refresher,
+        'panel': _panel,
+        'action': _action,
+        'footer': _footer,
+      };
 }
 
 class _PushedViewArguments<A extends Application> {

@@ -43,7 +43,7 @@ class SearchHeader extends ActionsHeader {
     }
     _init();
   }
-
+  
   void _init() {
     _inputController = new TextEditingController();
     _focusNode = FocusNode();
@@ -91,7 +91,7 @@ class SearchHeader extends ActionsHeader {
     }
   }
 
-  Future _clear() async {
+  Future clear() async {
     _busy = true;
     scope.rasterize();
     await onClear?.call();
@@ -151,7 +151,7 @@ class SearchHeader extends ActionsHeader {
       $actions.add(IconButton(
         icon: const Icon(Icons.clear),
         onPressed: () {
-          _clear();
+          clear();
         },
       ));
     }

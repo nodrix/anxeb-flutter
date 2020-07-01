@@ -127,6 +127,11 @@ class Model<T> {
     return _primaryField != null ? _data[_primaryField] : _data.toObjects();
   }
 
+  void $print({bool usePrimaryKeys}) {
+    _pushFieldsToData(usePrimaryKeys: usePrimaryKeys);
+    _data.$print();
+  }
+
   dynamic toObjects({bool usePrimaryKeys}) {
     _pushFieldsToData(usePrimaryKeys: usePrimaryKeys);
     return _data.toObjects();

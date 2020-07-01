@@ -3,14 +3,15 @@ import 'package:anxeb_flutter/misc/common.dart';
 import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:flutter/material.dart';
 
-enum ButtonType { Main, Secundary, Link }
-enum ButtonSize { Normal, Small }
+enum ButtonType { primary, secundary, link }
+enum ButtonSize { normal, small, medium }
 
 const Color _BASE_COLOR = Color(0xff2e7db2);
 const Color _LINK_COLOR = Color(0xff0055ff);
 
 const double _NORMAL_SIZE = 18.0;
 const double _SMALL_SIZE = 16.0;
+const double _MEDIUM_SIZE = 18.0;
 
 class TextButton extends StatefulWidget {
   const TextButton({
@@ -18,6 +19,7 @@ class TextButton extends StatefulWidget {
     this.margin,
     this.caption,
     this.icon,
+    this.shadow,
     this.color,
     this.iconColor,
     this.textColor,
@@ -33,6 +35,7 @@ class TextButton extends StatefulWidget {
   final EdgeInsets padding;
   final String caption;
   final IconData icon;
+  final List<BoxShadow> shadow;
   final Color color;
   final Color iconColor;
   final Color textColor;
@@ -57,12 +60,12 @@ class TextButton extends StatefulWidget {
                 caption: $option.key,
                 textColor: selectedValue == $option.value ? $settings.colors.active : null,
                 color: $option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.primary : $settings.colors.primary),
-                margin: EdgeInsets.zero,
+                margin: EdgeInsets.symmetric(vertical: 5),
                 onPressed: () {
                   Navigator.of(context).pop($option.value);
                 },
-                type: ButtonType.Main,
-                size: ButtonSize.Small,
+                type: ButtonType.primary,
+                size: ButtonSize.small,
               ),
             ),
           ]));
@@ -76,15 +79,15 @@ class TextButton extends StatefulWidget {
         caption: $button.key,
         color: $settings.colors.primary,
         textColor: Colors.white,
-        margin: EdgeInsets.zero,
+        margin: EdgeInsets.only(top: 10),
         onPressed: () {
           var btnResult = $button.value();
           if (btnResult != null) {
             Navigator.of(context).pop(btnResult);
           }
         },
-        type: ButtonType.Main,
-        size: ButtonSize.Small,
+        type: ButtonType.primary,
+        size: ButtonSize.small,
       );
 
       var isLast = buttons.last.key == $button.key;
@@ -102,65 +105,79 @@ class TextButton extends StatefulWidget {
 class _TextButtonState extends State<TextButton> {
   @override
   Widget build(BuildContext context) {
-    var padding = EdgeInsets.all(12);
+    var $padding = EdgeInsets.all(12);
     var fontSize = widget.fontSize ?? _NORMAL_SIZE;
     var borderRadius = 30.0;
 
-    if (widget.size == ButtonSize.Small) {
-      padding = EdgeInsets.all(5);
+    if (widget.size == ButtonSize.small) {
+      $padding = EdgeInsets.all(8);
       fontSize = widget.fontSize ?? _SMALL_SIZE;
+    }
+
+    if (widget.size == ButtonSize.medium) {
+      $padding = EdgeInsets.all(10);
+      fontSize = widget.fontSize ?? _MEDIUM_SIZE;
     }
 
     var textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.white, fontWeight: FontWeight.normal);
     var color = widget.color ?? _BASE_COLOR;
-    var shape = new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(borderRadius));
 
-    if (widget.type == ButtonType.Secundary) {
+    if (widget.type == ButtonType.secundary) {
       textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: FontWeight.normal);
       color = widget.color ?? Colors.white.withOpacity(0.5);
-    } else if (widget.type == ButtonType.Link) {
+    } else if (widget.type == ButtonType.link) {
       textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? _LINK_COLOR, fontWeight: FontWeight.normal);
       color = widget.color ?? Colors.transparent;
-      shape = new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(borderRadius));
-      padding = EdgeInsets.all(0);
+      $padding = EdgeInsets.all(5);
     }
 
-    final button = FlatButton(
-      shape: shape,
-      child: Padding(
-        padding: widget.padding != null ? widget.padding : EdgeInsets.only(left: 8, right: 8),
-        child: widget.icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: Icon(
-                      widget.icon,
-                      color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                      size: widget.iconSize != null ? widget.iconSize : 20,
-                    ),
-                  ),
-                  new Text(
-                    widget.caption,
-                    style: textStyle,
-                  ),
-                ],
-              )
-            : new Text(
-                widget.caption,
-                textAlign: TextAlign.center,
-                style: textStyle,
-              ),
-      ),
+    final button = Material(
+      key: GlobalKey(),
       color: color,
-      padding: padding,
-      onPressed: widget.enabled != false ? widget.onPressed : () {},
+      borderRadius: new BorderRadius.all(
+        Radius.circular(borderRadius),
+      ),
+      child: InkWell(
+        onTap: widget.enabled != false ? widget.onPressed : () {},
+        borderRadius: new BorderRadius.all(
+          Radius.circular(borderRadius),
+        ),
+        child: Padding(
+          padding: $padding ?? EdgeInsets.only(left: 8, right: 8),
+          child: widget.icon != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Icon(
+                        widget.icon,
+                        color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                        size: widget.iconSize != null ? widget.iconSize : 20,
+                      ),
+                    ),
+                    new Text(
+                      widget.caption,
+                      style: textStyle,
+                    ),
+                  ],
+                )
+              : new Text(
+                  widget.caption,
+                  textAlign: TextAlign.center,
+                  style: textStyle,
+                ),
+        ),
+      ),
     );
 
     return Container(
-      padding: widget.margin != null ? widget.margin : EdgeInsets.zero,
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        boxShadow: widget.shadow,
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
       child: widget.enabled == false
           ? Opacity(
               child: button,

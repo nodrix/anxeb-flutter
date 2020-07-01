@@ -43,3 +43,7 @@ export 'parts/footers/actions.dart';
 export 'parts/headers/actions.dart';
 export 'misc/action_icon.dart';
 export 'middleware/action.dart';
+export 'widgets/blocks/list_title.dart';
+export 'package:google_sign_in/google_sign_in.dart';
+export 'middleware/auth.dart';
+export 'parts/auths/google.dart';

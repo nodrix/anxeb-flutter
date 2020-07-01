@@ -114,11 +114,11 @@ class Navigator {
 
     var $enabled = $item.enabled != null ? $item.enabled : ($item.isEnabled != null ? $item.isEnabled() : null);
     var $disabled = $item.isDisabled != null ? $item.isDisabled() : null;
-    
-    if ($disabled == true){
+
+    if ($disabled == true) {
       $enabled = false;
     }
-    
+
     var $error = $item.error ?? ($item.isError != null ? $item.isError() : null);
 
     var $active = _isItemActive($item);
@@ -176,7 +176,7 @@ class Navigator {
                       padding: const EdgeInsets.only(top: 5),
                       child: Text($error.toUpperCase(),
                           style: TextStyle(
-                            color:  $enabled == false ? _application.settings.colors.danger.withAlpha(150) : _application.settings.colors.danger,
+                            color: $enabled == false ? _application.settings.colors.danger.withAlpha(150) : _application.settings.colors.danger,
                             fontSize: 11,
                             letterSpacing: 0.2,
                             fontWeight: FontWeight.w400,

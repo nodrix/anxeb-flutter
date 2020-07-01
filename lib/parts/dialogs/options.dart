@@ -29,23 +29,15 @@ class OptionsDialog extends ScopeDialog {
                 children: <Widget>[
                   Container(
                     padding: EdgeInsets.only(right: 7),
-                    //margin: EdgeInsets.only(right: 12),
-                    /*decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
-                      ),
-                    ),*/
                     child: Icon(
                       icon,
                       size: 29,
-                      //color: scope.application.settings.colors.secudary,
                     ),
                   ),
                   Expanded(
                     child: Text(
                       title,
                       textAlign: TextAlign.left,
-                      //style: TextStyle(color: scope.application.settings.colors.secudary,),
                     ),
                   ),
                 ],

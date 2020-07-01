@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
-
 import 'package:android_middleware/android_middleware.dart';
 import 'package:android_middleware/middleware/window_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_statusbar/flutter_statusbar.dart';
 
 class Overlay {
   bool extendBodyFullScreen = false;
@@ -18,18 +16,10 @@ class Overlay {
   Color statusFill;
   Brightness brightness;
   Color fill;
-  double statusBarHeight;
   SystemUiOverlayStyle style;
 
   Overlay({this.navigationBrightness, this.navigationFill, this.navigationDefaultFill, this.statusBrightness, this.statusFill, this.brightness, this.fill, this.style}) {
     style = SystemUiOverlayStyle.light;
-    init();
-  }
-
-  void init() async {
-    try {
-      statusBarHeight = await FlutterStatusbar.height;
-    } on PlatformException {}
   }
 
   void apply() {
