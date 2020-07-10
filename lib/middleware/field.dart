@@ -1,12 +1,10 @@
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
-
 import 'form.dart';
 import 'scope.dart';
 
-class FieldWidget extends StatefulWidget {
+class FieldWidget<V> extends StatefulWidget {
   final Scope scope;
   final Key key;
   final String name;
@@ -17,12 +15,12 @@ class FieldWidget extends StatefulWidget {
   final EdgeInsets padding;
   final bool readonly;
   final bool visible;
-  final ValueChanged<dynamic> onSubmitted;
-  final ValueChanged<dynamic> onValidSubmit;
+  final ValueChanged<V> onSubmitted;
+  final ValueChanged<V> onValidSubmit;
+  final ValueChanged<V> onChanged;
   final GestureTapCallback onTab;
   final GestureTapCallback onBlur;
   final GestureTapCallback onFocus;
-  final ValueChanged<dynamic> onChanged;
   final FormFieldValidator<String> validator;
 
   FieldWidget({
@@ -38,10 +36,10 @@ class FieldWidget extends StatefulWidget {
     this.visible,
     this.onSubmitted,
     this.onValidSubmit,
+    this.onChanged,
     this.onTab,
     this.onBlur,
     this.onFocus,
-    this.onChanged,
     this.validator,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
@@ -50,11 +48,10 @@ class FieldWidget extends StatefulWidget {
   Field createState() => Field();
 }
 
-abstract class FieldState<T extends FieldWidget> extends State<T> {
+abstract class FieldState<V, F extends FieldWidget<V>> extends State<F> {
   int index;
-  dynamic value;
+  V value;
   bool focused;
-
   bool isEmpty;
 
   void focus({String warning});
@@ -70,8 +67,8 @@ abstract class FieldState<T extends FieldWidget> extends State<T> {
   dynamic data();
 }
 
-class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> {
-  dynamic _value;
+class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInitMixin<F> {
+  V _value;
   bool _focused = false;
   int index = 0;
   String _warning;
@@ -124,15 +121,7 @@ class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> 
   }
 
   String validate({bool showMessage}) {
-    var $value;
-
-    if (this.value is KeyValue) {
-      $value = this.value.value;
-    } else {
-      $value = value;
-    }
-
-    var result = widget.visible != false && widget.validator != null ? widget.validator($value?.toString()) : null;
+    var result = widget.visible != false && widget.validator != null ? widget.validator(getValueString(this.value)) : null;
 
     if (showMessage != false) {
       warning = result;
@@ -145,11 +134,16 @@ class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> 
   }
 
   @protected
-  void submit(dynamic $value) {
-    if (value != $value && widget.onChanged != null) {
+  String getValueString(V value) {
+    return value?.toString();
+  }
+
+  @protected
+  void submit(V $value) {
+    if (this.value != $value && widget.onChanged != null) {
       widget.onChanged($value);
     }
-    value = $value;
+    this.value = $value;
     if (valid()) {
       if (!form.focusFrom(index)) {
         unfocus();
@@ -175,6 +169,9 @@ class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> 
     super.initState();
     focusNode = FocusNode();
     focusNode.addListener(() {
+      if (widget.readonly == true) {
+        return;
+      }
       if (mounted == true) {
         if (!focusNode.hasFocus) {
           if (isEmpty) {
@@ -212,12 +209,26 @@ class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> 
 
   @override
   Widget build(BuildContext context) {
+    if (widget.visible == false) {
+      return Container();
+    }
     prebuild();
     return Container(
       padding: widget.padding,
       margin: widget.margin,
       child: field(),
     );
+  }
+
+  @protected
+  void clear() {
+    validate();
+    Future.delayed(Duration(milliseconds: 0), () {
+      this.reset();
+      if (widget.onChanged != null) {
+        widget.onChanged(null);
+      }
+    });
   }
 
   @protected
@@ -241,7 +252,7 @@ class Field<T extends FieldWidget> extends FieldState<T> with AfterInitMixin<T> 
     rasterize();
   }
 
-  dynamic get value => _value;
+  V get value => _value;
 
   set value(value) {
     _value = value;

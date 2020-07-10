@@ -50,7 +50,7 @@ class TwitterAuth extends AuthProvider {
         result.firstNames = displayNameParts[0];
         result.lastNames = displayNameParts.length > 1 ? displayNameParts[1] : null;
         result.email = profileData['email'] ?? (profileData['screen_name'] + '@twitter.com');
-        result.photo = profileData['profile_image_url_https']?.toString()?.replaceAll('_normal.jpg', '_200x200.jpg');
+        result.photo = profileData['profile_image_url_https']?.toString()?.replaceAll('_normal.jpg', '.jpg');
         result.token = session.token;
         result.provider = 'twitter';
         result.meta = {

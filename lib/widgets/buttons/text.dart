@@ -51,7 +51,7 @@ class TextButton extends StatefulWidget {
   @override
   _TextButtonState createState() => _TextButtonState();
 
-  static List<Widget> createOptions(BuildContext context, List<KeyValue> options, {String selectedValue, Settings settings}) {
+  static List<Widget> createOptions<V>(BuildContext context, List<KeyValue<V>> options, {V selectedValue, Settings settings}) {
     var $settings = settings ?? Settings();
     return options.map(($option) {
       return Container(
@@ -61,7 +61,7 @@ class TextButton extends StatefulWidget {
               child: TextButton(
                 caption: $option.key,
                 textColor: selectedValue == $option.value ? $settings.colors.active : null,
-                color: $option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.primary : $settings.colors.primary),
+                color: $option.value == '*' ? $settings.colors.asterisk : ($option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.secudary : $settings.colors.primary)),
                 margin: EdgeInsets.symmetric(vertical: 5),
                 onPressed: () {
                   Navigator.of(context).pop($option.value);

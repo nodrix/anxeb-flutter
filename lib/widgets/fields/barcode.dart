@@ -1,6 +1,5 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/common.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,13 +8,12 @@ import 'package:barcode_scan/barcode_scan.dart';
 
 enum BarcodeInputFieldType { numeric, alphanumeric }
 
-class BarcodeInputField extends FieldWidget {
+class BarcodeInputField extends FieldWidget<String> {
   final TextEditingController controller;
   final BarcodeInputFieldType type;
   final bool autofocus;
   final TextInputAction action;
   final bool canSelect;
-  final TextFieldFormatter formatter;
   final bool fixedLabel;
   final String hint;
   final String prefix;
@@ -33,19 +31,18 @@ class BarcodeInputField extends FieldWidget {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<dynamic> onSubmitted,
-    ValueChanged<dynamic> onValidSubmit,
+    ValueChanged<String> onSubmitted,
+    ValueChanged<String> onValidSubmit,
+    ValueChanged<String> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<dynamic> onChanged,
     FormFieldValidator<String> validator,
     this.controller,
     this.type,
     this.autofocus,
     this.action,
     this.canSelect,
-    this.formatter,
     this.fixedLabel,
     this.hint,
     this.prefix,
@@ -65,10 +62,10 @@ class BarcodeInputField extends FieldWidget {
           visible: visible,
           onSubmitted: onSubmitted,
           onValidSubmit: onValidSubmit,
+          onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
-          onChanged: onChanged,
           validator: validator,
         );
 
@@ -76,7 +73,7 @@ class BarcodeInputField extends FieldWidget {
   _BarcodeInputFieldState createState() => _BarcodeInputFieldState();
 }
 
-class _BarcodeInputFieldState extends Field<BarcodeInputField> {
+class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
   TextEditingController _controller = TextEditingController();
   bool _editing;
   bool _tabbed;
@@ -101,7 +98,7 @@ class _BarcodeInputFieldState extends Field<BarcodeInputField> {
   }
 
   @override
-  void select(){
+  void select() {
     _controller.selection = TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
   }
 
@@ -128,11 +125,7 @@ class _BarcodeInputFieldState extends Field<BarcodeInputField> {
 
   @override
   dynamic data() {
-    if (widget.formatter != null) {
-      return widget.formatter(value?.toString());
-    } else {
-      return super.data();
-    }
+    return super.data();
   }
 
   @override
@@ -148,16 +141,6 @@ class _BarcodeInputFieldState extends Field<BarcodeInputField> {
   void present() {
     _controller.text = value != null ? value.toString() : '';
     _controller.text = _controller.text.toUpperCase();
-  }
-
-  void _clear() {
-    validate();
-    Future.delayed(Duration(milliseconds: 0), () {
-      this.reset();
-      if (widget.onChanged != null) {
-        widget.onChanged(null);
-      }
-    });
   }
 
   void _scan() async {
@@ -263,7 +246,7 @@ class _BarcodeInputFieldState extends Field<BarcodeInputField> {
               super.submit(_controller.text);
             } else {
               if (_controller.text.length > 0) {
-                _clear();
+                clear();
               } else {
                 _scan();
               }

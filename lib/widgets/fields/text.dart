@@ -1,26 +1,27 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/common.dart';
+import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
-enum TextInputFieldType { digits, decimals, real, integers, text, email, date, phone, url, password }
+enum TextInputFieldType { digits, decimals, positive, integers, text, email, date, phone, url, password }
 
-class TextInputField extends FieldWidget {
+class TextInputField<V> extends FieldWidget<V> {
   final TextEditingController controller;
   final TextInputFieldType type;
   final bool autofocus;
   final TextInputAction action;
-  final ValueChanged<dynamic> onActionSubmit;
+  final ValueChanged<V> onActionSubmit;
   final TextCapitalization capitalization;
   final bool canSelect;
-  final TextFieldFormatter formatter;
   final bool fixedLabel;
   final String hint;
   final String prefix;
   final String suffix;
+  final V Function(String value) converter;
+  final String Function(V value) displayText;
 
   TextInputField({
     @required Scope scope,
@@ -33,12 +34,12 @@ class TextInputField extends FieldWidget {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<dynamic> onSubmitted,
-    ValueChanged<dynamic> onValidSubmit,
+    ValueChanged<V> onSubmitted,
+    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<dynamic> onChanged,
     FormFieldValidator<String> validator,
     this.controller,
     this.type,
@@ -47,11 +48,12 @@ class TextInputField extends FieldWidget {
     this.onActionSubmit,
     this.capitalization,
     this.canSelect,
-    this.formatter,
     this.fixedLabel,
     this.hint,
     this.prefix,
     this.suffix,
+    this.converter,
+    this.displayText,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -66,20 +68,21 @@ class TextInputField extends FieldWidget {
           visible: visible,
           onSubmitted: onSubmitted,
           onValidSubmit: onValidSubmit,
+          onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
-          onChanged: onChanged,
           validator: validator,
         );
 
   @override
-  _TextInputFieldState createState() => _TextInputFieldState();
+  _TextInputFieldState createState() => _TextInputFieldState<V>();
 }
 
-class _TextInputFieldState extends Field<TextInputField> {
+class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   bool _obscureText;
   TextEditingController _controller = TextEditingController();
+  TextEditingController _controller2 = TextEditingController();
   bool _editing;
   bool _tabbed;
 
@@ -117,7 +120,7 @@ class _TextInputFieldState extends Field<TextInputField> {
   List<TextInputFormatter> get _formatters {
     if (widget.type == TextInputFieldType.digits) {
       return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
-    } else if (widget.type == TextInputFieldType.real) {
+    } else if (widget.type == TextInputFieldType.positive) {
       return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
@@ -131,7 +134,7 @@ class _TextInputFieldState extends Field<TextInputField> {
       return TextInputType.text;
     } else if (widget.type == TextInputFieldType.decimals) {
       return TextInputType.numberWithOptions(signed: true, decimal: true);
-    } else if (widget.type == TextInputFieldType.real) {
+    } else if (widget.type == TextInputFieldType.positive) {
       return TextInputType.numberWithOptions(signed: false, decimal: true);
     } else if (widget.type == TextInputFieldType.digits) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
@@ -152,10 +155,13 @@ class _TextInputFieldState extends Field<TextInputField> {
 
   @override
   void onBlur() {
+    if (widget.displayText != null) {
+      _controller2.text = widget.displayText(value);
+    }
     _obscureText = true;
     if (_editing == true) {
       _editing = false;
-      super.submit(_controller.text);
+      _convertAndSubmit(_controller.text);
     }
     super.onBlur();
   }
@@ -168,11 +174,7 @@ class _TextInputFieldState extends Field<TextInputField> {
 
   @override
   dynamic data() {
-    if (widget.formatter != null) {
-      return widget.formatter(value?.toString());
-    } else {
-      return super.data();
-    }
+    return super.data();
   }
 
   @override
@@ -187,38 +189,35 @@ class _TextInputFieldState extends Field<TextInputField> {
   @override
   void present() {
     _controller.text = value != null ? value.toString() : '';
+    if (widget.displayText != null) {
+      _controller2.text = widget.displayText(value);
+    }
     if (widget.capitalization == TextCapitalization.characters) {
       _controller.text = _controller.text.toUpperCase();
     }
   }
 
-  void _clear() {
-    validate();
-    Future.delayed(Duration(milliseconds: 0), () {
-      this.reset();
-      if (widget.onChanged != null) {
-        widget.onChanged(null);
-      }
-    });
-  }
-
   @override
   Widget field() {
+    if (widget.displayText != null && !focused) {
+      _controller2.text = widget.displayText(value);
+    }
+    
     var result = TextField(
       autofocus: widget.autofocus ?? false,
       obscureText: _obscureText && widget.type == TextInputFieldType.password,
       focusNode: focusNode,
       textInputAction: widget.action,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
-      controller: _controller,
+      controller: widget.displayText != null ? (focused && widget.readonly != true ? _controller : _controller2) : _controller,
       readOnly: widget.readonly == true,
       enableInteractiveSelection: widget.canSelect != null ? widget.canSelect : true,
       autocorrect: false,
       inputFormatters: _formatters,
       keyboardType: _keyboardType,
-      onSubmitted: ($value) {
+      onSubmitted: (text) {
         _editing = false;
-        super.submit($value);
+        _convertAndSubmit(text);
         if (widget.onActionSubmit != null) {
           widget.onActionSubmit(value);
         }
@@ -239,14 +238,13 @@ class _TextInputFieldState extends Field<TextInputField> {
           }
         }
       },
-      onChanged: (value) {
+      onChanged: (text) {
         if (_editing == false) {
           warning = null;
         }
         _editing = true;
-
         if (widget.onChanged != null) {
-          widget.onChanged(value);
+          widget.onChanged(_convertValue(text));
         }
       },
       textAlign: TextAlign.left,
@@ -294,16 +292,16 @@ class _TextInputFieldState extends Field<TextInputField> {
                     _obscureText = !_obscureText;
                   });
                 } else {
-                  _clear();
+                  clear();
                 }
               }
             } else {
               if (focused && warning == null) {
                 _editing = false;
-                super.submit(_controller.text);
+                _convertAndSubmit(_controller.text);
               } else {
                 if (_controller.text.length > 0) {
-                  _clear();
+                  clear();
                 } else {
                   focus();
                 }
@@ -315,6 +313,38 @@ class _TextInputFieldState extends Field<TextInputField> {
       ),
     );
     return result;
+  }
+
+  V _convertValue(String text) {
+    if (widget.converter != null) {
+      return widget.converter(text);
+    } else {
+      dynamic result;
+      if (text?.isNotEmpty == true) {
+        if (widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.email || widget.type == TextInputFieldType.url || widget.type == TextInputFieldType.password) {
+          result = Utils.convert.fromStringToTrimedString(text);
+        } else if (widget.type == TextInputFieldType.digits) {
+          result = Utils.convert.fromStringToDigits(text);
+        } else if (widget.type == TextInputFieldType.date) {
+          result = Utils.convert.fromStringToDate(text);
+        } else if (widget.type == TextInputFieldType.decimals) {
+          result = Utils.convert.fromStringToDouble(text);
+        } else if (widget.type == TextInputFieldType.integers) {
+          result = Utils.convert.fromStringToInteger(text);
+        } else if (widget.type == TextInputFieldType.phone) {
+          result = Utils.convert.fromStringToDigits(text);
+        } else if (widget.type == TextInputFieldType.positive) {
+          result = Utils.convert.fromStringToPositive(text);
+        } else {
+          result = Utils.convert.fromStringToTrimedString(text);
+        }
+      }
+      return result;
+    }
+  }
+
+  void _convertAndSubmit(String text) {
+    super.submit(_convertValue(text));
   }
 
   Icon _getIcon() {

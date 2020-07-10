@@ -93,7 +93,16 @@ class ScopeAlerts {
         delay: delay,
       ));
 
-  SnackAlert exception(err, {String title, int delay}) {
+  SnackAlert exception(String message, {String title, int delay}) => _initialize(SnackAlert(
+        _scope,
+        title: title ?? 'Error',
+        message: message,
+        icon: Icons.warning,
+        color: _scope.application.settings.colors.danger,
+        delay: delay,
+      ));
+
+  SnackAlert error(err, {String title, int delay}) {
     String message;
 
     if (err is AssertionError) {

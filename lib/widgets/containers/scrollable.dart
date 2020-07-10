@@ -9,6 +9,7 @@ class ScrollableContainer extends StatelessWidget {
   final ScrollController controller;
   final Scope scope;
   final bool fixedHeight;
+  final bool disablePhysics;
 
   ScrollableContainer({
     Key key,
@@ -18,17 +19,19 @@ class ScrollableContainer extends StatelessWidget {
     this.padding,
     this.controller,
     this.fixedHeight,
+    this.disablePhysics,
   })  : assert(child != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: fixedHeight == true ? scope.window.available.height : null,
       child: SingleChildScrollView(
+        physics: disablePhysics == true ? NeverScrollableScrollPhysics() : null,
         controller: controller,
         child: Container(
-          height: fixedHeight == true ? scope.window.available.height : null,
-          padding: Utils.convert.toFraction(fadding, scope.window.size),
+          padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
           child: Padding(
             padding: padding != null ? padding : const EdgeInsets.all(0),
             child: child,

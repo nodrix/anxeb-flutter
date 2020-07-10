@@ -25,7 +25,7 @@ class BasicContainer extends StatelessWidget {
       child: Padding(
         padding: padding ?? EdgeInsets.zero,
         child: Container(
-          padding: Utils.convert.toFraction(fadding, scope.window.size),
+          padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
           margin: margin ?? EdgeInsets.zero,
           child: this.child,
         ),

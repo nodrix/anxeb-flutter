@@ -4,11 +4,11 @@ import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
-class OptionsDialog extends ScopeDialog {
+class OptionsDialog<V> extends ScopeDialog {
   final String title;
   final IconData icon;
-  final List<KeyValue> options;
-  final String selectedValue;
+  final List<KeyValue<V>> options;
+  final V selectedValue;
 
   OptionsDialog(Scope scope, {this.title, this.icon, this.options, this.selectedValue})
       : assert(title != null),
@@ -50,13 +50,15 @@ class OptionsDialog extends ScopeDialog {
                 textAlign: TextAlign.center,
               ),
             ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: TextButton.createOptions(
-          context,
-          options,
-          selectedValue: selectedValue,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: TextButton.createOptions<V>(
+            context,
+            options,
+            selectedValue: selectedValue,
+          ),
         ),
       ),
     );

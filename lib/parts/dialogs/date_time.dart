@@ -5,9 +5,9 @@ import 'package:flutter/material.dart' hide Dialog;
 
 class DateTimeDialog extends ScopeDialog {
   final DateTime value;
-  
+
   DateTimeDialog(Scope scope, {this.value}) : super(scope);
-  
+
   @override
   Future show() async {
     var initialDate = value ?? DateTime.now();
@@ -19,11 +19,10 @@ class DateTimeDialog extends ScopeDialog {
       lastDate: new DateTime(2101),
     );
     if (finalDate != null) {
-      final finalTime = await showTimePicker(context: scope.context, initialTime: Utils.convert.toTime(finalDate));
+      final finalTime = await showTimePicker(context: scope.context, initialTime: Utils.convert.fromDateToTime(finalDate));
       if (finalTime != null) {
         return DateTime(finalDate.year, finalDate.month, finalDate.day, finalTime.hour, finalTime.minute);
       }
     }
   }
 }
-

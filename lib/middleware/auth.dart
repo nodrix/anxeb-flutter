@@ -37,6 +37,9 @@ class AuthResultModel extends Model<AuthResultModel> {
   String token;
   String provider;
   dynamic meta;
+
+  @override
+  String toString() => lastNames?.isNotEmpty == true ? '$firstNames $lastNames' : firstNames;
 }
 
 class AuthProviders {

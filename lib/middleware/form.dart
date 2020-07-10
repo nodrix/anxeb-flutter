@@ -32,6 +32,14 @@ class FieldsForm {
     fields[fieldName]?.value = value;
   }
 
+  dynamic get(String fieldName, {bool raw}) {
+    if (raw == true) {
+      return fields[fieldName]?.value;
+    } else {
+      return fields[fieldName]?.data();
+    }
+  }
+
   void update([dynamic data]) {
     validated = false;
 
@@ -44,7 +52,9 @@ class FieldsForm {
     }
 
     for (var field in fields.values) {
-      field.value = _initialValues[field.widget.name];
+      if ((_initialValues as Map).containsKey(field.widget.name)) {
+        field.value = _initialValues[field.widget.name];
+      }
     }
   }
 
@@ -118,7 +128,9 @@ class FieldsForm {
     } else {
       current.index = fields.length;
       if (_initialValues != null) {
-        current.value = _initialValues[current.widget.name];
+        if ((_initialValues as Map).containsKey(current.widget.name)) {
+          current.value = _initialValues[current.widget.name];
+        }
       }
     }
     fields[current.widget.name] = current;
@@ -156,6 +168,21 @@ class FieldsForm {
         }
       }
       return data;
+    } else {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> value() {
+    if (validate()) {
+      var result = Map<String, dynamic>();
+
+      for (var field in fields.values) {
+        if (field.widget.visible != false) {
+          result[field.widget.name] = field.value;
+        }
+      }
+      return result;
     } else {
       return null;
     }
@@ -209,14 +236,25 @@ class ScopeForms {
   }
 
   Data data() {
-    var _data = Data();
+    var result = Data();
     for (var $form in _forms.values) {
       var $data = $form.data();
       if ($data != null) {
-        _data.include($data);
+        result.include($data);
       }
     }
-    return _data;
+    return result;
+  }
+
+  Data values() {
+    var result = Data();
+    for (var $form in _forms.values) {
+      var $data = $form.value();
+      if ($data != null) {
+        result.include($data);
+      }
+    }
+    return result;
   }
 
   FieldsForm _retrieve(String name) {

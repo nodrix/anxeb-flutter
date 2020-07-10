@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/middleware/window.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
+import 'package:anxeb_flutter/parts/headers/search.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
@@ -62,6 +63,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   ViewHeader _header;
   ViewFooter _footer;
   ViewAction _action;
+  _ViewParts _parts;
+  bool _initialized;
+  bool _initializing;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
@@ -98,7 +102,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _panel = panel();
     _action = action();
     _footer = footer();
-    await init();
     setup();
     _scope.window.overlay.apply();
   }
@@ -140,6 +143,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
               return false;
             } else if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
               scaffold.currentState.openEndDrawer();
+              return false;
+            } else if (_header is SearchHeader && (_header as SearchHeader).isActive) {
+              (_header as SearchHeader).end();
               return false;
             }
             var result = await beforePop();
@@ -295,10 +301,27 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _panel = _panel?.rebuild == true ? panel() : _panel;
     _action = _action?.rebuild == true ? action() : _action;
     _footer = _footer?.rebuild == true ? footer() : _footer;
+
+    _parts = _parts ??
+        _ViewParts(
+          header: _header,
+          refresher: _refresher,
+          panel: _panel,
+          action: _action,
+          footer: _footer,
+        );
   }
 
   Widget _getWrappedContent() {
-    var $content = content() ?? Container();
+    if (_initialized != true && _initializing != true) {
+      _initializing = true;
+      Future.delayed(Duration(milliseconds: 0), () async {
+        await init();
+        _initialized = true;
+        rasterize();
+      });
+    }
+    var $content = (_initialized == true ? content() : null) ?? Container();
     $content = _refresher != null ? _refresher.wrap($content) : $content;
     $content = _panel != null ? _panel.wrap($content) : $content;
     return $content;
@@ -335,13 +358,23 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
   @protected
-  dynamic get parts => {
-        'header': _header,
-        'refresher': _refresher,
-        'panel': _panel,
-        'action': _action,
-        'footer': _footer,
-      };
+  _ViewParts get parts => _parts;
+}
+
+class _ViewParts {
+  final ViewHeader header;
+  final ViewRefresher refresher;
+  final ViewPanel panel;
+  final ViewAction action;
+  final ViewFooter footer;
+
+  _ViewParts({
+    this.header,
+    this.refresher,
+    this.panel,
+    this.action,
+    this.footer,
+  });
 }
 
 class _PushedViewArguments<A extends Application> {

@@ -7,14 +7,17 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 enum OptionsInputFieldType { dropdown, dialog }
 
-class OptionsInputField extends FieldWidget {
-  final List<KeyValue> options;
+class OptionsInputField<V> extends FieldWidget<V> {
+  final List<V> options;
   final OptionsInputFieldType type;
   final bool autofocus;
   final bool fixedLabel;
   final String hint;
   final String prefix;
   final String suffix;
+  final String Function(V value) displayText;
+  final dynamic Function(V value) dataValue;
+  final bool Function(V a, V b) comparer;
 
   OptionsInputField({
     @required Scope scope,
@@ -27,12 +30,12 @@ class OptionsInputField extends FieldWidget {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<dynamic> onSubmitted,
-    ValueChanged<dynamic> onValidSubmit,
+    ValueChanged<V> onSubmitted,
+    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<dynamic> onChanged,
     FormFieldValidator<String> validator,
     @required this.options,
     this.type,
@@ -41,6 +44,9 @@ class OptionsInputField extends FieldWidget {
     this.hint,
     this.prefix,
     this.suffix,
+    this.displayText,
+    this.dataValue,
+    this.comparer,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -55,18 +61,18 @@ class OptionsInputField extends FieldWidget {
           visible: visible,
           onSubmitted: onSubmitted,
           onValidSubmit: onValidSubmit,
+          onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
-          onChanged: onChanged,
           validator: validator,
         );
 
   @override
-  _OptionsInputFieldState createState() => _OptionsInputFieldState();
+  _OptionsInputFieldState createState() => _OptionsInputFieldState<V>();
 }
 
-class _OptionsInputFieldState extends Field<OptionsInputField> {
+class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
   GlobalKey<FormState> _fieldKey;
 
   _OptionsInputFieldState() {
@@ -99,7 +105,7 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
 
   @override
   dynamic data() {
-    return super.data();
+    return widget.dataValue != null ? widget.dataValue(value) : value;
   }
 
   @override
@@ -109,15 +115,6 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
 
   @override
   Widget field() {
-    var optionValue = widget.options.firstWhere((item) => item.value == value, orElse: () => null);
-
-    var optionKey;
-    if (optionValue != null) {
-      optionKey = optionValue.key;
-    } else {
-      value = null;
-    }
-
     var result = GestureDetector(
       onTap: () {
         if (widget.readonly == true) {
@@ -171,7 +168,11 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
                     });
                   } else {
                     setState(() {
-                      //TODO: Allow collapse/expando from icon
+                      if (widget.type == OptionsInputFieldType.dialog) {
+                        _getOptionFromDialog();
+                      } else {
+                        //TODO: Allow collapse/expando from icon
+                      }
                     });
                   }
                 },
@@ -180,7 +181,7 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
             ),
             child: Padding(
               padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
-              child: widget.type == OptionsInputFieldType.dropdown
+              child: widget.type == null || widget.type == OptionsInputFieldType.dropdown
                   ? DropdownButtonHideUnderline(
                       child: GestureDetector(
                         onTap: () {
@@ -188,32 +189,17 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
                             return;
                           }
                         },
-                        child: DropdownButton<String>(
+                        child: DropdownButton<V>(
                           key: _fieldKey,
                           value: value,
                           iconSize: 0,
                           isDense: true,
-                          onChanged: (String selectedValue) {
+                          onChanged: (selectedValue) {
                             super.submit(selectedValue);
                           },
-                          hint: value != null
-                              ? Text(
-                                  optionKey,
-                                  style: TextStyle(
-                                    color: widget.scope.application.settings.colors.focus,
-                                  ),
-                                )
-                              : Text(
-                                  widget.label,
-                                  style: TextStyle(
-                                    color: Color(0x88000000),
-                                  ),
-                                ),
+                          hint: value != null ? Text(_displayText ?? '', style: TextStyle(color: widget.scope.application.settings.colors.focus)) : Text(widget.label, style: TextStyle(color: Color(0x88000000))),
                           items: widget.options.map((item) {
-                            return DropdownMenuItem<String>(
-                              value: item.value,
-                              child: Text(item.key),
-                            );
+                            return DropdownMenuItem<V>(value: item, child: Text(widget.displayText != null ? widget.displayText(item) : item?.toString()));
                           }).toList(),
                         ),
                       ),
@@ -221,10 +207,10 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
                   : Container(
                       padding: EdgeInsets.only(top: 2),
                       child: Text(
-                        _display ?? widget.label,
+                        _displayText ?? widget.label,
                         style: TextStyle(
                           fontSize: 16,
-                          color: _display != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
+                          color: _displayText != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
                         ),
                       ),
                     ),
@@ -238,19 +224,19 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
 
   void _getOptionFromDialog() async {
     var result = await widget.scope.dialogs
-        .options(
+        .options<V>(
           widget.label,
-          options: widget.options,
-          selectedValue: 'cash',
+          options: widget.options.map(($option) => KeyValue<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
+          selectedValue: value,
           icon: widget.icon,
         )
         .show();
 
     if (result != null) {
       if (result == '') {
-        value = null;
+        clear();
       } else {
-        value = result;
+        super.submit(result);
       }
     }
   }
@@ -263,12 +249,9 @@ class _OptionsInputFieldState extends Field<OptionsInputField> {
     if (value != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
-      return Icon(Icons.keyboard_arrow_down, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+      return Icon(Icons.list, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
 
-  String get _display {
-    var optionValue = widget.options.firstWhere((item) => item.value == this.value, orElse: () => null);
-    return optionValue?.key;
-  }
+  String get _displayText => widget.displayText != null ? widget.displayText(value) : value?.toString();
 }

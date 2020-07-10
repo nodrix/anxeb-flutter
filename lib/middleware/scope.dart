@@ -74,9 +74,13 @@ class Scope {
         builder: ($context) {
           var length = window.horizontal(0.16);
           Future.delayed(Duration(milliseconds: 100), () {
-            _busyContext = $context;
-            _busying = false;
-            busyPromise.complete();
+            if (_busying == true || _busyContext != null) {
+              _busying = false;
+              _busyContext = $context;
+              if (!busyPromise.isCompleted) {
+                busyPromise.complete();
+              }
+            }
           });
           return Center(
             child: SizedBox(
@@ -98,8 +102,10 @@ class Scope {
         });
       });
 
-      _busyCountDown = timeout ?? 8;
-      _checkBusyCountDown();
+      if (timeout == null || timeout > 0) {
+        _busyCountDown = timeout ?? 8;
+        _checkBusyCountDown();
+      }
     }
     return busyPromise.future;
   }

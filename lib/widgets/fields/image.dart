@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/preview.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
@@ -11,7 +10,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 enum ImageInputFieldType { front, rear, local, web }
 
-class ImageInputField extends FieldWidget {
+class ImageInputField extends FieldWidget<String> {
   final ImageInputFieldType type;
 
   ImageInputField({
@@ -58,7 +57,7 @@ class ImageInputField extends FieldWidget {
   _ImageInputFieldState createState() => _ImageInputFieldState();
 }
 
-class _ImageInputFieldState extends Field<ImageInputField> {
+class _ImageInputFieldState extends Field<String, ImageInputField> {
   ImageProvider _takenPicture;
 
   @override
@@ -66,20 +65,6 @@ class _ImageInputFieldState extends Field<ImageInputField> {
 
   @override
   void setup() {}
-
-  void _clear() {
-    validate();
-    Future.delayed(Duration(milliseconds: 0), () {
-      setState(() {
-        warning = null;
-        value = null;
-        _takenPicture = null;
-        if (widget.onChanged != null) {
-          widget.onChanged(null);
-        }
-      });
-    });
-  }
 
   void _takePicture() async {
     var result = await widget.scope.view.push(CameraHelper(
@@ -89,11 +74,7 @@ class _ImageInputFieldState extends Field<ImageInputField> {
 
     if (result != null) {
       File image = result as File;
-      setState(() {
-        _takenPicture = Image.file(image).image;
-        var $data = image.readAsBytesSync();
-        super.submit('data:image/png;base64,${base64Encode($data)}');
-      });
+      super.submit('data:image/png;base64,${base64Encode(image.readAsBytesSync())}');
     }
   }
 
@@ -117,11 +98,13 @@ class _ImageInputFieldState extends Field<ImageInputField> {
 
   @override
   void present() {
-    if (value != null) {
-      setState(() {
-        _takenPicture = Image.memory(base64Decode(value.toString().substring(22))).image;
-      });
-    }
+    setState(() {
+      if (value != null) {
+        _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
+      } else {
+        _takenPicture = null;
+      }
+    });
   }
 
   @override
@@ -159,7 +142,7 @@ class _ImageInputFieldState extends Field<ImageInputField> {
                     return;
                   }
                   if (value != null) {
-                    _clear();
+                    clear();
                   } else {
                     _takePicture();
                   }
@@ -178,15 +161,14 @@ class _ImageInputFieldState extends Field<ImageInputField> {
                           child: GestureDetector(
                             onTap: () async {
                               var result = await widget.scope.view.push(ImagePreviewHelper(title: widget.label, image: _takenPicture, canRemove: true));
-
                               if (result == false) {
-                                _clear();
+                                clear();
                               }
                             },
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: new BorderRadius.all(
+                                borderRadius: BorderRadius.all(
                                   Radius.circular(10.0),
                                 ),
                                 image: DecorationImage(

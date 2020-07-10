@@ -1,19 +1,19 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/common.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
-class LookupInputField extends FieldWidget {
+class LookupInputField<V> extends FieldWidget<V> {
   final bool autofocus;
   final bool fixedLabel;
   final String hint;
   final String prefix;
   final String suffix;
-  final KeyValueCallback onLookup;
-
+  final Future<V> Function() onLookup;
+  final String Function(V value) displayText;
+  final dynamic Function(V value) dataValue;
+  
   LookupInputField({
     @required Scope scope,
     Key key,
@@ -25,12 +25,12 @@ class LookupInputField extends FieldWidget {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<dynamic> onSubmitted,
-    ValueChanged<dynamic> onValidSubmit,
+    ValueChanged<V> onSubmitted,
+    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<dynamic> onChanged,
     FormFieldValidator<String> validator,
     this.autofocus,
     this.fixedLabel,
@@ -38,93 +38,74 @@ class LookupInputField extends FieldWidget {
     this.prefix,
     this.suffix,
     this.onLookup,
-  })  : assert(name != null),
+    this.displayText,
+    this.dataValue,
+  })
+      : assert(name != null),
         super(
-          scope: scope,
-          key: key,
-          name: name,
-          group: group,
-          label: label,
-          icon: icon,
-          margin: margin,
-          padding: padding,
-          readonly: readonly,
-          visible: visible,
-          onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
-          onTab: onTab,
-          onBlur: onBlur,
-          onFocus: onFocus,
-          onChanged: onChanged,
-          validator: validator,
-        );
-
+        scope: scope,
+        key: key,
+        name: name,
+        group: group,
+        label: label,
+        icon: icon,
+        margin: margin,
+        padding: padding,
+        readonly: readonly,
+        visible: visible,
+        onSubmitted: onSubmitted,
+        onValidSubmit: onValidSubmit,
+        onChanged: onChanged,
+        onTab: onTab,
+        onBlur: onBlur,
+        onFocus: onFocus,
+        validator: validator,
+      );
+  
   @override
-  _LookupInputFieldState createState() => _LookupInputFieldState();
+  _LookupInputFieldState createState() => _LookupInputFieldState<V>();
 }
 
-class _LookupInputFieldState extends Field<LookupInputField> {
-  String _display;
-
+class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
   @override
   void init() {}
-
+  
   @override
   void focus({String warning}) {
     super.focus(warning: warning);
   }
-
+  
   @override
   void setup() {}
-
+  
   @override
   void prebuild() {}
-
+  
   @override
   void onBlur() {
     super.onBlur();
   }
-
+  
   @override
   void onFocus() {
     super.onFocus();
   }
-
+  
   @override
-  dynamic data() => value != null ? (value as KeyValue).value : null;
-
+  dynamic data() {
+    return widget.dataValue != null ? widget.dataValue(value) : value;
+  }
+  
   @override
   void reset() {
     super.reset();
   }
-
-  void _clear() {
-    validate();
-    Future.delayed(Duration(milliseconds: 0), () {
-      setState(() {
-        warning = null;
-        value = null;
-        if (widget.onChanged != null) {
-          widget.onChanged(null);
-        }
-      });
-    });
+  
+  @protected
+  String getValueString(V value) {
+    return value?.toString();
   }
-
-  void _beginLookup() async {
-    if (widget.onLookup != null) {
-      var $value = await widget.onLookup();
-      super.submit($value);
-    }
-  }
-
-  @override
-  void present() {
-    setState(() {
-      _display = (value != null && value is KeyValue) ? (value as KeyValue).key : value?.toString();
-    });
-  }
-
+  
   @override
   Widget field() {
     var result = GestureDetector(
@@ -149,11 +130,11 @@ class _LookupInputFieldState extends Field<LookupInputField> {
               labelText: value != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
               labelStyle: widget.fixedLabel == true
                   ? TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-                      letterSpacing: 0.8,
-                      fontSize: 15,
-                    )
+                fontWeight: FontWeight.w500,
+                color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
+                letterSpacing: 0.8,
+                fontSize: 15,
+              )
                   : null,
               fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
@@ -166,9 +147,9 @@ class _LookupInputFieldState extends Field<LookupInputField> {
                   if (widget.readonly == true) {
                     return;
                   }
-
+                  
                   if (value != null) {
-                    _clear();
+                    clear();
                   } else {
                     _beginLookup();
                   }
@@ -181,10 +162,10 @@ class _LookupInputFieldState extends Field<LookupInputField> {
               child: Container(
                 padding: EdgeInsets.only(top: 2),
                 child: Text(
-                  _display ?? widget.label,
+                  _displayText ?? widget.label,
                   style: TextStyle(
                     fontSize: 16,
-                    color: _display != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
+                    color: _displayText != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
                   ),
                 ),
               ),
@@ -195,16 +176,27 @@ class _LookupInputFieldState extends Field<LookupInputField> {
     );
     return result;
   }
-
+  
+  void _beginLookup() async {
+    if (widget.onLookup != null) {
+      var $value = await widget.onLookup();
+      if ($value != null) {
+        super.submit($value);
+      }
+    }
+  }
+  
   Icon _getIcon() {
     if (widget.readonly == true) {
       return Icon(Icons.lock_outline);
     }
-
+    
     if (value != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
       return Icon(Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
+  
+  String get _displayText => widget.displayText != null ? widget.displayText(value) : value?.toString();
 }

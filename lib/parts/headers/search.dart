@@ -22,6 +22,7 @@ class SearchHeader extends ActionsHeader {
 
   SearchHeader({
     Scope scope,
+    String Function() title,
     List<ActionIcon> actions,
     VoidCallback dismiss,
     VoidCallback back,
@@ -33,7 +34,7 @@ class SearchHeader extends ActionsHeader {
     this.onClear,
     this.onCompleted,
     this.onBegin,
-  }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading) {
+  }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading, title: title) {
     super.actions = actions ?? List<ActionIcon>();
 
     if (actionRightPositioned == true) {
@@ -43,7 +44,7 @@ class SearchHeader extends ActionsHeader {
     }
     _init();
   }
-  
+
   void _init() {
     _inputController = new TextEditingController();
     _focusNode = FocusNode();
@@ -91,13 +92,16 @@ class SearchHeader extends ActionsHeader {
     }
   }
 
-  Future clear() async {
+  Future clear({bool inactivate}) async {
     _busy = true;
     scope.rasterize();
     await onClear?.call();
     _inputController.clear();
     _currentText = '';
     _busy = false;
+    if (inactivate == true) {
+      _active = false;
+    }
     scope.rasterize();
   }
 
@@ -116,12 +120,17 @@ class SearchHeader extends ActionsHeader {
   Future _endSearch() async {
     _busy = true;
     scope.rasterize();
-    await onCompleted?.call(_inputController.text);
+    var result = _inputController.text;
     _inputController.clear();
     _currentText = '';
     _active = false;
     _busy = false;
+    await onCompleted?.call(result);
     scope.rasterize();
+  }
+
+  Future end() async {
+    await _endSearch();
   }
 
   void _focusSearch() {
@@ -194,6 +203,14 @@ class SearchHeader extends ActionsHeader {
       ),
     );
   }
+
+  String get text => _currentText;
+
+  bool get isActive => _active == true;
+
+  bool get isNotEmpty => _currentText?.isNotEmpty == true;
+
+  bool get isEmpty => !isNotEmpty;
 
   @override
   PreferredSizeWidget build() => _active ? _buildSearchBar() : super.build();

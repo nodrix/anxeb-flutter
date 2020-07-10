@@ -1,15 +1,15 @@
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/misc/common.dart';
 import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
+import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
 import 'package:flutter/material.dart';
-
 import 'scope.dart';
 
-class ScopeDialog {
+class ScopeDialog<V> {
   final Scope scope;
-
   @protected
   bool dismissible = false;
 
@@ -20,8 +20,12 @@ class ScopeDialog {
     return Container();
   }
 
-  Future show() {
-    return showDialog(
+  @protected
+  Future setup() => null;
+
+  Future<V> show() async {
+    await setup();
+    return showDialog<V>(
       context: scope.context,
       barrierDismissible: dismissible,
       builder: (BuildContext context) {
@@ -38,8 +42,27 @@ class ScopeDialogs {
     _scope = scope;
   }
 
-  OptionsDialog options(String title, {IconData icon, List<KeyValue> options, String selectedValue}) {
-    return OptionsDialog(
+  ReferencerDialog referencer<V>(
+    String title, {
+    IconData icon,
+    ReferenceLoaderHandler<V> loader,
+    ReferenceComparerHandler<V> comparer,
+    Function() updater,
+    ReferenceItemWidget<V> itemWidget,
+    ReferenceHeaderWidget<V> headerWidget,
+  }) {
+    return ReferencerDialog<V>(
+      _scope,
+      title: title,
+      icon: icon,
+      referencer: Referencer<V>(loader: loader, comparer: comparer, updater: updater),
+      itemWidget: itemWidget,
+      headerWidget: headerWidget,
+    );
+  }
+
+  OptionsDialog options<V>(String title, {IconData icon, List<KeyValue<V>> options, V selectedValue}) {
+    return OptionsDialog<V>(
       _scope,
       title: title,
       icon: icon,
@@ -99,7 +122,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget body}) {
+  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget body, bool swap}) {
     return MessageDialog(
       _scope,
       title: title ?? 'Confirmar Acción',
@@ -110,10 +133,38 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.info,
       body: body,
       iconColor: _scope.application.settings.colors.info,
-      buttons: [
-        KeyValue(yesLabel ?? 'Sí', () => true),
-        KeyValue(noLabel ?? 'No', () => false),
-      ],
+      buttons: swap == true
+          ? [
+              KeyValue(noLabel ?? 'No', () => false),
+              KeyValue(yesLabel ?? 'Sí', () => true),
+            ]
+          : [
+              KeyValue(yesLabel ?? 'Sí', () => true),
+              KeyValue(noLabel ?? 'No', () => false),
+            ],
+    );
+  }
+
+  custom({String message, String title, String yesLabel, String noLabel, Widget body, IconData icon, Color color, bool swap}) {
+    return MessageDialog(
+      _scope,
+      title: title ?? 'Confirmar Acción',
+      message: message,
+      icon: icon ?? Icons.chat_bubble,
+      iconSize: 48,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: color ?? _scope.application.settings.colors.info,
+      body: body,
+      iconColor: color ?? _scope.application.settings.colors.info,
+      buttons: swap == true
+          ? [
+              KeyValue(noLabel ?? 'Cancelar', () => false),
+              KeyValue(yesLabel ?? 'OK', () => true),
+            ]
+          : [
+              KeyValue(yesLabel ?? 'OK', () => true),
+              KeyValue(noLabel ?? 'Cancelar', () => false),
+            ],
     );
   }
 

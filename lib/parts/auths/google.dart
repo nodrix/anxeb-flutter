@@ -33,13 +33,15 @@ class GoogleAuth extends AuthProvider {
       if (profileData != null) {
         var authData = await profileData.authentication;
         var displayNameParts = profileData.displayName.split(' ');
+        var pind = profileData.photoUrl.lastIndexOf('=');
+        var photo = pind > 0 ? profileData.photoUrl.substring(0, pind) : profileData.photoUrl;
 
         AuthResultModel result = AuthResultModel();
         result.id = profileData.id;
         result.firstNames = displayNameParts[0];
         result.lastNames = displayNameParts.length > 1 ? displayNameParts[1] : null;
         result.email = profileData.email;
-        result.photo = profileData.photoUrl;
+        result.photo = photo;
         result.token = authData.idToken;
         result.provider = 'google';
         result.meta = {

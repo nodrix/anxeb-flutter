@@ -36,14 +36,13 @@ class FacebookAuth extends AuthProvider {
       if (session != null) {
         var api = Api('https://graph.facebook.com/v7.0/');
         var profileData = await api.get('me?fields=name,first_name,last_name,email&access_token=${session.token}');
-        var photoData = await api.get('me/picture?redirect=0&height=200&width=200&type=normal&access_token=${session.token}');
 
         AuthResultModel result = AuthResultModel();
         result.id = profileData['id'];
         result.firstNames = profileData['first_name'];
         result.lastNames = profileData['last_name'];
         result.email = profileData['email'];
-        result.photo = photoData['data']['url'];
+        result.photo = 'https://graph.facebook.com/v7.0/me/picture?height=320&access_token=${session.token}';
         result.token = session.token;
         result.provider = 'facebook';
         result.meta = {

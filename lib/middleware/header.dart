@@ -6,6 +6,7 @@ class ViewHeader {
   final List<Widget> childs;
   final VoidCallback dismiss;
   final VoidCallback back;
+  final String Function() title;
   Widget leading;
 
   ViewHeader({
@@ -14,14 +15,15 @@ class ViewHeader {
     this.dismiss,
     this.back,
     this.leading,
+    this.title,
   });
 
   @protected
   List<Widget> content() => childs;
-  
+
   PreferredSizeWidget build() {
     return AppBar(
-      title: Text(scope.view.title ?? scope.application.title),
+      title: Text(this.title?.call() ?? scope.view.title ?? scope.application.title),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
       brightness: scope.window.overlay.brightness,

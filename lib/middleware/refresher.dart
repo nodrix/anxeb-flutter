@@ -5,14 +5,11 @@ import 'scope.dart';
 class ViewRefresher {
   final Scope scope;
   final Future Function() action;
-  final Future Function(dynamic err) completed;
+  final Future Function() onCompleted;
+  final Future Function(dynamic err) onError;
   RefreshController _refreshController;
 
-  ViewRefresher({
-    this.scope,
-    this.action,
-    this.completed,
-  }) {
+  ViewRefresher({this.scope, this.action, this.onCompleted, this.onError}) {
     _refreshController = RefreshController(initialRefresh: false);
   }
 
@@ -33,13 +30,23 @@ class ViewRefresher {
         _refreshController.refreshCompleted();
         try {
           await action();
-          completed(null);
+          onCompleted?.call();
         } catch (err) {
-          completed(err);
+          onError?.call(err);
         }
       },
       child: body,
     );
+  }
+
+  void scrollToEnd() {
+    // ignore: deprecated_member_use
+    _refreshController.scrollController.animateTo(_refreshController.scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+  }
+
+  void scrollToStart() {
+    // ignore: deprecated_member_use
+    _refreshController.scrollController.animateTo(0, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
   }
 
   bool get rebuild => false;

@@ -3,16 +3,16 @@ import 'package:anxeb_flutter/middleware/utils.dart';
 class Validators {
   String firstNames(String value) {
     var err = 'Ingrese uno o dos nombres válidos';
-    
+
     Pattern pattern = r'^[a-z A-Z\\s]+$';
     RegExp regex = new RegExp(pattern);
     if (value != null && regex.hasMatch(value)) {
       var parts = value.split(' ');
-      
+
       if (parts.length > 2) {
         return err;
       }
-      
+
       for (var item in parts) {
         if (item.length < 2) {
           return err;
@@ -24,10 +24,10 @@ class Validators {
     } else {
       return err;
     }
-    
+
     return null;
   }
-  
+
   String lastNames(String value) {
     if (firstNames(value) != null) {
       return 'Ingrese uno o dos apellidos válidos';
@@ -35,7 +35,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String required(String value) {
     if (value == null || value.length == 0) {
       return 'Campo requirido';
@@ -43,17 +43,17 @@ class Validators {
       return null;
     }
   }
-  
+
   String greaterZero(String value) {
-    var numb = Utils.convert.number(value);
-    
+    var numb = Utils.convert.fromStringToDouble(value);
+
     if (numb == null || numb <= 0) {
       return 'Valor numérico requirido';
     } else {
       return null;
     }
   }
-  
+
   String barcode(String value) {
     if (value != null && value.isNotEmpty) {
       if (value.length > 1) {
@@ -64,11 +64,11 @@ class Validators {
             total += (mult * int.parse(value[i]));
             mult = mult == 3 ? 1 : 3;
           }
-          
+
           var totalStr = total.toString();
           var lastDigit = int.parse(totalStr[totalStr.length - 1]);
           var checkDigit = lastDigit > 0 ? 10 - lastDigit : 0;
-          
+
           if (value.endsWith(checkDigit.toString())) {
             return null;
           }
@@ -79,7 +79,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String phone(String value) {
     Pattern pattern = r'^[0-9]*$';
     RegExp regex = new RegExp(pattern);
@@ -88,19 +88,15 @@ class Validators {
       var number = 0;
       try {
         number = int.parse(phone);
-        if (number
-            .toString()
-            .length == 10 || number
-            .toString()
-            .length == 11) {
+        if (number.toString().length == 10 || number.toString().length == 11) {
           return null;
         }
       } catch (err) {}
     }
-    
+
     return 'Ingrese un número telefónico válido (solo números)';
   }
-  
+
   String email(String value) {
     if (value == null || value.isEmpty) {
       return 'Correo requerido';
@@ -114,7 +110,7 @@ class Validators {
       }
     }
   }
-  
+
   String password(String value) {
     if (value == null || value.isEmpty) {
       return 'Contraseña requerida';
@@ -128,7 +124,7 @@ class Validators {
     }
     return null;
   }
-  
+
   String cedula(String value) {
     var msg = 'Ingrese una cédula válida (solo números)';
     Pattern pattern = r'^[0-9]*$';
@@ -167,7 +163,7 @@ class Validators {
     }
     return msg;
   }
-  
+
   String passport(String value) {
     Pattern pattern = r'/[a-zA-Z]{2}[0-9]{7}/';
     RegExp regex = new RegExp(pattern);
@@ -177,7 +173,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String identity(String value) {
     if (this.cedula(value) == null || this.passport(value) == null) {
       return null;

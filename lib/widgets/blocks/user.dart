@@ -37,7 +37,7 @@ class UserBlock extends StatelessWidget {
         top: true,
         bottom: false,
         child: Container(
-          padding: Utils.convert.toFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
+          padding: Utils.convert.fromInsetToFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
           child: Row(
             children: <Widget>[
               Container(

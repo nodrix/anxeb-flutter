@@ -9,11 +9,12 @@ class ActionsHeader extends ViewHeader {
 
   ActionsHeader({
     Scope scope,
+    String Function() title,
     this.actions,
     VoidCallback dismiss,
     VoidCallback back,
     ActionIcon leading,
-  }) : super(scope: scope, dismiss: dismiss, back: back) {
+  }) : super(scope: scope, dismiss: dismiss, back: back, title: title) {
     super.leading = leading?.build();
   }
 

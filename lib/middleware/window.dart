@@ -39,7 +39,7 @@ class Window {
   }
 
   EdgeInsets padding({double left = 0.0, double top = 0.0, double right = 0.0, double bottom = 0.0}) {
-    return Utils.convert.toFraction(EdgeInsets.only(left: left, top: top, right: right, bottom: bottom), size);
+    return Utils.convert.fromInsetToFraction(EdgeInsets.only(left: left, top: top, right: right, bottom: bottom), size);
   }
 
   Size get size => context != null ? MediaQuery.of(context).size : Size.zero;
