@@ -1,6 +1,6 @@
+import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -37,6 +37,8 @@ class OptionsInputField<V> extends FieldWidget<V> {
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
+    V Function(dynamic value) parser,
+    bool focusNext,
     @required this.options,
     this.type,
     this.autofocus,
@@ -66,6 +68,8 @@ class OptionsInputField<V> extends FieldWidget<V> {
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
+          parser: parser,
+          focusNext: focusNext,
         );
 
   @override
@@ -226,7 +230,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
     var result = await widget.scope.dialogs
         .options<V>(
           widget.label,
-          options: widget.options.map(($option) => KeyValue<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
+          options: widget.options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
           selectedValue: value,
           icon: widget.icon,
         )

@@ -55,28 +55,30 @@ class EmptyBlock extends StatelessWidget {
                         )
                       : Container(),
                   actionText != null
-                      ? Material(
-                          key: GlobalKey(),
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          child: InkWell(
-                            onTap: actionCallback,
+                      ? Container(
+                          margin: EdgeInsets.only(top: 5),
+                          child: Material(
+                            key: GlobalKey(),
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.all(Radius.circular(30)),
-                            child: Container(
-                              margin: EdgeInsets.only(top:5),
-                              padding: EdgeInsets.symmetric(horizontal:14, vertical: 8),
-                              child: ParagraphBlock(
-                                content: <TextSpan>[
-                                  TextSpan(
-                                    text: actionText.toUpperCase(),
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      letterSpacing: 0.15,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xff0055f0),
+                            child: InkWell(
+                              onTap: actionCallback,
+                              borderRadius: BorderRadius.all(Radius.circular(30)),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                child: ParagraphBlock(
+                                  content: <TextSpan>[
+                                    TextSpan(
+                                      text: actionText.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        letterSpacing: 0.15,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff0055f0),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),

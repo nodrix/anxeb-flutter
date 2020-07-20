@@ -1,6 +1,5 @@
 import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/blocks/referencer.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
@@ -85,10 +84,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 children: TextButton.createList(
                   context,
                   [
-                    KeyValue('Inicio', () {
+                    DialogButton('Inicio', null, onTap: () {
                       referencer.start();
                     }),
-                    KeyValue('Cancelar', () {
+                    DialogButton('Cancelar', null, onTap: () {
                       Navigator.of(context).pop();
                     })
                   ],

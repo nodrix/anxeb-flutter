@@ -1,39 +1,29 @@
 import 'package:anxeb_flutter/parts/alerts/snack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-
 import 'scope.dart';
 
 class ScopeAlert {
   final Scope scope;
-
   bool _disposed = false;
 
   ScopeAlert(this.scope);
 
-  void dispose({bool quick}) {
-    if (_disposed == false) {
-      _disposed = true;
-      try {
-        if (quick == true) {
-          scope.scaffold.currentState.removeCurrentSnackBar(reason: SnackBarClosedReason.remove);
-        } else {
-          scope.scaffold.currentState.hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
-        }
-      } catch (err) {}
-    }
+  Future dispose({bool quick}) async {
+    _disposed = true;
   }
 
   @protected
-  Widget build() {
-    return Container();
+  Future build() {
+    return Future.value(null);
   }
 
   Future show() async {
     if (_disposed == false) {
+      scope.unfocus();
       scope.rasterize();
       await scope.idle();
-      var result = await scope.scaffold.currentState.showSnackBar(build()).closed;
+      var result = await build();
       _disposed = true;
       return result;
     } else {
@@ -50,9 +40,9 @@ class ScopeAlerts {
     _scope = scope;
   }
 
-  void dispose({bool quick}) {
+  Future dispose({bool quick}) async {
     if (_current != null) {
-      _current.dispose(quick: quick);
+      await _current.dispose(quick: quick);
     }
   }
 
@@ -71,7 +61,7 @@ class ScopeAlerts {
         title: title,
         message: message,
         icon: Icons.info,
-        color: _scope.application.settings.colors.info,
+        fillColor: _scope.application.settings.colors.info,
         delay: delay,
       ));
 
@@ -80,7 +70,16 @@ class ScopeAlerts {
         title: title,
         message: message,
         icon: Icons.check_circle,
-        color: _scope.application.settings.colors.success,
+        fillColor: _scope.application.settings.colors.success,
+        delay: delay,
+      ));
+
+  SnackAlert event(String title, {String message, int delay}) => _initialize(SnackAlert(
+        _scope,
+        title: title,
+        message: message,
+        icon: Icons.check_circle,
+        fillColor: _scope.application.settings.colors.primary,
         delay: delay,
       ));
 
@@ -89,7 +88,7 @@ class ScopeAlerts {
         title: title,
         message: message,
         icon: FlutterIcons.asterisk_mco,
-        color: _scope.application.settings.colors.asterisk,
+        fillColor: _scope.application.settings.colors.asterisk,
         delay: delay,
       ));
 
@@ -98,7 +97,7 @@ class ScopeAlerts {
         title: title ?? 'Error',
         message: message,
         icon: Icons.warning,
-        color: _scope.application.settings.colors.danger,
+        fillColor: _scope.application.settings.colors.danger,
         delay: delay,
       ));
 
@@ -137,7 +136,7 @@ class ScopeAlerts {
       title: title ?? 'Error',
       message: message,
       icon: Icons.warning,
-      color: _scope.application.settings.colors.danger,
+      fillColor: _scope.application.settings.colors.danger,
       delay: delay,
     ));
   }

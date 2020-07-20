@@ -1,10 +1,10 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
+import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:barcode_scan/barcode_scan.dart';
 
 enum BarcodeInputFieldType { numeric, alphanumeric }
 
@@ -38,6 +38,8 @@ class BarcodeInputField extends FieldWidget<String> {
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
+    String Function(dynamic value) parser,
+    bool focusNext,
     this.controller,
     this.type,
     this.autofocus,
@@ -67,6 +69,8 @@ class BarcodeInputField extends FieldWidget<String> {
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
+          parser: parser,
+          focusNext: focusNext,
         );
 
   @override
@@ -145,25 +149,12 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
 
   void _scan() async {
     await Future.delayed(Duration(milliseconds: 200));
-    try {
-      var $value = await BarcodeScanner.scan(
-          options: ScanOptions(
-        strings: {
-          'cancel': 'X',
-          'flash_on': 'Apagar Luz',
-          'flash_off': 'Encender Luz',
-        },
-        autoEnableFlash: widget.autoflash != null ? widget.autoflash : true,
-        android: AndroidOptions(
-          useAutoFocus: true,
-        ),
-      ));
-      if ($value != null) {
-        super.value = $value.rawContent;
-        _controller.selection = TextSelection(baseOffset: _controller.text.length, extentOffset: _controller.text.length);
-        validate();
-      }
-    } catch (e) {}
+    var $value = await Utils.device.beginBarcodeScan(autoflash: widget.autoflash);
+    if ($value != null) {
+      super.value = $value;
+      _controller.selection = TextSelection(baseOffset: _controller.text.length, extentOffset: _controller.text.length);
+      validate();
+    }
   }
 
   @override

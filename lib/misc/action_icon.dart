@@ -1,7 +1,8 @@
 import 'dart:io';
+import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:flutter/material.dart';
 
-class ActionIcon {
+class ActionIcon with ActionItem {
   final IconData Function() icon;
   final Color Function() color;
   final bool Function() isDisabled;

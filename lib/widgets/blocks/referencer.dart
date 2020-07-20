@@ -10,7 +10,13 @@ class ReferencerBlock<V> extends StatefulWidget {
   final ReferenceHeaderWidget<V> headerWidget;
   final EdgeInsets padding;
 
-  ReferencerBlock({this.scope, this.referencer, this.itemWidget, this.headerWidget, this.padding}) : assert(referencer != null);
+  ReferencerBlock({
+    @required this.scope,
+    this.referencer,
+    this.itemWidget,
+    this.headerWidget,
+    this.padding,
+  }) : assert(referencer != null);
 
   @override
   _ReferencerBlockState createState() => _ReferencerBlockState<V>();

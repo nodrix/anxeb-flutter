@@ -1,6 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/misc/common.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
@@ -61,7 +59,7 @@ class ScopeDialogs {
     );
   }
 
-  OptionsDialog options<V>(String title, {IconData icon, List<KeyValue<V>> options, V selectedValue}) {
+  OptionsDialog options<V>(String title, {IconData icon, List<DialogButton<V>> options, V selectedValue}) {
     return OptionsDialog<V>(
       _scope,
       title: title,
@@ -71,7 +69,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog information(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
+  MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
@@ -84,7 +82,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog success(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
+  MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
@@ -97,7 +95,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog exception(String title, {String message, List<KeyValue<ResultCallback>> buttons, IconData icon}) {
+  MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: title,
@@ -110,7 +108,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog error(error, {List<KeyValue<ResultCallback>> buttons, IconData icon}) {
+  MessageDialog error(error, {List<DialogButton> buttons, IconData icon}) {
     return MessageDialog(
       _scope,
       title: error is FormatException ? error.message : error.toString(),
@@ -135,17 +133,17 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              KeyValue(noLabel ?? 'No', () => false),
-              KeyValue(yesLabel ?? 'Sí', () => true),
+              DialogButton(noLabel ?? 'No', false),
+              DialogButton(yesLabel ?? 'Sí', true),
             ]
           : [
-              KeyValue(yesLabel ?? 'Sí', () => true),
-              KeyValue(noLabel ?? 'No', () => false),
+              DialogButton(yesLabel ?? 'Sí', true),
+              DialogButton(noLabel ?? 'No', false),
             ],
     );
   }
 
-  custom({String message, String title, String yesLabel, String noLabel, Widget body, IconData icon, Color color, bool swap}) {
+  custom({String message, String title, Widget body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
     return MessageDialog(
       _scope,
       title: title ?? 'Confirmar Acción',
@@ -156,19 +154,32 @@ class ScopeDialogs {
       titleColor: color ?? _scope.application.settings.colors.info,
       body: body,
       iconColor: color ?? _scope.application.settings.colors.info,
-      buttons: swap == true
-          ? [
-              KeyValue(noLabel ?? 'Cancelar', () => false),
-              KeyValue(yesLabel ?? 'OK', () => true),
-            ]
-          : [
-              KeyValue(yesLabel ?? 'OK', () => true),
-              KeyValue(noLabel ?? 'Cancelar', () => false),
-            ],
+      buttons: buttons,
+      dismissible: dismissible,
     );
   }
 
   DateTimeDialog dateTime([DateTime value]) {
     return DateTimeDialog(_scope, value: value);
   }
+}
+
+class DialogButton<T> {
+  final String caption;
+  final T value;
+  final Color fillColor;
+  final Color textColor;
+  final IconData icon;
+  final T Function() onTap;
+  final bool swapIcon;
+
+  DialogButton(
+    this.caption,
+    this.value, {
+    this.onTap,
+    this.fillColor,
+    this.textColor,
+    this.icon,
+    this.swapIcon,
+  });
 }

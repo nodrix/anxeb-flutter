@@ -33,7 +33,8 @@ class SecuredImage extends ImageProvider<SecuredImage> {
   }
 
   //TODO: Validate PEM Certificate
-  static final HttpClient _httpClient = new HttpClient()..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
+  static final HttpClient _httpClient = new HttpClient()
+    ..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
 
   Future<ui.Codec> _loadAsync(SecuredImage key, DecoderCallback decode) async {
     assert(key == this);

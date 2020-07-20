@@ -7,7 +7,7 @@ class ViewFooter {
   final Widget child;
 
   ViewFooter({
-    this.scope,
+    @required this.scope,
     this.child,
   });
 

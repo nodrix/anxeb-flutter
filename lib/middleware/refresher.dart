@@ -7,16 +7,23 @@ class ViewRefresher {
   final Future Function() action;
   final Future Function() onCompleted;
   final Future Function(dynamic err) onError;
+  final bool Function() isDisabled;
   RefreshController _refreshController;
 
-  ViewRefresher({this.scope, this.action, this.onCompleted, this.onError}) {
+  ViewRefresher({
+    @required this.scope,
+    this.action,
+    this.onCompleted,
+    this.onError,
+    this.isDisabled,
+  }) {
     _refreshController = RefreshController(initialRefresh: false);
   }
 
   Widget wrap(Widget body) {
     return SmartRefresher(
       controller: _refreshController,
-      enablePullDown: true,
+      enablePullDown: isDisabled?.call() != true,
       enablePullUp: false,
       footer: null,
       header: WaterDropHeader(
@@ -41,12 +48,18 @@ class ViewRefresher {
 
   void scrollToEnd() {
     // ignore: deprecated_member_use
-    _refreshController.scrollController.animateTo(_refreshController.scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+    if (_refreshController.scrollController != null) {
+      // ignore: deprecated_member_use
+      _refreshController.scrollController.animateTo(_refreshController.scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+    }
   }
 
   void scrollToStart() {
     // ignore: deprecated_member_use
-    _refreshController.scrollController.animateTo(0, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+    if (_refreshController.scrollController != null) {
+      // ignore: deprecated_member_use
+      _refreshController.scrollController.animateTo(0, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+    }
   }
 
   bool get rebuild => false;

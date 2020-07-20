@@ -13,7 +13,7 @@ class LookupInputField<V> extends FieldWidget<V> {
   final Future<V> Function() onLookup;
   final String Function(V value) displayText;
   final dynamic Function(V value) dataValue;
-  
+
   LookupInputField({
     @required Scope scope,
     Key key,
@@ -32,6 +32,8 @@ class LookupInputField<V> extends FieldWidget<V> {
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
+    V Function(dynamic value) parser,
+    bool focusNext,
     this.autofocus,
     this.fixedLabel,
     this.hint,
@@ -40,28 +42,29 @@ class LookupInputField<V> extends FieldWidget<V> {
     this.onLookup,
     this.displayText,
     this.dataValue,
-  })
-      : assert(name != null),
+  })  : assert(name != null),
         super(
-        scope: scope,
-        key: key,
-        name: name,
-        group: group,
-        label: label,
-        icon: icon,
-        margin: margin,
-        padding: padding,
-        readonly: readonly,
-        visible: visible,
-        onSubmitted: onSubmitted,
-        onValidSubmit: onValidSubmit,
-        onChanged: onChanged,
-        onTab: onTab,
-        onBlur: onBlur,
-        onFocus: onFocus,
-        validator: validator,
-      );
-  
+          scope: scope,
+          key: key,
+          name: name,
+          group: group,
+          label: label,
+          icon: icon,
+          margin: margin,
+          padding: padding,
+          readonly: readonly,
+          visible: visible,
+          onSubmitted: onSubmitted,
+          onValidSubmit: onValidSubmit,
+          onChanged: onChanged,
+          onTab: onTab,
+          onBlur: onBlur,
+          onFocus: onFocus,
+          validator: validator,
+          parser: parser,
+          focusNext: focusNext,
+        );
+
   @override
   _LookupInputFieldState createState() => _LookupInputFieldState<V>();
 }
@@ -69,43 +72,43 @@ class LookupInputField<V> extends FieldWidget<V> {
 class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
   @override
   void init() {}
-  
+
   @override
   void focus({String warning}) {
     super.focus(warning: warning);
   }
-  
+
   @override
   void setup() {}
-  
+
   @override
   void prebuild() {}
-  
+
   @override
   void onBlur() {
     super.onBlur();
   }
-  
+
   @override
   void onFocus() {
     super.onFocus();
   }
-  
+
   @override
   dynamic data() {
     return widget.dataValue != null ? widget.dataValue(value) : value;
   }
-  
+
   @override
   void reset() {
     super.reset();
   }
-  
+
   @protected
   String getValueString(V value) {
     return value?.toString();
   }
-  
+
   @override
   Widget field() {
     var result = GestureDetector(
@@ -130,11 +133,11 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
               labelText: value != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
               labelStyle: widget.fixedLabel == true
                   ? TextStyle(
-                fontWeight: FontWeight.w500,
-                color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-                letterSpacing: 0.8,
-                fontSize: 15,
-              )
+                      fontWeight: FontWeight.w500,
+                      color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
+                      letterSpacing: 0.8,
+                      fontSize: 15,
+                    )
                   : null,
               fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
@@ -147,7 +150,7 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
                   if (widget.readonly == true) {
                     return;
                   }
-                  
+
                   if (value != null) {
                     clear();
                   } else {
@@ -176,7 +179,7 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
     );
     return result;
   }
-  
+
   void _beginLookup() async {
     if (widget.onLookup != null) {
       var $value = await widget.onLookup();
@@ -185,18 +188,18 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
       }
     }
   }
-  
+
   Icon _getIcon() {
     if (widget.readonly == true) {
       return Icon(Icons.lock_outline);
     }
-    
+
     if (value != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
       return Icon(Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
-  
+
   String get _displayText => widget.displayText != null ? widget.displayText(value) : value?.toString();
 }

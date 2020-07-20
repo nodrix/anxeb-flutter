@@ -41,6 +41,8 @@ class TextInputField<V> extends FieldWidget<V> {
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
+    V Function(dynamic value) parser,
+    bool focusNext,
     this.controller,
     this.type,
     this.autofocus,
@@ -73,6 +75,8 @@ class TextInputField<V> extends FieldWidget<V> {
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
+          parser: parser,
+          focusNext: focusNext,
         );
 
   @override
@@ -169,6 +173,10 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   @override
   void onFocus() {
     _editing = false;
+
+    if (warning != null) {
+      select();
+    }
     super.onFocus();
   }
 
@@ -202,7 +210,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
     if (widget.displayText != null && !focused) {
       _controller2.text = widget.displayText(value);
     }
-    
+
     var result = TextField(
       autofocus: widget.autofocus ?? false,
       obscureText: _obscureText && widget.type == TextInputFieldType.password,

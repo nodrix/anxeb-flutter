@@ -9,7 +9,11 @@ class ViewPanel {
   PanelController _controller;
   bool rebuild = false;
 
-  ViewPanel({this.scope, this.height, this.isDisabled}) {
+  ViewPanel({
+    @required this.scope,
+    this.height,
+    this.isDisabled,
+  }) {
     _controller = PanelController();
   }
 

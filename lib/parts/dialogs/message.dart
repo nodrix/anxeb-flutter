@@ -1,7 +1,5 @@
 import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/common.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
@@ -14,13 +12,25 @@ class MessageDialog extends ScopeDialog {
   final Color messageColor;
   final Color titleColor;
   final Color iconColor;
-  final List<KeyValue<ResultCallback>> buttons;
+  final List<DialogButton> buttons;
   final TextAlign textAlign;
 
-  MessageDialog(Scope scope, {this.title, this.message, this.body, this.icon, this.iconSize, this.iconColor, this.messageColor, this.titleColor, this.textAlign, this.buttons})
-      : assert(icon != null),
+  MessageDialog(
+    Scope scope, {
+    this.title,
+    this.message,
+    this.body,
+    this.icon,
+    this.iconSize,
+    this.iconColor,
+    this.messageColor,
+    this.titleColor,
+    this.textAlign,
+    this.buttons,
+    bool dismissible,
+  })  : assert(icon != null),
         super(scope) {
-    super.dismissible = this.buttons == null;
+    super.dismissible = dismissible != null ? dismissible : (this.buttons == null);
   }
 
   @override

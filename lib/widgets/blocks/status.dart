@@ -11,6 +11,7 @@ class StatusBlock extends StatefulWidget {
     this.caption,
     this.subcaption,
     this.action,
+    this.captionAction,
     this.cancel,
     this.busy,
     this.enabled,
@@ -20,6 +21,7 @@ class StatusBlock extends StatefulWidget {
     this.titleColor,
     this.captionColor,
     this.subcaptionColor,
+    this.controller,
   }) : assert(title != null);
 
   final EdgeInsets margin;
@@ -29,6 +31,7 @@ class StatusBlock extends StatefulWidget {
   final String subcaption;
   final Future Function() action;
   final Future Function() cancel;
+  final Function() captionAction;
   final bool busy;
   final bool enabled;
   final IconData icon;
@@ -37,6 +40,7 @@ class StatusBlock extends StatefulWidget {
   final Color titleColor;
   final Color captionColor;
   final Color subcaptionColor;
+  final StatusBlockController controller;
 
   @override
   _StatusBlockState createState() => _StatusBlockState();
@@ -102,7 +106,7 @@ class _StatusBlockState extends State<StatusBlock> {
                   width: 42,
                   height: 42,
                   child: Container(
-                      child: _busy == true
+                      child: widget.busy == true || _busy == true
                           ? Container(
                               padding: EdgeInsets.all(5),
                               child: CircularProgressIndicator(
@@ -124,7 +128,7 @@ class _StatusBlockState extends State<StatusBlock> {
             ),
           ),
           Container(
-            padding: EdgeInsets.only(left: 10),
+            padding: EdgeInsets.only(left: 10, right: 10),
             child: new Text(
               widget.title,
               style: TextStyle(
@@ -139,31 +143,34 @@ class _StatusBlockState extends State<StatusBlock> {
               ? Expanded(
                   child: Container(
                     alignment: Alignment.topRight,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: <Widget>[
-                        Text(
-                          widget.caption,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.4,
-                            color: widget.captionColor ?? Colors.green,
+                    child: Material(
+                      color: Colors.transparent,
+                      key: GlobalKey(),
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                      child: InkWell(
+                        borderRadius: new BorderRadius.all(
+                          Radius.circular(6.0),
+                        ),
+                        onTap: () {
+                          widget.captionAction?.call();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              _StatusCaption(
+                                controller: widget.controller,
+                                caption: widget.caption,
+                                subcaption: widget.subcaption,
+                                captionColor: widget.captionColor,
+                                subcaptionColor: widget.subcaptionColor,
+                              )
+                            ],
                           ),
                         ),
-                        widget.subcaption != null
-                            ? Text(
-                                widget.subcaption,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                  letterSpacing: 0.3,
-                                  color: widget.subcaptionColor ?? Colors.green,
-                                ),
-                              )
-                            : Container(),
-                      ],
+                      ),
                     ),
                   ),
                 )
@@ -172,4 +179,81 @@ class _StatusBlockState extends State<StatusBlock> {
       ),
     );
   }
+}
+
+class _StatusCaption extends StatefulWidget {
+  final StatusBlockController controller;
+  final String caption;
+  final String subcaption;
+  final Color captionColor;
+  final Color subcaptionColor;
+
+  _StatusCaption({this.caption, this.subcaption, this.captionColor, this.subcaptionColor, this.controller});
+
+  @override
+  _StatusCaptionState createState() => _StatusCaptionState();
+}
+
+class _StatusCaptionState extends State<_StatusCaption> {
+  @override
+  void initState() {
+    widget.controller?._onUpdate(() {
+      setState(() {});
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        Text(
+          widget?.controller?.caption ?? widget.caption,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0.4,
+            color: widget.captionColor ?? Colors.green,
+          ),
+        ),
+        (widget?.controller?.subcaption ?? widget.subcaption) != null
+            ? Text(
+                widget?.controller?.subcaption ?? widget.subcaption,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.3,
+                  color: widget.subcaptionColor ?? Colors.green,
+                ),
+              )
+            : Container(),
+      ],
+    );
+  }
+}
+
+class StatusBlockController {
+  Function() _callback;
+  String _caption;
+  String _subcaption;
+
+  void _onUpdate(Function() callback) {
+    _callback = callback;
+  }
+
+  set caption(value) {
+    _caption = value;
+    _callback?.call();
+  }
+
+  set subcaption(value) {
+    _subcaption = value;
+    _callback?.call();
+  }
+
+  String get subcaption => _subcaption;
+
+  String get caption => _caption;
 }

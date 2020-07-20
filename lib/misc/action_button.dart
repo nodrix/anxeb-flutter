@@ -1,7 +1,7 @@
-import 'package:anxeb_flutter/widgets/buttons/text.dart';
+import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:flutter/material.dart';
 
-class ActionButton {
+class ActionButton with ActionItem {
   final IconData Function() icon;
   final String Function() caption;
   final Color Function() color;

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class ActionsHeader extends ViewHeader {
   @protected
-  List<ActionIcon> actions;
+  List<ActionItem> actions;
 
   ActionsHeader({
     Scope scope,
@@ -23,4 +23,12 @@ class ActionsHeader extends ViewHeader {
     var $actions = actions != null ? actions.where(($action) => $action.isVisible?.call() != false).map(($action) => $action.build()).toList() : null;
     return $actions;
   }
+}
+
+abstract class ActionItem {
+  bool Function() isDisabled;
+  bool Function() isVisible;
+  VoidCallback onPressed;
+
+  Widget build();
 }

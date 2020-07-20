@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'api.dart';
 import 'application.dart';
@@ -62,51 +63,104 @@ class Scope {
     tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
-  Future busy({int timeout}) {
+  Future busy({int timeout, String text}) {
     var busyPromise = Completer();
-    if (_busying == true || _busyContext != null) {
-      busyPromise.complete();
-    } else {
-      _busying = true;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: ($context) {
-          var length = window.horizontal(0.16);
-          Future.delayed(Duration(milliseconds: 100), () {
-            if (_busying == true || _busyContext != null) {
-              _busying = false;
-              _busyContext = $context;
-              if (!busyPromise.isCompleted) {
-                busyPromise.complete();
-              }
-            }
-          });
-          return Center(
-            child: SizedBox(
-              child: CircularProgressIndicator(
-                strokeWidth: 5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
-              ),
-              height: length,
-              width: length,
-            ),
-          );
-        },
-      ).then((idlePromise) {
-        Future.delayed(Duration(milliseconds: 100), () {
-          _busyContext = null;
-          _idling = false;
-          (idlePromise as Completer).complete();
-          rasterize();
-        });
-      });
+    var textedDialog = text != null;
+    alerts.dispose().then((value) {
+      if (_busying == true || _busyContext != null) {
+        busyPromise.complete();
+      } else {
+        _busying = true;
 
-      if (timeout == null || timeout > 0) {
-        _busyCountDown = timeout ?? 8;
-        _checkBusyCountDown();
+        showGeneralDialog(
+          context: context,
+          pageBuilder: (BuildContext buildContext, Animation<double> animation, Animation<double> secondaryAnimation) {
+            return SafeArea(
+              child: Builder(builder: (BuildContext $context) {
+                var length = window.horizontal(0.16);
+                Future.delayed(Duration(milliseconds: 100), () {
+                  if (_busying == true || _busyContext != null) {
+                    _busying = false;
+                    _busyContext = $context;
+                    if (!busyPromise.isCompleted) {
+                      busyPromise.complete();
+                    }
+                  }
+                });
+                if (textedDialog) {
+                  return Center(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+                          margin: EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Color(0xd9666666),
+                            //boxShadow: [BoxShadow(offset: Offset(0, 4), blurRadius: 4, spreadRadius: 2, color: Color(0xc9888888))],
+                            borderRadius: new BorderRadius.all(
+                              Radius.circular(12.0),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 12.0),
+                                child: SizedBox(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
+                                  ),
+                                  height: 30,
+                                  width: 30,
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.all(5),
+                                child: Text(text ?? 'Cargando', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, letterSpacing: -0.1, color: Colors.white, decoration: TextDecoration.none)),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return Center(
+                  child: SizedBox(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
+                    ),
+                    height: length,
+                    width: length,
+                  ),
+                );
+              }),
+            );
+          },
+          barrierDismissible: false,
+          barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+          barrierColor: textedDialog ? Color(0x00999999) : Colors.black54,
+          transitionDuration: const Duration(milliseconds: 150),
+        ).then((idlePromise) {
+          Future.delayed(Duration(milliseconds: 100), () {
+            _busyContext = null;
+            _idling = false;
+            (idlePromise as Completer).complete();
+            rasterize();
+          });
+        });
+
+        if (timeout == null || timeout > 0) {
+          _busyCountDown = timeout ?? 8;
+          _checkBusyCountDown();
+        }
       }
-    }
+    });
     return busyPromise.future;
   }
 

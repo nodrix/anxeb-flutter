@@ -9,9 +9,10 @@ class ViewAction {
   final Color Function() color;
   final bool Function() isDisabled;
   final bool Function() isVisible;
+  bool _hidden;
 
   ViewAction({
-    this.scope,
+    @required this.scope,
     this.icon,
     this.onPressed,
     this.color,
@@ -19,8 +20,18 @@ class ViewAction {
     this.isVisible,
   });
 
+  void show() {
+    _hidden = false;
+    scope.rasterize();
+  }
+
+  void hide() {
+    _hidden = true;
+    scope.rasterize();
+  }
+
   Widget build() {
-    if (isVisible?.call() == false) {
+    if (_hidden == true || isVisible?.call() == false) {
       return null;
     }
     return FloatAction(

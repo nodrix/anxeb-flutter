@@ -1,6 +1,5 @@
+import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
-import 'package:anxeb_flutter/misc/common.dart';
-import 'package:anxeb_flutter/misc/key_value.dart';
 import 'package:flutter/material.dart';
 
 enum ButtonType { primary, secundary, link }
@@ -19,6 +18,7 @@ class TextButton extends StatefulWidget {
   final String caption;
   final String subtitle;
   final IconData icon;
+  final bool swapIcon;
   final List<BoxShadow> shadow;
   final Color color;
   final Color iconColor;
@@ -36,6 +36,7 @@ class TextButton extends StatefulWidget {
     this.caption,
     this.subtitle,
     this.icon,
+    this.swapIcon,
     this.shadow,
     this.color,
     this.iconColor,
@@ -51,7 +52,7 @@ class TextButton extends StatefulWidget {
   @override
   _TextButtonState createState() => _TextButtonState();
 
-  static List<Widget> createOptions<V>(BuildContext context, List<KeyValue<V>> options, {V selectedValue, Settings settings}) {
+  static List<Widget> createOptions<V>(BuildContext context, List<DialogButton<V>> options, {V selectedValue, Settings settings}) {
     var $settings = settings ?? Settings();
     return options.map(($option) {
       return Container(
@@ -59,12 +60,21 @@ class TextButton extends StatefulWidget {
           child: Row(mainAxisSize: MainAxisSize.max, children: <Widget>[
             Expanded(
               child: TextButton(
-                caption: $option.key,
-                textColor: selectedValue == $option.value ? $settings.colors.active : null,
-                color: $option.value == '*' ? $settings.colors.asterisk : ($option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.secudary : $settings.colors.primary)),
+                caption: $option.caption,
+                textColor: $option.textColor ?? (selectedValue == $option.value ? $settings.colors.active : null),
+                color: $option.fillColor ?? ($option.value == '*' ? $settings.colors.asterisk : ($option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.secudary : $settings.colors.primary))),
+                icon: $option.icon,
+                swapIcon: $option.swapIcon,
                 margin: EdgeInsets.symmetric(vertical: 5),
                 onPressed: () {
-                  Navigator.of(context).pop($option.value);
+                  if ($option.onTap != null) {
+                    var tabResult = $option.onTap();
+                    if (tabResult != null) {
+                      Navigator.of(context).pop(tabResult);
+                    }
+                  } else {
+                    Navigator.of(context).pop($option.value);
+                  }
                 },
                 type: ButtonType.primary,
                 size: ButtonSize.small,
@@ -74,25 +84,31 @@ class TextButton extends StatefulWidget {
     }).toList();
   }
 
-  static List<Widget> createList(BuildContext context, List<KeyValue<ResultCallback>> buttons, {Settings settings}) {
+  static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings}) {
     var $settings = settings ?? Settings();
     return buttons.map(($button) {
       var button = TextButton(
-        caption: $button.key,
-        color: $settings.colors.primary,
-        textColor: Colors.white,
-        margin: EdgeInsets.only(top: 10),
+        caption: $button.caption,
+        icon: $button.icon,
+        swapIcon: $button.swapIcon,
+        color: $button.fillColor ?? $settings.colors.primary,
+        textColor: $button.textColor ?? Colors.white,
+        margin: EdgeInsets.only(top: 10, left: buttons.first == $button ? 0 : 4, right: buttons.last == $button ? 0 : 4),
         onPressed: () {
-          var btnResult = $button.value();
-          if (btnResult != null) {
-            Navigator.of(context).pop(btnResult);
+          if ($button.onTap != null) {
+            var tabResult = $button.onTap();
+            if (tabResult != null) {
+              Navigator.of(context).pop(tabResult);
+            }
+          } else {
+            Navigator.of(context).pop($button.value);
           }
         },
         type: ButtonType.primary,
         size: ButtonSize.small,
       );
 
-      var isLast = buttons.last.key == $button.key;
+      var isLast = buttons.last.value == $button.value;
 
       return Expanded(
         child: Container(
@@ -153,20 +169,35 @@ class _TextButtonState extends State<TextButton> {
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Icon(
-                              widget.icon,
-                              color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                              size: widget.iconSize != null ? widget.iconSize : 20,
-                            ),
-                          ),
-                          Text(
-                            widget.caption,
-                            style: textStyle,
-                          ),
-                        ],
+                        children: widget.swapIcon == true
+                            ? <Widget>[
+                                Text(
+                                  widget.caption,
+                                  style: textStyle,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 6.0),
+                                  child: Icon(
+                                    widget.icon,
+                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                                    size: widget.iconSize != null ? widget.iconSize : 20,
+                                  ),
+                                ),
+                              ]
+                            : <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: Icon(
+                                    widget.icon,
+                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                                    size: widget.iconSize != null ? widget.iconSize : 20,
+                                  ),
+                                ),
+                                Text(
+                                  widget.caption,
+                                  style: textStyle,
+                                ),
+                              ],
                       )
                     : Text(
                         widget.caption,

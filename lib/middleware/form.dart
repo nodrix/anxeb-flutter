@@ -29,7 +29,7 @@ class FieldsForm {
   }
 
   void set(String fieldName, dynamic value) {
-    fields[fieldName]?.value = value;
+    fields[fieldName].value = value;
   }
 
   dynamic get(String fieldName, {bool raw}) {

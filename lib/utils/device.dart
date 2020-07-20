@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:device_info/device_info.dart';
 
 class Device {
@@ -12,5 +13,28 @@ class Device {
       var iosInfo = await _deviceInfo.iosInfo;
       return iosInfo.utsname.machine;
     }
+  }
+
+  Future<String> beginBarcodeScan({bool autoflash}) async {
+    String value;
+    try {
+      var scanResult = await BarcodeScanner.scan(
+        options: ScanOptions(
+          strings: {
+            'cancel': 'X',
+            'flash_on': 'Apagar Luz',
+            'flash_off': 'Encender Luz',
+          },
+          autoEnableFlash: autoflash != null ? autoflash : true,
+          android: AndroidOptions(
+            useAutoFocus: true,
+          ),
+        ),
+      );
+      value = scanResult.rawContent;
+    } catch (e) {
+      value = null;
+    }
+    return value?.isNotEmpty == true ? value : null;
   }
 }

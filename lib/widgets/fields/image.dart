@@ -24,13 +24,15 @@ class ImageInputField extends FieldWidget<String> {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<dynamic> onSubmitted,
-    ValueChanged<dynamic> onValidSubmit,
+    ValueChanged<String> onSubmitted,
+    ValueChanged<String> onValidSubmit,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<dynamic> onChanged,
+    ValueChanged<String> onChanged,
     FormFieldValidator<String> validator,
+    String Function(String value) parser,
+    bool focusNext,
     this.type,
   })  : assert(name != null),
         super(
@@ -51,6 +53,8 @@ class ImageInputField extends FieldWidget<String> {
           onFocus: onFocus,
           onChanged: onChanged,
           validator: validator,
+          parser: parser,
+          focusNext: focusNext,
         );
 
   @override

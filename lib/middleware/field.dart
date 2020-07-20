@@ -22,9 +22,11 @@ class FieldWidget<V> extends StatefulWidget {
   final GestureTapCallback onBlur;
   final GestureTapCallback onFocus;
   final FormFieldValidator<String> validator;
+  final V Function(dynamic value) parser;
+  final bool focusNext;
 
   FieldWidget({
-    this.scope,
+    @required this.scope,
     this.key,
     this.name,
     this.group,
@@ -41,6 +43,8 @@ class FieldWidget<V> extends StatefulWidget {
     this.onBlur,
     this.onFocus,
     this.validator,
+    this.parser,
+    this.focusNext,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
 
@@ -145,7 +149,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
     this.value = $value;
     if (valid()) {
-      if (!form.focusFrom(index)) {
+      if (widget.focusNext == false || !form.focusFrom(index)) {
         unfocus();
       }
       if (widget.onValidSubmit != null) {
@@ -254,8 +258,12 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   V get value => _value;
 
-  set value(value) {
-    _value = value;
+  set value(dynamic value) {
+    if (value is V) {
+      _value = value;
+    } else {
+      _value = value != null ? widget.parser(value) : null;
+    }
     present();
     rasterize();
   }

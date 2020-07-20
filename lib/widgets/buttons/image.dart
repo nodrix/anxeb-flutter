@@ -38,6 +38,7 @@ class ImageButton extends StatefulWidget {
     this.innerPadding,
     this.innerRadius,
     this.innerBorderColor,
+    this.autohide,
   });
 
   final bool enabled;
@@ -63,6 +64,7 @@ class ImageButton extends StatefulWidget {
   final List<BoxShadow> shadow;
   final String label;
   final Widget body;
+  final bool autohide;
 
   final double outerRadius;
   final double outerThickness;
@@ -90,9 +92,9 @@ class _ImageButtonState extends State<ImageButton> {
       _setupImage(widget.imageUrl);
     } else {
       if (widget.imageAsset != null) {
-        _imageLoaded = true;
         _displayImage = true;
       }
+      _imageLoaded = true;
     }
     super.initState();
   }
@@ -134,10 +136,13 @@ class _ImageButtonState extends State<ImageButton> {
 
   @override
   Widget build(BuildContext context) {
-    if (_netImage != null && _netImage.url != widget.imageUrl) {
+    if (widget.imageUrl != null && (_netImage == null || _netImage.url != widget.imageUrl)) {
       _setupImage(widget.imageUrl);
     }
-
+    
+    if (widget.autohide == true && widget.body == null && _imageLoaded != true) {
+      return Container();
+    }
     var touchWidget = Material(
       key: GlobalKey(),
       color: Colors.transparent,

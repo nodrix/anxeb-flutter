@@ -7,7 +7,7 @@ import 'actions.dart';
 
 class SearchHeader extends ActionsHeader {
   final bool actionRightPositioned;
-  final int submitDelay;
+  final int Function() submitDelay;
   final String hint;
   final Future Function(String text) onSearch;
   final Future Function() onClear;
@@ -63,11 +63,11 @@ class SearchHeader extends ActionsHeader {
     });
 
     _inputController.addListener(() {
-      if (submitDelay != null && submitDelay > 0) {
+      if (submitDelay != null && submitDelay() != null && submitDelay() > 0) {
         searchTick = DateTime.now().toUtc().millisecondsSinceEpoch;
 
         if (writeTimer == null || writeTimer.isActive == false) {
-          writeTimer = Timer.periodic(new Duration(milliseconds: submitDelay ?? 250), (timer) {
+          writeTimer = Timer.periodic(new Duration(milliseconds: submitDelay() ?? 250), (timer) {
             var currentTick = DateTime.now().toUtc().millisecondsSinceEpoch;
             if (currentTick - searchTick > 500) {
               _lookup(_inputController.text);
@@ -195,6 +195,7 @@ class SearchHeader extends ActionsHeader {
         },
       ),
       actions: $actions,
+      bottom: scope?.view?.parts?.tabs?.header?.call(),
       automaticallyImplyLeading: false,
       leading: BackButton(
         onPressed: () {

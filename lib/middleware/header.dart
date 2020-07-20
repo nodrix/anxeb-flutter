@@ -10,7 +10,7 @@ class ViewHeader {
   Widget leading;
 
   ViewHeader({
-    this.scope,
+    @required this.scope,
     this.childs,
     this.dismiss,
     this.back,
@@ -21,13 +21,17 @@ class ViewHeader {
   @protected
   List<Widget> content() => childs;
 
+  @protected
+  Widget body() => null;
+
   PreferredSizeWidget build() {
     return AppBar(
-      title: Text(this.title?.call() ?? scope.view.title ?? scope.application.title),
+      title: body?.call() ?? Text(this.title?.call() ?? scope.view.title ?? scope.application.title),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
       brightness: scope.window.overlay.brightness,
       backgroundColor: scope.application.settings.colors.primary,
+      bottom: scope?.view?.parts?.tabs?.header?.call(),
       actions: content(),
     );
   }

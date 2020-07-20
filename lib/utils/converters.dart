@@ -26,16 +26,18 @@ class Converters {
     return value.trim();
   }
 
-  String fromAnyToNumber(value, {int decimals, bool comma}) {
+  String fromAnyToNumber(value, {int decimals, bool comma, String prefix}) {
     if (value == null) {
       return null;
     }
     String $value = decimals != null ? (value is double ? value : double.parse(value.toString())).toStringAsFixed(decimals) : value.toString();
+    var result;
     if (comma == null || comma == true) {
-      return $value.replaceAllMapped(_commaRegex, (Match m) => '${m[1]},');
+      result = $value.replaceAllMapped(_commaRegex, (Match m) => '${m[1]},');
     } else {
-      return $value;
+      result = $value;
     }
+    return (prefix ?? '') + result;
   }
 
   String fromDateToFullDateString(DateTime date, {bool seconds}) {
@@ -64,14 +66,14 @@ class Converters {
     if (value is String) {
       return fromStringToDouble(value);
     } else {
-      return double.parse((value as num).toDouble().toStringAsFixed(decimals ?? 2));
+      return decimals != null ? double.parse((value as num).toDouble().toStringAsFixed(decimals)) : (value as num).toDouble();
     }
   }
 
   double fromStringToDouble(String value, {int decimals}) {
     if (value != null && value.isNotEmpty) {
       value = value.replaceAll(',', '');
-      return double.parse(double.parse(value).toStringAsFixed(decimals ?? 2));
+      return decimals != null ? double.parse(double.parse(value).toStringAsFixed(decimals)) : double.parse(value);
     } else {
       return null;
     }
@@ -86,7 +88,9 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date
+        .toUtc()
+        .millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {

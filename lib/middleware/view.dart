@@ -13,6 +13,7 @@ import 'header.dart';
 import 'panel.dart';
 import 'refresher.dart';
 import 'scope.dart';
+import 'tabs.dart';
 
 enum ViewTransitionType {
   fromBottom,
@@ -63,9 +64,12 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   ViewHeader _header;
   ViewFooter _footer;
   ViewAction _action;
+  ViewTabs _tabs;
   _ViewParts _parts;
   bool _initialized;
   bool _initializing;
+  bool _postinitialized;
+  dynamic value;
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
@@ -101,6 +105,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _refresher = refresher();
     _panel = panel();
     _action = action();
+    _tabs = tabs();
     _footer = footer();
     setup();
     _scope.window.overlay.apply();
@@ -139,7 +144,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
             return false;
           } else {
             if (_scope.alerts.isAny) {
-              _scope.alerts.dispose();
+              await _scope.alerts.dispose();
               return false;
             } else if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
               scaffold.currentState.openEndDrawer();
@@ -150,7 +155,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
             }
             var result = await beforePop();
             if (result == true) {
-              await closing();
+              await _beginPop(null);
             }
             return result;
           }
@@ -163,18 +168,25 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: _getWrappedContent(),
+              child: _initializeContent(),
             );
           }),
         ),
       ),
     );
 
-    return scaffoldContent;
+    if (_tabs != null) {
+      return _tabs.setup(scaffoldContent);
+    } else {
+      return scaffoldContent;
+    }
   }
 
   @protected
   void prebuild() {}
+
+  @protected
+  void postinit() {}
 
   @protected
   dynamic drawer() => null;
@@ -190,6 +202,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   @protected
   ViewPanel panel() => null;
+
+  @protected
+  ViewTabs tabs() => null;
 
   @protected
   ViewAction action() => null;
@@ -209,7 +224,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   Future<bool> pop(result, {bool force}) async {
     scope.idle();
-    scope.alerts.dispose(quick: true);
+    await scope.alerts.dispose(quick: true);
 
     if (force == true) {
       await _beginPop(result);
@@ -228,7 +243,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   Future<T> push<T>(ViewWidget view, {ViewTransitionType transition, int delay}) async {
     scope.idle();
-    scope.alerts.dispose(quick: true);
+    await scope.alerts.dispose(quick: true);
 
     var settings = RouteSettings(
         arguments: _PushedViewArguments<A>(
@@ -296,6 +311,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   }
 
   void _checkParts() {
+    _tabs = _tabs?.rebuild == true ? tabs() : _tabs;
     _header = _header?.rebuild == true ? header() : _header;
     _refresher = _refresher?.rebuild == true ? refresher() : _refresher;
     _panel = _panel?.rebuild == true ? panel() : _panel;
@@ -309,22 +325,37 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
           panel: _panel,
           action: _action,
           footer: _footer,
+          tabs: _tabs,
         );
   }
 
-  Widget _getWrappedContent() {
+  Widget _initializeContent() {
+    var contentResult;
+    if (_tabs != null) {
+      contentResult = _tabs.build(_initialized);
+    } else {
+      var $content = (_initialized == true ? content() : null) ?? Container();
+      $content = _refresher != null ? _refresher.wrap($content) : $content;
+      $content = _panel != null ? _panel.wrap($content) : $content;
+      contentResult = $content;
+    }
+
     if (_initialized != true && _initializing != true) {
       _initializing = true;
       Future.delayed(Duration(milliseconds: 0), () async {
         await init();
         _initialized = true;
+        _initializing = false;
+        rasterize();
+      });
+    } else if (_initialized == true && _postinitialized != true) {
+      Future.delayed(Duration(milliseconds: 0), () async {
+        postinit();
+        _postinitialized = true;
         rasterize();
       });
     }
-    var $content = (_initialized == true ? content() : null) ?? Container();
-    $content = _refresher != null ? _refresher.wrap($content) : $content;
-    $content = _panel != null ? _panel.wrap($content) : $content;
-    return $content;
+    return contentResult;
   }
 
   Future _beginPop(result) async {
@@ -332,7 +363,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       scaffold.currentState.openEndDrawer();
     }
     await closing();
-    Navigator.of(_scope.context).pop(result);
+    Navigator.of(_scope.context).pop(result ?? value);
   }
 
   bool equals(String name) {
@@ -357,7 +388,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
-  @protected
   _ViewParts get parts => _parts;
 }
 
@@ -367,6 +397,7 @@ class _ViewParts {
   final ViewPanel panel;
   final ViewAction action;
   final ViewFooter footer;
+  final ViewTabs tabs;
 
   _ViewParts({
     this.header,
@@ -374,6 +405,7 @@ class _ViewParts {
     this.panel,
     this.action,
     this.footer,
+    this.tabs,
   });
 }
 
@@ -382,7 +414,7 @@ class _PushedViewArguments<A extends Application> {
   final Scope scope;
 
   _PushedViewArguments({
-    this.application,
-    this.scope,
+    @required this.application,
+    @required this.scope,
   });
 }

@@ -39,9 +39,9 @@ class ListTitleBlock extends StatelessWidget {
   final Widget body;
   final Color fillColor;
   final Decoration decoration;
-  
+
   ListTitleBlock({
-    this.scope,
+    @required this.scope,
     this.padding,
     this.margin,
     this.borderRadius,
@@ -78,7 +78,7 @@ class ListTitleBlock extends StatelessWidget {
     this.fillColor,
     this.decoration,
   });
-  
+
   Widget _getMainIcons() {
     return Column(
       children: <Widget>[
@@ -87,7 +87,7 @@ class ListTitleBlock extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _getBusyIcon(double scale, Color color) {
     return Container(
       child: SizedBox(
@@ -106,7 +106,7 @@ class ListTitleBlock extends StatelessWidget {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -125,6 +125,7 @@ class ListTitleBlock extends StatelessWidget {
             padding: padding,
             child: Row(
               mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 busy == true && icon != null ? _getBusyIcon(iconScale, iconColor) : _getMainIcons(),
                 Expanded(
@@ -133,6 +134,7 @@ class ListTitleBlock extends StatelessWidget {
                     child: Column(
                       children: <Widget>[
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Expanded(
                               child: Text(
@@ -148,53 +150,55 @@ class ListTitleBlock extends StatelessWidget {
                             ),
                             titleTrail != null
                                 ? Text(titleTrail,
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: titleTrailColor ?? scope.application.settings.colors.primary,
-                                ))
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: titleTrailColor ?? scope.application.settings.colors.primary,
+                                    ))
                                 : Container(),
                           ],
                         ),
                         divisor == true
                             ? Container(
-                          margin: EdgeInsets.only(top: 1, bottom: 1),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                width: 0.5,
-                                color: divisorColor ?? scope.application.settings.colors.separator,
-                              ),
-                            ),
-                          ),
-                        )
+                                margin: EdgeInsets.only(top: 1, bottom: 1),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      width: 0.5,
+                                      color: divisorColor ?? scope.application.settings.colors.separator,
+                                    ),
+                                  ),
+                                ),
+                              )
                             : Container(),
                         (subtitle ?? subtitleTrail) != null
                             ? Row(
-                          children: <Widget>[
-                            subtitle != null
-                                ? Expanded(
-                              child: Text(subtitle,
-                                  overflow: subtitleOverflow ?? TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w300,
-                                    color: subtitleColor ?? scope.application.settings.colors.text,
-                                  )),
-                            )
-                                : Container(),
-                            subtitleTrail != null
-                                ? Text(subtitleTrail,
-                                textAlign: TextAlign.right,
-                                style: subtitleTrailStyle ?? TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w300,
-                                  color: subtitleTrailColor ?? scope.application.settings.colors.text,
-                                ))
-                                : Container(),
-                          ],
-                        )
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  subtitle != null
+                                      ? Expanded(
+                                          child: Text(subtitle,
+                                              overflow: subtitleOverflow ?? TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w300,
+                                                color: subtitleColor ?? scope.application.settings.colors.text,
+                                              )),
+                                        )
+                                      : Container(),
+                                  subtitleTrail != null
+                                      ? Text(subtitleTrail,
+                                          textAlign: TextAlign.right,
+                                          style: subtitleTrailStyle ??
+                                              TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w300,
+                                                color: subtitleTrailColor ?? scope.application.settings.colors.text,
+                                              ))
+                                      : Container(),
+                                ],
+                              )
                             : Container(),
                         body ?? Container()
                       ],
