@@ -9,7 +9,7 @@ class Navigator {
   Application _application;
   List<MenuGroup> _groups;
   Drawer Function(List<MenuGroup> groups) build;
-  String role;
+  String Function() role;
   Function() header;
   View _sourceView;
   GlobalKey<ViewState> _currentViewKey;
@@ -20,7 +20,7 @@ class Navigator {
     build = _buildDrawer;
   }
 
-  void begin({View source, String role, Widget Function() header}) {
+  void begin({View source, String Function() role, Widget Function() header}) {
     _sourceView = source;
     this.header = header;
     this.role = role;
@@ -33,7 +33,6 @@ class Navigator {
 
     _sourceView = null;
     this.header = null;
-    this.role = null;
   }
 
   Future<bool> exit([result]) async => _sourceView != null ? await _sourceView.pop(result) : false;
@@ -110,8 +109,9 @@ class Navigator {
   }
 
   Widget _buildItem(MenuItem $item, [MenuItem parent]) {
+    var $role = role?.call();
     var $hidden = $item.visible == false || ($item.isVisible != null && $item.isVisible() == false);
-    var $unauthorized = (_sourceView == null) || (role != null && $item.roles != null && !$item.roles.contains(role));
+    var $unauthorized = (_sourceView == null) || ($role != null && $item.roles != null && !$item.roles.contains($role));
 
     if ($hidden || $unauthorized) {
       return Container();

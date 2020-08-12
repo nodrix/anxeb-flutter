@@ -11,8 +11,9 @@ class TipSheet extends ScopeSheet {
   final Color foreground;
   final IconData icon;
   final Widget body;
+  final bool flat;
 
-  TipSheet(Scope scope, {this.title, this.message, this.fill, this.foreground, this.icon, this.body})
+  TipSheet(Scope scope, {this.title, this.message, this.fill, this.foreground, this.icon, this.body, this.flat})
       : assert(title != null),
         super(scope);
 
@@ -24,17 +25,20 @@ class TipSheet extends ScopeSheet {
         minHeight: 0,
       ),
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: FractionalOffset.topCenter,
-            end: FractionalOffset.bottomCenter,
-            colors: [
-              fill.withOpacity(1),
-              fill.withOpacity(0.8),
-            ],
-            stops: [0.0, 1.0],
-          ),
-        ),
+        decoration: flat != true
+            ? BoxDecoration(
+                gradient: LinearGradient(
+                  begin: FractionalOffset.topCenter,
+                  end: FractionalOffset.bottomCenter,
+                  colors: [
+                    fill.withOpacity(1),
+                    fill.withOpacity(0.8),
+                  ],
+                  stops: [0.0, 1.0],
+                ),
+              )
+            : null,
+        color: flat == true ? fill : null,
         child: SafeArea(
           top: false,
           bottom: true,

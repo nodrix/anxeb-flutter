@@ -6,6 +6,7 @@ class Converters {
   final _commaRegex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
   final _fullDateFormat = DateFormat("dd/MM/yyyy h:mm:ss a");
   final _normalDateFormat = DateFormat("dd/MM/yyyy h:mm a");
+  final _fileDateFormat = DateFormat("dd_MM_yyyy_h_mm_a");
 
   String fromStringToDigits(String value) {
     String result = '';
@@ -51,6 +52,45 @@ class Converters {
     }
   }
 
+  String fromTextToEllipsis(String value, int max) {
+    if (value.length > max) {
+      var $value = value;
+      while ($value.length > max) {
+        var parts = $value.split(' ');
+        if (parts.length == 1) {
+          return value.substring(0, max) + '...';
+        }
+        parts.removeLast();
+        $value = parts.join(' ');
+      }
+      return $value + '...';
+    }
+    return value;
+  }
+
+  String fromAnyToDataSize(int value) {
+    const ONE_KB = 1000;
+    const ONE_MB = 1000000;
+    var sufix = 'B';
+    var caption = fromAnyToNumber(value, decimals: 0, comma: true);
+
+    if (value >= ONE_MB) {
+      sufix = 'MB';
+      caption = fromAnyToNumber((value / ONE_MB), decimals: 2, comma: true);
+    } else if (value >= ONE_KB) {
+      sufix = 'KB';
+      caption = fromAnyToNumber((value / ONE_KB), decimals: 2, comma: true);
+    }
+    return '$caption $sufix';
+  }
+
+  String fromDateToFileDateString(DateTime date) {
+    if (date == null) {
+      return null;
+    }
+    return _fileDateFormat.format(date);
+  }
+
   DateTime fromTickToDate(int timestamp) {
     if (timestamp != null) {
       return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
@@ -88,9 +128,7 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date
-        .toUtc()
-        .millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {

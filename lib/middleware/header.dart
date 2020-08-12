@@ -7,6 +7,10 @@ class ViewHeader {
   final VoidCallback dismiss;
   final VoidCallback back;
   final String Function() title;
+  final double Function() elevation;
+  final double Function() height;
+  final Widget Function() bottom;
+  final bool Function() isVisible;
   Widget leading;
 
   ViewHeader({
@@ -16,6 +20,10 @@ class ViewHeader {
     this.back,
     this.leading,
     this.title,
+    this.elevation,
+    this.height,
+    this.bottom,
+    this.isVisible,
   });
 
   @protected
@@ -27,12 +35,13 @@ class ViewHeader {
   PreferredSizeWidget build() {
     return AppBar(
       title: body?.call() ?? Text(this.title?.call() ?? scope.view.title ?? scope.application.title),
+      elevation: elevation?.call(),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
       brightness: scope.window.overlay.brightness,
       backgroundColor: scope.application.settings.colors.primary,
-      bottom: scope?.view?.parts?.tabs?.header?.call(),
-      actions: content(),
+      bottom: scope?.view?.parts?.tabs?.header?.call(bottomBody: bottom?.call(), height: height) ?? bottom?.call(),
+      actions: isVisible?.call() != false ? content() : [],
     );
   }
 

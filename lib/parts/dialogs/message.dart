@@ -6,7 +6,7 @@ import 'package:flutter/material.dart' hide Dialog;
 class MessageDialog extends ScopeDialog {
   final String title;
   final String message;
-  final Widget body;
+  final Widget Function(BuildContext) body;
   final IconData icon;
   final double iconSize;
   final Color messageColor;
@@ -84,7 +84,7 @@ class MessageDialog extends ScopeDialog {
                   ),
                 )
               : Container(),
-          body ?? Container(),
+          body?.call(context) ?? Container(),
           buttons != null
               ? Container(
                   padding: EdgeInsets.only(top: 10),

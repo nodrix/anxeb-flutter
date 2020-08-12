@@ -15,6 +15,7 @@ class EmptyBlock extends StatelessWidget {
     this.iconSize,
     this.iconPadding,
     this.margin,
+    this.heightFactor,
   }) : assert(text != null);
 
   final String text;
@@ -25,12 +26,13 @@ class EmptyBlock extends StatelessWidget {
   final double iconSize;
   final EdgeInsets iconPadding;
   final EdgeInsets margin;
-
+  final double heightFactor;
+  
   @override
   Widget build(BuildContext context) {
     return visible != false
         ? Center(
-            heightFactor: 2,
+            heightFactor: heightFactor ?? 2,
             child: Container(
               margin: margin ?? EdgeInsets.only(left: 30, right: 30, bottom: 30),
               padding: EdgeInsets.only(left: 18, right: 18, top: 0, bottom: 10),

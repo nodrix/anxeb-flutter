@@ -68,7 +68,7 @@ class TextButton extends StatefulWidget {
                 margin: EdgeInsets.symmetric(vertical: 5),
                 onPressed: () {
                   if ($option.onTap != null) {
-                    var tabResult = $option.onTap();
+                    var tabResult = $option.onTap(context);
                     if (tabResult != null) {
                       Navigator.of(context).pop(tabResult);
                     }
@@ -96,7 +96,7 @@ class TextButton extends StatefulWidget {
         margin: EdgeInsets.only(top: 10, left: buttons.first == $button ? 0 : 4, right: buttons.last == $button ? 0 : 4),
         onPressed: () {
           if ($button.onTap != null) {
-            var tabResult = $button.onTap();
+            var tabResult = $button.onTap(context);
             if (tabResult != null) {
               Navigator.of(context).pop(tabResult);
             }

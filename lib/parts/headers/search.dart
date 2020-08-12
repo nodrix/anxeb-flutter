@@ -13,7 +13,6 @@ class SearchHeader extends ActionsHeader {
   final Future Function() onClear;
   final Function(String text) onCompleted;
   final Future Function() onBegin;
-
   TextEditingController _inputController;
   FocusNode _focusNode;
   String _currentText;
@@ -27,6 +26,9 @@ class SearchHeader extends ActionsHeader {
     VoidCallback dismiss,
     VoidCallback back,
     ActionIcon leading,
+    Widget Function() bottom,
+    double Function() elevation,
+    double Function() height,
     this.actionRightPositioned,
     this.hint,
     this.submitDelay,
@@ -34,7 +36,7 @@ class SearchHeader extends ActionsHeader {
     this.onClear,
     this.onCompleted,
     this.onBegin,
-  }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading, title: title) {
+  }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading, title: title, bottom: bottom, elevation: elevation, height: height) {
     super.actions = actions ?? List<ActionIcon>();
 
     if (actionRightPositioned == true) {
@@ -195,7 +197,7 @@ class SearchHeader extends ActionsHeader {
         },
       ),
       actions: $actions,
-      bottom: scope?.view?.parts?.tabs?.header?.call(),
+      bottom: scope?.view?.parts?.tabs?.header?.call(bottomBody: bottom?.call(), height: height) ?? bottom?.call(),
       automaticallyImplyLeading: false,
       leading: BackButton(
         onPressed: () {

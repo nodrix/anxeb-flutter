@@ -24,6 +24,7 @@ class FieldWidget<V> extends StatefulWidget {
   final FormFieldValidator<String> validator;
   final V Function(dynamic value) parser;
   final bool focusNext;
+  final V initialValue;
 
   FieldWidget({
     @required this.scope,
@@ -45,6 +46,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.validator,
     this.parser,
     this.focusNext,
+    this.initialValue,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
 
@@ -76,6 +78,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   bool _focused = false;
   int index = 0;
   String _warning;
+  bool _initialized = false;
 
   @protected
   FocusNode focusNode;
@@ -100,6 +103,13 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   @override
   void didInitState() {
     setup();
+    if (_initialized != true) {
+      _initialized = true;
+      if (widget.initialValue != null) {
+        value = widget.initialValue;
+        select();
+      }
+    }
   }
 
   @protected
@@ -246,6 +256,15 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   @protected
   Widget field() => Container();
+
+  @protected
+  setValueSilent(dynamic value) {
+    if (value is V) {
+      _value = value;
+    } else {
+      _value = value != null ? widget.parser(value) : null;
+    }
+  }
 
   @protected
   String get warning => _warning;

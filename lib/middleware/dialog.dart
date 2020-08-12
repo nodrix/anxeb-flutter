@@ -1,10 +1,14 @@
-import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
 import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
+import 'package:anxeb_flutter/utils/referencer.dart';
+import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
+import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
+import 'form.dart';
 import 'scope.dart';
+import 'utils.dart';
 
 class ScopeDialog<V> {
   final Scope scope;
@@ -120,7 +124,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget body, bool swap}) {
+  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget Function(BuildContext context) body, bool swap}) {
     return MessageDialog(
       _scope,
       title: title ?? 'Confirmar Acción',
@@ -143,7 +147,94 @@ class ScopeDialogs {
     );
   }
 
-  custom({String message, String title, Widget body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
+  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap}) {
+    var cancel = (BuildContext context) {
+      Future.delayed(Duration(milliseconds: 0)).then((value) {
+        _scope.unfocus();
+      });
+      Navigator.of(context).pop(null);
+    };
+
+    var accept = () {
+      FieldsForm form = _scope.forms['_dialog'];
+      var field = form.fields['prompt'];
+      if (field.valid() == true) {
+        Future.delayed(Duration(milliseconds: 0)).then((value) {
+          _scope.unfocus();
+        });
+        return field.data();
+      } else {
+        return null;
+      }
+    };
+
+    return MessageDialog(
+      _scope,
+      title: title,
+      icon: icon ?? Icons.edit,
+      iconSize: 48,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: _scope.application.settings.colors.info,
+      body: (context) => TextInputField<T>(
+        scope: _scope,
+        name: 'prompt',
+        group: '_dialog',
+        margin: const EdgeInsets.only(top: 20),
+        label: label,
+        value: value,
+        validator: validator ?? Utils.validators.required,
+        action: TextInputAction.next,
+        type: type ?? TextInputFieldType.text,
+        hint: hint,
+        autofocus: true,
+        focusNext: false,
+        onActionSubmit: (value) {
+          var data = accept();
+          if (data != null) {
+            Navigator.of(context).pop(data);
+          }
+        },
+      ),
+      iconColor: _scope.application.settings.colors.info,
+      buttons: swap == true
+          ? [
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+            ]
+          : [
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+            ],
+    );
+  }
+
+  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller}) {
+    var cancel = (BuildContext context) {
+      controller.cancel();
+      Future.delayed(Duration(milliseconds: 0)).then((value) {
+        _scope.unfocus();
+      });
+      Navigator.of(context).pop(null);
+    };
+
+    return MessageDialog(_scope, title: title, icon: icon ?? Icons.edit, iconSize: 48, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.info, body: (context) {
+      controller.onCompleted(() {
+        Future.delayed(Duration(milliseconds: 0)).then((value) {
+          _scope.unfocus();
+        });
+        Navigator.of(context).pop(null);
+      });
+
+      return DialogProgress(
+        controller: controller,
+        scope: _scope,
+      );
+    }, iconColor: _scope.application.settings.colors.info, buttons: [
+      DialogButton(cancelLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+    ]);
+  }
+
+  custom({String message, String title, Widget Function(BuildContext context) body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
     return MessageDialog(
       _scope,
       title: title ?? 'Confirmar Acción',
@@ -170,7 +261,7 @@ class DialogButton<T> {
   final Color fillColor;
   final Color textColor;
   final IconData icon;
-  final T Function() onTap;
+  final T Function(BuildContext context) onTap;
   final bool swapIcon;
 
   DialogButton(

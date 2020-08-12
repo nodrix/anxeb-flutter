@@ -10,11 +10,22 @@ class ActionsHeader extends ViewHeader {
   ActionsHeader({
     Scope scope,
     String Function() title,
+    Widget Function() bottom,
+    double Function() elevation,
+    double Function() height,
     this.actions,
     VoidCallback dismiss,
     VoidCallback back,
     ActionIcon leading,
-  }) : super(scope: scope, dismiss: dismiss, back: back, title: title) {
+    bool Function() isVisible,
+  }) : super(scope: scope,
+      dismiss: dismiss,
+      back: back,
+      title: title,
+      bottom: bottom,
+      elevation: elevation,
+      height: height,
+      isVisible: isVisible) {
     super.leading = leading?.build();
   }
 

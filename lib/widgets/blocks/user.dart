@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 
 class UserBlock extends StatelessWidget {
   final ImageProvider background;
+  final Color color;
+  final bool safeArea;
+  final EdgeInsets padding;
   final String imageUrl;
   final String authToken;
   final String userName;
@@ -13,6 +16,9 @@ class UserBlock extends StatelessWidget {
 
   UserBlock({
     this.background,
+    this.color,
+    this.safeArea,
+    this.padding,
     this.imageUrl,
     this.authToken,
     this.userName,
@@ -25,19 +31,21 @@ class UserBlock extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        boxShadow: [BoxShadow(offset: Offset(0, 8), blurRadius: 8, spreadRadius: -5, color: Color(0x44000000))],
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: background,
-        ),
-      ),
+      decoration: background != null
+          ? BoxDecoration(
+              color: Colors.transparent,
+              boxShadow: [BoxShadow(offset: Offset(0, 8), blurRadius: 8, spreadRadius: -5, color: Color(0x44000000))],
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                image: background,
+              ),
+            )
+          : null,
       child: SafeArea(
-        top: true,
+        top: safeArea ?? false,
         bottom: false,
         child: Container(
-          padding: Utils.convert.fromInsetToFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
+          padding: padding ?? Utils.convert.fromInsetToFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
           child: Row(
             children: <Widget>[
               Container(
@@ -47,7 +55,7 @@ class UserBlock extends StatelessWidget {
                   imageUrl: imageUrl,
                   innerPadding: EdgeInsets.all(5),
                   headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
-                  outerBorderColor: Colors.white,
+                  outerBorderColor: color ?? Colors.white,
                   failedIcon: Icons.account_circle,
                   outerThickness: 3,
                   onTap: onTab,
@@ -64,7 +72,7 @@ class UserBlock extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.white,
+                              color: color ?? Colors.white,
                               width: 1.0,
                             ),
                           ),
@@ -73,7 +81,7 @@ class UserBlock extends StatelessWidget {
                           children: <Widget>[
                             Text(
                               userName,
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 18),
+                              style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 18),
                             ),
                           ],
                         ),
@@ -82,7 +90,7 @@ class UserBlock extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 15.0, top: 7),
                         child: Text(
                           userTitle.toUpperCase(),
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 12, letterSpacing: 0.1),
+                          style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 12, letterSpacing: 0.1),
                         ),
                       ),
                     ],

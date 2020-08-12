@@ -60,3 +60,5 @@ export 'middleware/settings.dart';
 export 'package:percent_indicator/circular_percent_indicator.dart';
 export 'package:percent_indicator/percent_indicator.dart';
 export 'package:percent_indicator/linear_percent_indicator.dart';
+export 'widgets/buttons/icon.dart';
+export 'widgets/components/dialog_progress.dart';

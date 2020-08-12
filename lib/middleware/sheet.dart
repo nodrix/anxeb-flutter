@@ -88,4 +88,17 @@ class ScopeSheets {
       icon: Icons.chat,
     );
   }
+
+  TipSheet flat(String title, {String message, Widget body, IconData icon}) {
+    return TipSheet(
+      _scope,
+      title: title,
+      fill: _scope.application.settings.colors.navigation,
+      message: message,
+      body: body,
+      flat: true,
+      foreground: Colors.white,
+      icon: icon ?? Icons.info_outline,
+    );
+  }
 }

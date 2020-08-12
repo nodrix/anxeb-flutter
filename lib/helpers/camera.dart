@@ -15,10 +15,18 @@ import 'preview.dart';
 
 class CameraHelper extends ViewWidget {
   final String title;
-  final bool rear;
+  final bool allowMainCamera;
   final Image frameImage;
+  final bool initFaceCamera;
+  final bool fullImage;
 
-  CameraHelper({this.title, this.rear, this.frameImage}) : super('anxeb_camera_helper', title: title);
+  CameraHelper({
+    this.title,
+    this.allowMainCamera,
+    this.initFaceCamera,
+    this.frameImage,
+    this.fullImage,
+  }) : super('anxeb_camera_helper', title: title);
 
   @override
   _CameraHelperState createState() => new _CameraHelperState();
@@ -26,8 +34,8 @@ class CameraHelper extends ViewWidget {
 
 class _CameraHelperState extends View<CameraHelper, Application> {
   CameraController _camera;
-  CameraDescription _frontCameraDesc;
-  CameraDescription _rearCameraDesc;
+  CameraDescription _mainCamera;
+  CameraDescription _faceCamera;
   Future<void> _initializeControllerFuture;
   bool _diabled = false;
   bool _initilized = false;
@@ -35,10 +43,14 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   @override
   Future init() async {
     availableCameras().then((cameras) {
-      _frontCameraDesc = cameras.length > 0 ? cameras.first : null;
-      _rearCameraDesc = cameras.length > 1 ? cameras[1] : null;
+      _mainCamera = cameras.length > 0 ? cameras.first : null;
+      _faceCamera = cameras.length > 1 ? cameras[1] : null;
 
-      _initCamera(_frontCameraDesc);
+      if (widget.initFaceCamera == true) {
+        _initCamera(_faceCamera);
+      } else {
+        _initCamera(_mainCamera);
+      }
     });
   }
 
@@ -88,47 +100,52 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       //print(' WIDTH  ${properties.width} vs $_reduceSize');
       //print(' HEIGHT ${properties.height} vs $_reduceSize');
 
-      bool $horizontal = properties.width > properties.height;
-      int $width = properties.width;
-      int $height = properties.height;
-      double $t;
-      double $l;
-      double $size;
+      var cropped;
+      if (widget.fullImage != true) {
+        bool $horizontal = properties.width > properties.height;
+        int $width = properties.width;
+        int $height = properties.height;
+        double $t;
+        double $l;
+        double $size;
 
-      if ($horizontal) {
-        //print('HORIZONTAL CALC');
-        $size = $height * 0.9;
-        $l = (properties.height / properties.width) * _topOffset;
-        $t = ((properties.height - $size) / 2) / properties.height;
-      } else {
-        //print('VERTICAL CALC');
-        $size = $width * 0.9;
-        $l = ((properties.width - $size) / 2) / properties.width;
-        $t = (properties.width / properties.height) * _topOffset;
+        if ($horizontal) {
+          //print('HORIZONTAL CALC');
+          $size = $height * 0.9;
+          $l = (properties.height / properties.width) * _topOffset;
+          $t = ((properties.height - $size) / 2) / properties.height;
+        } else {
+          //print('VERTICAL CALC');
+          $size = $width * 0.9;
+          $l = ((properties.width - $size) / 2) / properties.width;
+          $t = (properties.width / properties.height) * _topOffset;
+        }
+
+        double $w = $size / properties.width;
+        double $h = $size / properties.height;
+
+        //print('CROPPING RATIOS');
+        //print(' T ${$t}');
+        //print(' L ${$l}');
+        //print(' S ${$w} x ${$h}');
+
+        cropped = await ImageCrop.cropImage(
+          file: reduced,
+          area: Rect.fromLTWH($l, $t, $w, $h),
+        );
+
+        properties = await ImageCrop.getImageOptions(file: cropped);
+
+        //print('CROPPED');
+        //print(' WIDTH  ${properties.width}');
+        //print(' HEIGHT ${properties.height}');
+        //print(' SIZE   ${(cropped.readAsBytesSync().length / 1024).round()}KB');
       }
 
-      double $w = $size / properties.width;
-      double $h = $size / properties.height;
-
-      //print('CROPPING RATIOS');
-      //print(' T ${$t}');
-      //print(' L ${$l}');
-      //print(' S ${$w} x ${$h}');
-
-      final cropped = await ImageCrop.cropImage(
-        file: reduced,
-        area: Rect.fromLTWH($l, $t, $w, $h),
-      );
-
-      properties = await ImageCrop.getImageOptions(file: cropped);
-
-      //print('CROPPED');
-      //print(' WIDTH  ${properties.width}');
-      //print(' HEIGHT ${properties.height}');
-      //print(' SIZE   ${(cropped.readAsBytesSync().length / 1024).round()}KB');
-
+      File $finalFile = cropped ?? reduced;
+      
       if (preview == true) {
-        var previewImage = Image.file(cropped).image;
+        var previewImage = Image.file($finalFile).image;
         setState(() {
           _diabled = false;
         });
@@ -139,14 +156,14 @@ class _CameraHelperState extends View<CameraHelper, Application> {
         ));
 
         if (result == true) {
-          _submit(cropped);
+          _submit($finalFile);
         }
       } else {
         await scope.idle();
         setState(() {
           _diabled = false;
         });
-        _submit(cropped);
+        _submit($finalFile);
       }
     } catch (err) {
       await scope.dialogs.error(err).show();
@@ -157,11 +174,11 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   }
 
   void _swapCameras() {
-    if (_rearCameraDesc != null) {
-      if (_camera.description == _frontCameraDesc) {
-        _initCamera(_rearCameraDesc);
+    if (_faceCamera != null) {
+      if (_camera.description == _mainCamera) {
+        _initCamera(_faceCamera);
       } else {
-        _initCamera(_frontCameraDesc);
+        _initCamera(_mainCamera);
       }
     }
   }
@@ -174,8 +191,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
         enableAudio: false,
       );
       _initializeControllerFuture = _camera.initialize();
+      _initializeControllerFuture.then((value) {
+        setState(() {});
+      });
     }
-    setState(() {});
   }
 
   @override
@@ -191,13 +210,14 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       leading: ActionBack(),
       actions: [
         ActionIcon(
-          icon: () => _frontCameraActive ? Icons.camera_rear : Icons.camera_front,
+          icon: () => _mainCameraActive ? Icons.camera_rear : Icons.camera_front,
           onPressed: _swapCameras,
-          isVisible: () => _frontCameraAvailable == true,
+          isVisible: () => _mainCameraAvailable == true,
         ),
         ActionIcon(
           icon: () => Icons.image,
           onPressed: () => _takePicture(preview: true),
+          isVisible: () => widget.fullImage != true,
           isDisabled: () => _noCamera || _diabled == true,
         ),
       ],
@@ -230,6 +250,11 @@ class _CameraHelperState extends View<CameraHelper, Application> {
             });
           }
 
+          if (widget.fullImage == true) {
+            return CameraPreview(
+              _camera,
+            );
+          }
           return Stack(
             children: <Widget>[
               Container(
@@ -282,7 +307,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
 
   bool get _noCamera => _camera == null || _camera.value == null || _camera.value.isInitialized != true;
 
-  bool get _frontCameraAvailable => _frontCameraDesc != null && widget.rear == true;
+  bool get _mainCameraAvailable => _mainCamera != null && widget.allowMainCamera == true;
 
-  bool get _frontCameraActive => _camera.description == _frontCameraDesc;
+  bool get _mainCameraActive => _camera.description == _mainCamera;
 }

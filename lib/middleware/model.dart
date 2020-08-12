@@ -61,12 +61,7 @@ class Model<T> {
 
   void _pushDataToFields() {
     for (var field in _fields) {
-      try {
-        field.pushToFields();
-      } catch (err) {
-        print('Error pushing \'${field.fieldName}\' to fields.');
-        print(err);
-      }
+      field.pushToFields();
     }
   }
 
@@ -105,7 +100,7 @@ class Model<T> {
     return promise.future;
   }
 
-  void field(dynamic Function() getValue, Function(dynamic value) setValue, String fieldName, {bool primary, dynamic Function() defect, dynamic Function(dynamic raw) instance}) {
+  void field(dynamic Function() getValue, Function(dynamic value) setValue, String fieldName, {bool primary, dynamic Function() defect, dynamic Function(dynamic raw) instance, List<dynamic> enumValues}) {
     if (primary == true) {
       _primaryField = fieldName;
     }
@@ -118,6 +113,7 @@ class Model<T> {
       defect: defect,
       instance: instance,
       pk: primary == true ? _pk : null,
+      enumValues: enumValues,
     ));
   }
 
@@ -171,8 +167,19 @@ class _ModelField {
   final dynamic Function() defect;
   final dynamic Function(dynamic raw) instance;
   final dynamic pk;
+  final List<dynamic> enumValues;
 
-  _ModelField({this.data, this.getValue, this.setValue, this.fieldName, this.primary, this.defect, this.instance, this.pk});
+  _ModelField({
+    this.data,
+    this.getValue,
+    this.setValue,
+    this.fieldName,
+    this.primary,
+    this.defect,
+    this.instance,
+    this.pk,
+    this.enumValues,
+  });
 
   void initialize() {
     if (pk != null) {
@@ -205,7 +212,11 @@ class _ModelField {
         }
       }
     } else {
-      setValue($rawValue ?? $defValue);
+      if (enumValues != null && $rawValue != null) {
+        setValue(enumValues.firstWhere(($enum) => $enum.toString().endsWith($rawValue), orElse: () => null) ?? $defValue);
+      } else {
+        setValue($rawValue ?? $defValue);
+      }
     }
   }
 
@@ -218,6 +229,8 @@ class _ModelField {
       } else {
         data[fieldName] = propertyValue.toObjects();
       }
+    } else if (enumValues != null) {
+      data[fieldName] = propertyValue != null ? propertyValue.toString().split('.')[1] : null;
     } else if (propertyValue is List<Model>) {
       var items = List();
       for (var item in propertyValue) {

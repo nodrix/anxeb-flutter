@@ -84,10 +84,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 children: TextButton.createList(
                   context,
                   [
-                    DialogButton('Inicio', null, onTap: () {
+                    DialogButton('Inicio', null, onTap: (context) {
                       referencer.start();
                     }),
-                    DialogButton('Cancelar', null, onTap: () {
+                    DialogButton('Cancelar', null, onTap: (context) {
                       Navigator.of(context).pop();
                     })
                   ],

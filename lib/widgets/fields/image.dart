@@ -73,7 +73,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   void _takePicture() async {
     var result = await widget.scope.view.push(CameraHelper(
       title: widget.label,
-      rear: widget.type == ImageInputFieldType.rear,
+      allowMainCamera: widget.type == ImageInputFieldType.rear,
     ));
 
     if (result != null) {

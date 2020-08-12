@@ -4,7 +4,6 @@ import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 enum TextInputFieldType { digits, decimals, positive, integers, text, email, date, phone, url, password }
 
@@ -22,6 +21,8 @@ class TextInputField<V> extends FieldWidget<V> {
   final String suffix;
   final V Function(String value) converter;
   final String Function(V value) displayText;
+  final int maxLines;
+  final int maxLength;
 
   TextInputField({
     @required Scope scope,
@@ -43,6 +44,7 @@ class TextInputField<V> extends FieldWidget<V> {
     FormFieldValidator<String> validator,
     V Function(dynamic value) parser,
     bool focusNext,
+    V value,
     this.controller,
     this.type,
     this.autofocus,
@@ -56,6 +58,8 @@ class TextInputField<V> extends FieldWidget<V> {
     this.suffix,
     this.converter,
     this.displayText,
+    this.maxLines,
+    this.maxLength,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -77,6 +81,7 @@ class TextInputField<V> extends FieldWidget<V> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          initialValue: value,
         );
 
   @override
@@ -222,6 +227,8 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       enableInteractiveSelection: widget.canSelect != null ? widget.canSelect : true,
       autocorrect: false,
       inputFormatters: _formatters,
+      maxLength: widget.maxLength,
+      maxLines: widget.maxLines,
       keyboardType: _keyboardType,
       onSubmitted: (text) {
         _editing = false;
@@ -247,6 +254,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         }
       },
       onChanged: (text) {
+        super.setValueSilent(_convertValue(text));
         if (_editing == false) {
           warning = null;
         }
@@ -256,14 +264,17 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         }
       },
       textAlign: TextAlign.left,
+      style: widget.label == null ? TextStyle(fontSize: 20.25) : null,
       decoration: InputDecoration(
         filled: true,
-        contentPadding: EdgeInsets.only(left: 0, top: 7, bottom: 0, right: 0),
-        prefixIcon: Icon(
-          widget.icon ?? FontAwesome5.dot_circle,
-          color: widget.scope.application.settings.colors.primary,
-        ),
-        labelText: widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label,
+        contentPadding: EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+        prefixIcon: widget.icon != null
+            ? Icon(
+                widget.icon,
+                color: widget.scope.application.settings.colors.primary,
+              )
+            : null,
+        labelText: widget.label != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
         labelStyle: widget.fixedLabel == true
             ? TextStyle(
                 fontWeight: FontWeight.w500,
@@ -277,6 +288,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         prefixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
+        counter: Container(),
         suffixText: widget.suffix,
         fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
         errorText: warning,

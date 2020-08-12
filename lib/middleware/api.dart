@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
-
+import 'package:path/path.dart' as Path;
 import 'data.dart';
 import 'model.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 enum ApiMethods { PUT, GET, POST, DELETE }
 
@@ -107,10 +109,10 @@ class Api {
 
   Future<Data> get(String route) => _process(ApiMethods.GET, route);
 
-  Future<File> download(String url, {String location, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+  Future<File> download(String route, {String location, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
       Response response = await _dio.get(
-        url,
+        route,
         onReceiveProgress: (count, total) => progress(count, total),
         cancelToken: cancelToken,
         queryParameters: query,
@@ -126,6 +128,29 @@ class Api {
       raf.writeFromSync(response.data);
       await raf.close();
       return file;
+    } catch (err) {
+      var apiException = ApiException.fromErr(err);
+      if (apiException != null) {
+        throw apiException;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  Future<Data> upload(String route, {form, File file, String fieldName, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+    var contentType = lookupMimeType(file.path);
+    
+    try {
+      form[fieldName ?? 'file'] = await MultipartFile.fromFile(file.path, filename: Path.basename(file.path), contentType: MediaType.parse(contentType));
+      var res = await _dio.put(
+        route,
+        data: FormData.fromMap(form),
+        onSendProgress: (count, total) => progress(count, total),
+        cancelToken: cancelToken,
+        queryParameters: query,
+      );
+      return Data(res.data);
     } catch (err) {
       var apiException = ApiException.fromErr(err);
       if (apiException != null) {

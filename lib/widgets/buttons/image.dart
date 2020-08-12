@@ -30,6 +30,7 @@ class ImageButton extends StatefulWidget {
     this.shadow,
     this.label,
     this.body,
+    this.failedBody,
     this.outerRadius,
     this.outerThickness,
     this.outerFill,
@@ -39,6 +40,8 @@ class ImageButton extends StatefulWidget {
     this.innerRadius,
     this.innerBorderColor,
     this.autohide,
+    this.horizontal,
+    this.expanded,
   });
 
   final bool enabled;
@@ -64,7 +67,10 @@ class ImageButton extends StatefulWidget {
   final List<BoxShadow> shadow;
   final String label;
   final Widget body;
+  final Widget failedBody;
   final bool autohide;
+  final bool horizontal;
+  final bool expanded;
 
   final double outerRadius;
   final double outerThickness;
@@ -139,10 +145,45 @@ class _ImageButtonState extends State<ImageButton> {
     if (widget.imageUrl != null && (_netImage == null || _netImage.url != widget.imageUrl)) {
       _setupImage(widget.imageUrl);
     }
-    
+
     if (widget.autohide == true && widget.body == null && _imageLoaded != true) {
       return Container();
     }
+
+    var emptyWidget = widget.horizontal != true
+        ? Column(
+            children: <Widget>[
+              Container(
+                height: widget.height,
+                width: widget.width,
+              ),
+              Opacity(
+                opacity: 0,
+                child: widget.body ?? Container(),
+              )
+            ],
+          )
+        : Row(
+            children: <Widget>[
+              Container(
+                height: widget.height,
+                width: widget.width,
+              ),
+              widget.body != null
+                  ? (widget.expanded == true
+                      ? Expanded(
+                          child: Opacity(
+                          opacity: 0,
+                          child: widget.body ?? Container(),
+                        ))
+                      : Opacity(
+                          opacity: 0,
+                          child: widget.body ?? Container(),
+                        ))
+                  : Container()
+            ],
+          );
+
     var touchWidget = Material(
       key: GlobalKey(),
       color: Colors.transparent,
@@ -169,18 +210,7 @@ class _ImageButtonState extends State<ImageButton> {
             shape: widget.shape ?? BoxShape.circle,
             borderRadius: widget.outerRadius != null ? BorderRadius.all(Radius.circular(widget.outerRadius)) : null,
           ),
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: widget.height,
-                width: widget.width,
-              ),
-              Opacity(
-                opacity: 0,
-                child: widget.body ?? Container(),
-              )
-            ],
-          ),
+          child: emptyWidget,
         ),
       ),
     );
@@ -189,7 +219,7 @@ class _ImageButtonState extends State<ImageButton> {
         ? AnimatedOpacity(
             duration: Duration(milliseconds: 200),
             opacity: _displayImage == true ? 1 : 0,
-            child: widget.body == null
+            child: widget.failedBody == null
                 ? Container(
                     height: widget.height,
                     width: widget.width,
@@ -199,11 +229,11 @@ class _ImageButtonState extends State<ImageButton> {
                       size: widget.failedIconSize ?? ((widget.height ?? widget.width ?? 1)),
                     ),
                   )
-                : Container(),
+                : widget.failedBody,
           )
         : null;
 
-    var loadingWidget = _imageLoaded == null || _busy == true
+    var loadingWidget = widget.loadingThickness != null && widget.loadingThickness > 0 && (_imageLoaded == null || _busy == true)
         ? Center(
             child: Container(
               height: widget.height,
@@ -214,7 +244,7 @@ class _ImageButtonState extends State<ImageButton> {
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: CircularProgressIndicator(
-                    strokeWidth: widget.loadingThickness ?? 3,
+                    strokeWidth: widget.loadingThickness,
                     valueColor: AlwaysStoppedAnimation<Color>(widget.loadingColor ?? Colors.white.withOpacity(0.8)),
                   ),
                 ),
@@ -223,49 +253,64 @@ class _ImageButtonState extends State<ImageButton> {
           )
         : null;
 
-    var emptyWidget = Column(
-      children: <Widget>[
-        Container(
-          height: widget.height,
-          width: widget.width,
-        ),
-        Opacity(
-          opacity: 0,
-          child: widget.body ?? Container(),
-        )
-      ],
-    );
-
     var imageWidget = _imageLoaded == true
         ? AnimatedOpacity(
             duration: Duration(milliseconds: 200),
             opacity: _displayImage == true ? 1 : 0,
-            child: Column(
-              children: <Widget>[
-                Container(
-                  height: widget.height,
-                  width: widget.width,
-                  decoration: BoxDecoration(
-                    shape: widget.shape ?? BoxShape.circle,
-                    borderRadius: widget.innerRadius != null
-                        ? BorderRadius.all(Radius.circular(
-                            widget.innerRadius,
-                          ))
-                        : null,
-                    border: widget.innerThickness != null ? Border.all(width: widget.innerThickness, color: widget.innerBorderColor) : null,
-                    image: widget.imageAsset != null || _netImage != null
-                        ? DecorationImage(
-                            colorFilter: widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen),
-                            fit: widget.fit ?? BoxFit.cover,
-                            alignment: Alignment.center,
-                            image: _netImage ?? widget.imageAsset,
-                          )
-                        : null,
+            child: widget.horizontal != true
+                ? Column(
+                    children: <Widget>[
+                      Container(
+                        height: widget.height,
+                        width: widget.width,
+                        decoration: BoxDecoration(
+                          shape: widget.shape ?? BoxShape.circle,
+                          borderRadius: widget.innerRadius != null
+                              ? BorderRadius.all(Radius.circular(
+                                  widget.innerRadius,
+                                ))
+                              : null,
+                          border: widget.innerThickness != null ? Border.all(width: widget.innerThickness, color: widget.innerBorderColor) : null,
+                          image: widget.imageAsset != null || _netImage != null
+                              ? DecorationImage(
+                                  colorFilter: widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen),
+                                  fit: widget.fit ?? BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  image: _netImage ?? widget.imageAsset,
+                                )
+                              : null,
+                        ),
+                      ),
+                      widget.body ?? Container()
+                    ],
+                  )
+                : Row(
+                    children: <Widget>[
+                      Container(
+                        height: widget.height,
+                        width: widget.width,
+                        decoration: BoxDecoration(
+                          shape: widget.shape ?? BoxShape.circle,
+                          borderRadius: widget.innerRadius != null
+                              ? BorderRadius.all(Radius.circular(
+                                  widget.innerRadius,
+                                ))
+                              : null,
+                          border: widget.innerThickness != null ? Border.all(width: widget.innerThickness, color: widget.innerBorderColor) : null,
+                          image: widget.imageAsset != null || _netImage != null
+                              ? DecorationImage(
+                                  colorFilter: widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen),
+                                  fit: widget.fit ?? BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  image: _netImage ?? widget.imageAsset,
+                                )
+                              : null,
+                        ),
+                      ),
+                      widget.body != null ? (widget.expanded == true ? Expanded(child: widget.body) : widget.body) : Container()
+                    ],
                   ),
-                ),
-                widget.body ?? Container()
-              ],
-            ))
+          )
         : null;
 
     return Container(

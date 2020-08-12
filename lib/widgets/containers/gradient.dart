@@ -38,10 +38,12 @@ class GradientContainer extends StatelessWidget {
             image ?? Container(),
             Padding(
               padding: padding ?? EdgeInsets.zero,
-              child: Container(
-                padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
-                child: this.child,
-              ),
+              child: fadding != null
+                  ? Container(
+                      padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
+                      child: this.child,
+                    )
+                  : this.child,
             ),
           ],
         ),

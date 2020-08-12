@@ -136,11 +136,13 @@ class FieldsForm {
     fields[current.widget.name] = current;
   }
 
-  bool validate({bool showMessage}) {
+  bool validate({bool showMessage, bool autoFocus}) {
     var result = true;
     for (var field in fields.values) {
       if (field.context != null && field.validate(showMessage: showMessage) != null) {
-        field.focus();
+        if (autoFocus != false) {
+          field.focus();
+        }
         result = false;
         break;
       }
@@ -154,8 +156,8 @@ class FieldsForm {
     return result;
   }
 
-  bool valid() {
-    return validate();
+  bool valid({bool autoFocus}) {
+    return validate(autoFocus: autoFocus);
   }
 
   Map<String, dynamic> data() {
@@ -211,9 +213,9 @@ class ScopeForms {
     return _retrieve(name).validate();
   }
 
-  bool valid() {
+  bool valid({bool autoFocus}) {
     for (var $form in _forms.values) {
-      if ($form.valid() == false) {
+      if ($form.valid(autoFocus: autoFocus) == false) {
         return false;
       }
     }
