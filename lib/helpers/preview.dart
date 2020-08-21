@@ -18,9 +18,6 @@ class ImagePreviewHelper extends ViewWidget {
 
 class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   @override
-  Future<bool> beforePop() async => true;
-
-  @override
   ViewHeader header() {
     return ViewHeader(
       scope: scope,

@@ -11,10 +11,11 @@ class ActionsFooter extends ViewFooter {
   List<ActionButton> buttons;
 
   ActionsFooter({
-    Scope scope,
+    @required Scope scope,
+    bool Function() isVisible,
     this.actions,
     this.buttons,
-  }) : super(scope: scope);
+  }) : super(scope: scope, isVisible: isVisible);
 
   @override
   Widget content() {

@@ -150,7 +150,9 @@ class Api {
         cancelToken: cancelToken,
         queryParameters: query,
       );
-      return Data(res.data);
+      if (res != null && res.data != null) {
+        return Data(res.data);
+      }
     } catch (err) {
       var apiException = ApiException.fromErr(err);
       if (apiException != null) {
@@ -159,6 +161,7 @@ class Api {
         throw err;
       }
     }
+    return null;
   }
 
   String get uri => _uri;

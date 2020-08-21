@@ -7,12 +7,12 @@ import 'package:percent_indicator/percent_indicator.dart';
 class DialogProgress extends StatefulWidget {
   final DialogProcessController controller;
   final Scope scope;
-
+  
   const DialogProgress({
     this.scope,
     this.controller,
   });
-
+  
   @override
   _DialogProgressState createState() => _DialogProgressState();
 }
@@ -30,7 +30,7 @@ class _DialogProgressState extends State<DialogProgress> {
     });
     super.initState();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     if (widget.controller.isFailed) {
@@ -51,7 +51,7 @@ class _DialogProgressState extends State<DialogProgress> {
         ),
       );
     }
-
+    
     if (widget.controller.isSuccess) {
       return Container(
         child: Column(
@@ -70,8 +70,8 @@ class _DialogProgressState extends State<DialogProgress> {
         ),
       );
     }
-
-    if (widget.controller.isCompleted) {
+    
+    if (widget.controller.isCompleted && !widget.controller.isDone) {
       return Container(
         padding: EdgeInsets.all(10),
         child: Column(
@@ -92,7 +92,7 @@ class _DialogProgressState extends State<DialogProgress> {
         ),
       );
     }
-
+    
     return Container(
       margin: EdgeInsets.only(top: 4),
       padding: EdgeInsets.all(5),
@@ -116,11 +116,11 @@ class _DialogProgressState extends State<DialogProgress> {
       ),
     );
   }
-
+  
   double get _percent => widget.controller == null || widget.controller.total == 0 ? 0 : ((widget.controller.value ?? 0) / (widget.controller.total ?? 1));
 }
 
-enum DialogProcessState { idle, process, success, failed, canceled }
+enum DialogProcessState { idle, process, completed, success, failed, canceled, done }
 
 class DialogProcessController {
   double total;
@@ -129,32 +129,40 @@ class DialogProcessController {
   bool Function() _refreshHandler;
   Function() _completeHandler;
   Function() _cancelHandler;
-
+  
   void _subscribe(Function() refresher) {
     _refreshHandler = refresher;
   }
-
+  
   void onCompleted(Function() completer) {
     _completeHandler = completer;
   }
-
+  
   void onCanceled(Function() canceler) {
     _cancelHandler = canceler;
   }
-
+  
   void update({double total, double value}) {
-    _state = DialogProcessState.process;
     this.total = total;
     this.value = value;
+    
+    if (this.value != null && this.total != null && this.value >= this.total && this.value > 0) {
+      _state = DialogProcessState.completed;
+      Future.delayed(Duration(milliseconds: 800), () {
+        _refreshHandler?.call();
+      });
+    } else {
+      _state = DialogProcessState.process;
+    }
     if (_refreshHandler?.call() == false) {
       _cancel(pop: false);
     }
   }
-
+  
   Future cancel() async {
     await _cancel(pop: false);
   }
-
+  
   Future _cancel({bool pop}) async {
     if (_state == DialogProcessState.process) {
       _cancelHandler?.call();
@@ -164,33 +172,53 @@ class DialogProcessController {
       }
     }
   }
-
-  void failed() async {
+  
+  Future failed() async {
     _state = DialogProcessState.failed;
   }
-
+  
   Future _pop() async {
     if (_refreshHandler?.call() == true) {
       await Future.delayed(Duration(milliseconds: 1000));
       _completeHandler?.call();
+      await Future.delayed(Duration(milliseconds: 200));
     }
   }
-
-  void success() async {
-    _state = DialogProcessState.success;
-    if (!isCanceled) {
-      if (_refreshHandler?.call() == true) {
-        await Future.delayed(Duration(milliseconds: 1000));
-        _completeHandler?.call();
+  
+  Future success({bool silent}) async {
+    if (silent == true) {
+      _state = DialogProcessState.done;
+      if (!isCanceled) {
+        if (_refreshHandler?.call() == true) {
+          _completeHandler?.call();
+        }
+      }
+    } else {
+      _state = DialogProcessState.success;
+      try {
+        if (!isCanceled) {
+          if (_refreshHandler?.call() == true) {
+            await Future.delayed(Duration(milliseconds: 1000));
+            
+            _completeHandler?.call();
+            await Future.delayed(Duration(milliseconds: 200));
+          }
+        }
+      } catch (err) {
+        //ignore
       }
     }
   }
-
+  
+  bool get isDone => _state == DialogProcessState.done;
+  
+  bool get isProcess => _state == DialogProcessState.process;
+  
   bool get isCanceled => _state == DialogProcessState.canceled;
-
+  
   bool get isFailed => _state == DialogProcessState.failed;
-
-  bool get isCompleted => this.value != null && this.total != null && this.value >= this.total && this.value > 0;
-
+  
+  bool get isCompleted => _state == DialogProcessState.completed;
+  
   bool get isSuccess => _state == DialogProcessState.success;
 }

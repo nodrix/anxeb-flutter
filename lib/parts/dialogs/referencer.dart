@@ -65,8 +65,9 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
             ),
       content: Container(
         height: scope.window.vertical(0.6),
+        width: scope.window.available.width,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             Expanded(
               child: ReferencerBlock<V>(

@@ -13,10 +13,13 @@ class IconButton extends StatefulWidget {
     this.enabled,
     this.icon,
     this.scale,
+    this.iconSize,
+    this.iconPadding,
     this.size,
     this.borderColor,
     this.fillColor,
     this.innerColor,
+    this.innerBorderColor,
     this.borderWidth,
     this.borderPadding,
   });
@@ -28,11 +31,14 @@ class IconButton extends StatefulWidget {
   final bool busy;
   final bool enabled;
   final IconData icon;
+  final double iconSize;
   final double scale;
+  final EdgeInsets iconPadding;
   final double size;
   final Color borderColor;
   final Color fillColor;
   final Color innerColor;
+  final Color innerBorderColor;
   final double borderWidth;
   final double borderPadding;
 
@@ -52,9 +58,10 @@ class _IconButtonState extends State<IconButton> {
       child: Row(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.all(widget.borderPadding),
+            padding: widget.borderPadding != null ? EdgeInsets.all(widget.borderPadding) : null,
             decoration: widget.borderWidth != null && widget.borderWidth > 0
                 ? BoxDecoration(
+                    color: widget.innerBorderColor,
                     borderRadius: BorderRadius.all(Radius.circular(45)),
                     border: Border.all(width: widget.borderWidth, color: widget.borderColor ?? widget.fillColor),
                   )
@@ -108,6 +115,7 @@ class _IconButtonState extends State<IconButton> {
                     width: widget.size ?? 42,
                     height: widget.size ?? 42,
                     child: Container(
+                        padding: widget.iconPadding,
                         child: widget.busy == true || _busy == true
                             ? Container(
                                 padding: EdgeInsets.all(5),
@@ -121,7 +129,7 @@ class _IconButtonState extends State<IconButton> {
                                 duration: Duration(milliseconds: 300),
                                 child: Icon(
                                   widget.icon,
-                                  size: 30 * (widget.scale ?? 1.0),
+                                  size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
                                   color: widget.innerColor ?? Colors.white,
                                 ),
                               )),

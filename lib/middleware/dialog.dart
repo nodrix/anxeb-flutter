@@ -26,14 +26,19 @@ class ScopeDialog<V> {
   Future setup() => null;
 
   Future<V> show() async {
-    await setup();
-    return showDialog<V>(
-      context: scope.context,
-      barrierDismissible: dismissible,
-      builder: (BuildContext context) {
-        return build(context);
-      },
-    );
+    try {
+      await setup();
+      return showDialog<V>(
+        context: scope.context,
+        barrierDismissible: dismissible,
+        builder: (BuildContext context) {
+          return build(context);
+        },
+      );
+    } catch (err) {
+      scope.alerts.error(err).show();
+      return null;
+    }
   }
 }
 
@@ -147,7 +152,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap}) {
+  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, int lines}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -184,6 +189,7 @@ class ScopeDialogs {
         value: value,
         validator: validator ?? Utils.validators.required,
         action: TextInputAction.next,
+        maxLines: lines,
         type: type ?? TextInputFieldType.text,
         hint: hint,
         autofocus: true,
@@ -263,6 +269,7 @@ class DialogButton<T> {
   final IconData icon;
   final T Function(BuildContext context) onTap;
   final bool swapIcon;
+  final bool visible;
 
   DialogButton(
     this.caption,
@@ -272,5 +279,6 @@ class DialogButton<T> {
     this.textColor,
     this.icon,
     this.swapIcon,
+    this.visible,
   });
 }

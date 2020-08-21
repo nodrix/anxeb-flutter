@@ -6,6 +6,7 @@ class ViewPanel {
   final Scope scope;
   final double height;
   final bool Function() isDisabled;
+  final bool gapless;
   PanelController _controller;
   bool rebuild = false;
 
@@ -13,6 +14,7 @@ class ViewPanel {
     @required this.scope,
     this.height,
     this.isDisabled,
+    this.gapless,
   }) {
     _controller = PanelController();
   }
@@ -26,6 +28,12 @@ class ViewPanel {
     if (isDisabled?.call() == true) {
       return parent;
     }
+
+    var panelContent = content();
+    if (panelContent == null) {
+      return parent;
+    }
+
     return SlidingUpPanel(
       controller: _controller,
       panel: Container(
@@ -39,16 +47,16 @@ class ViewPanel {
                 opacity: _controller.isAttached && _controller.isPanelClosed ? 1 : 0,
                 duration: Duration(milliseconds: 200),
                 child: Container(
-                  height: 10,
+                  height: gapless == true ? 15 : 10,
                   width: 100,
-                  margin: EdgeInsets.only(bottom: 40, top: 20),
+                  margin: gapless == true ? EdgeInsets.only(bottom: 20, top: 35) : EdgeInsets.only(bottom: 40, top: 20),
                   decoration: BoxDecoration(
-                    color: scope.application.settings.colors.primary,
+                    color: gapless == true ? scope.application.settings.colors.navigation : scope.application.settings.colors.primary,
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.elliptical(30, 9),
-                      topRight: Radius.elliptical(30, 9),
-                      bottomLeft: Radius.circular(3),
-                      bottomRight: Radius.circular(3),
+                      topLeft: Radius.elliptical(30, gapless == true ? 15 : 9),
+                      topRight: Radius.elliptical(30, gapless == true ? 15 : 9),
+                      bottomLeft: gapless == true ? Radius.zero : Radius.circular(3),
+                      bottomRight: gapless == true ? Radius.zero : Radius.circular(3),
                     ),
                   ),
                   child: Center(
@@ -65,7 +73,7 @@ class ViewPanel {
                 ),
               ),
             ),
-            content(),
+            panelContent,
           ],
         ),
       ),
@@ -75,7 +83,10 @@ class ViewPanel {
       backdropOpacity: 0.36,
       body: parent,
       minHeight: 48,
-      maxHeight: height ?? 200,
+      maxHeight: dynamicHeight ?? height ?? 200,
     );
   }
+
+  @protected
+  double get dynamicHeight => null;
 }

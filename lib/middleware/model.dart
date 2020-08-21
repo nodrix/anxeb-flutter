@@ -1,10 +1,11 @@
 import 'dart:async';
-
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:anxeb_flutter/misc/common.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data.dart';
+import 'helper.dart';
+import 'scope.dart';
 
 class Model<T> {
   Data _data;
@@ -152,9 +153,33 @@ class Model<T> {
     return _data.toJson();
   }
 
+  dynamic get $pk => _primaryField != null ? toValue() : null;
+
   @protected
   Data get data {
     return _data;
+  }
+}
+
+class HelpedModel<T, H extends ModelHelper> extends Model<T> {
+  ModelHelper _helper;
+
+  HelpedModel([data]) : super(data);
+
+  HelpedModel.fromDisk(String diskKey, ModelLoadedCallback<T> callback) : super.fromDisk(diskKey, callback);
+
+  @protected
+  H helper(Scope scope) {
+    return ModelHelper(scope: scope, model: this) as H;
+  }
+
+  H using(Scope scope, {bool reset}) {
+    if (reset == true) {
+      _helper = helper(scope);
+    } else {
+      _helper = _helper ?? helper(scope);
+    }
+    return _helper;
   }
 }
 
@@ -193,6 +218,9 @@ class _ModelField {
 
   void pushToFields() {
     var $rawValue = data[fieldName];
+    if (primary == true && $rawValue == null && fieldName == 'id') {
+      $rawValue = data['_id'] ?? pk;
+    }
     var $defValue = defect != null ? defect() : null;
 
     if (instance != null) {

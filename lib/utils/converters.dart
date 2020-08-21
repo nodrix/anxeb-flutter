@@ -7,7 +7,8 @@ class Converters {
   final _fullDateFormat = DateFormat("dd/MM/yyyy h:mm:ss a");
   final _normalDateFormat = DateFormat("dd/MM/yyyy h:mm a");
   final _fileDateFormat = DateFormat("dd_MM_yyyy_h_mm_a");
-
+  final _humanDateFormat = DateFormat.yMMMd('es_DO');
+  
   String fromStringToDigits(String value) {
     String result = '';
     for (var i = 0; i < value.length; i++) {
@@ -18,15 +19,37 @@ class Converters {
     }
     return result;
   }
-
+  
   String fromStringToUpperCase(String value) {
     return value.toUpperCase().trim();
   }
-
+  
   String fromStringToTrimedString(String value) {
     return value.trim();
   }
-
+  
+  String fromDateToDurationCaption(DateTime date) {
+    Duration duration = DateTime.now().difference(date);
+    int value;
+    String sufix;
+    
+    if (duration.inHours >= 24) {
+      value = duration.inDays;
+      sufix = 'd';
+    } else if (duration.inMinutes >= 60) {
+      value = duration.inHours;
+      sufix = 'h';
+    } else if (duration.inSeconds >= 60) {
+      value = duration.inMinutes;
+      sufix = 'm';
+    } else {
+      value = duration.inSeconds;
+      sufix = 's';
+    }
+    
+    return fromAnyToNumber(value, comma: true, decimals: 0) + sufix;
+  }
+  
   String fromAnyToNumber(value, {int decimals, bool comma, String prefix}) {
     if (value == null) {
       return null;
@@ -40,7 +63,7 @@ class Converters {
     }
     return (prefix ?? '') + result;
   }
-
+  
   String fromDateToFullDateString(DateTime date, {bool seconds}) {
     if (date == null) {
       return null;
@@ -51,7 +74,14 @@ class Converters {
       return _normalDateFormat.format(date);
     }
   }
-
+  
+  String fromDateToHumanString(DateTime date) {
+    if (date == null) {
+      return null;
+    }
+    return _humanDateFormat.format(date);
+  }
+  
   String fromTextToEllipsis(String value, int max) {
     if (value.length > max) {
       var $value = value;
@@ -67,13 +97,13 @@ class Converters {
     }
     return value;
   }
-
+  
   String fromAnyToDataSize(int value) {
     const ONE_KB = 1000;
     const ONE_MB = 1000000;
     var sufix = 'B';
     var caption = fromAnyToNumber(value, decimals: 0, comma: true);
-
+    
     if (value >= ONE_MB) {
       sufix = 'MB';
       caption = fromAnyToNumber((value / ONE_MB), decimals: 2, comma: true);
@@ -83,14 +113,14 @@ class Converters {
     }
     return '$caption $sufix';
   }
-
+  
   String fromDateToFileDateString(DateTime date) {
     if (date == null) {
       return null;
     }
     return _fileDateFormat.format(date);
   }
-
+  
   DateTime fromTickToDate(int timestamp) {
     if (timestamp != null) {
       return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
@@ -98,7 +128,7 @@ class Converters {
       return null;
     }
   }
-
+  
   double fromAnyToDouble(value, {int decimals}) {
     if (value == null) {
       return null;
@@ -109,7 +139,7 @@ class Converters {
       return decimals != null ? double.parse((value as num).toDouble().toStringAsFixed(decimals)) : (value as num).toDouble();
     }
   }
-
+  
   double fromStringToDouble(String value, {int decimals}) {
     if (value != null && value.isNotEmpty) {
       value = value.replaceAll(',', '');
@@ -118,19 +148,21 @@ class Converters {
       return null;
     }
   }
-
+  
   EdgeInsets fromInsetToFraction(EdgeInsets inset, Size screenSize) {
     return EdgeInsets.only(left: inset.left * screenSize.width, right: inset.right * screenSize.width, top: inset.top * screenSize.height, bottom: inset.bottom * screenSize.height);
   }
-
+  
   TimeOfDay fromDateToTime(DateTime date) {
     return TimeOfDay(hour: date.hour, minute: date.minute);
   }
-
+  
   int fromDateToTick(DateTime date) {
-    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date
+        .toUtc()
+        .millisecondsSinceEpoch ~/ 1000) : null;
   }
-
+  
   double fromAnyToMoney(value) {
     if (value == null) {
       return 0;
@@ -141,20 +173,20 @@ class Converters {
       return double.parse(value.toStringAsFixed(2));
     }
   }
-
+  
   String fromStringToNameCase(String value) {
     var items = value.split(' ');
     var result = List<String>();
-
+    
     for (var item in items) {
       if (item.length > 1) {
         result.add(item[0].toUpperCase() + item.substring(1).toLowerCase());
       }
     }
-
+    
     return result.join(' ');
   }
-
+  
   int fromStringToPositive(String value) {
     if (value != null && value.isNotEmpty) {
       value = value.replaceAll(',', '');
@@ -164,7 +196,7 @@ class Converters {
       return null;
     }
   }
-
+  
   int fromStringToInteger(String value) {
     if (value != null && value.isNotEmpty) {
       value = value.replaceAll(',', '');
@@ -173,7 +205,7 @@ class Converters {
       return null;
     }
   }
-
+  
   int fromAnyToInteger(value) {
     if (value == null) {
       return null;
@@ -184,7 +216,7 @@ class Converters {
       return (value as num).toInt();
     }
   }
-
+  
   fromStringToDate(String text) {
     return DateTime.parse(text);
   }

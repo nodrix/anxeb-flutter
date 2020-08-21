@@ -31,6 +31,9 @@ class Entry extends StatelessWidget {
           const Locale('es'),
           const Locale.fromSubtags(languageCode: 'es'),
         ],
+        routes: <String, WidgetBuilder>{
+          '/${this.home.name}': (BuildContext context) => this.home,
+        },
         debugShowCheckedModeBanner: false);
     return app;
   }

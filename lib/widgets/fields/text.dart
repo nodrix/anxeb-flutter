@@ -23,6 +23,7 @@ class TextInputField<V> extends FieldWidget<V> {
   final String Function(V value) displayText;
   final int maxLines;
   final int maxLength;
+  final bool suffixActions;
 
   TextInputField({
     @required Scope scope,
@@ -60,6 +61,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.displayText,
     this.maxLines,
     this.maxLength,
+    this.suffixActions,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -218,7 +220,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
     var result = TextField(
       autofocus: widget.autofocus ?? false,
-      obscureText: _obscureText && widget.type == TextInputFieldType.password,
+      obscureText: _obscureText == true && widget.type == TextInputFieldType.password,
       focusNode: focusNode,
       textInputAction: widget.action,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
@@ -228,7 +230,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       autocorrect: false,
       inputFormatters: _formatters,
       maxLength: widget.maxLength,
-      maxLines: widget.maxLines,
+      maxLines: (_obscureText == true && widget.type == TextInputFieldType.password) == true ? 1 : widget.maxLines,
       keyboardType: _keyboardType,
       onSubmitted: (text) {
         _editing = false;
@@ -293,43 +295,46 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
         errorText: warning,
         border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
-        suffixIcon: GestureDetector(
-          dragStartBehavior: DragStartBehavior.down,
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            if (widget.readonly == true) {
-              return;
-            }
-            _tabbed = true;
+        
+        suffixIcon: widget.suffixActions == false
+            ? null
+            : GestureDetector(
+                dragStartBehavior: DragStartBehavior.down,
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  if (widget.readonly == true) {
+                    return;
+                  }
+                  _tabbed = true;
 
-            if (widget.type == TextInputFieldType.password) {
-              if (_controller.text.length == 0) {
-                focus();
-              } else {
-                if (focused) {
-                  _editing = false;
-                  setState(() {
-                    _obscureText = !_obscureText;
-                  });
-                } else {
-                  clear();
-                }
-              }
-            } else {
-              if (focused && warning == null) {
-                _editing = false;
-                _convertAndSubmit(_controller.text);
-              } else {
-                if (_controller.text.length > 0) {
-                  clear();
-                } else {
-                  focus();
-                }
-              }
-            }
-          },
-          child: _getIcon(),
-        ),
+                  if (widget.type == TextInputFieldType.password) {
+                    if (_controller.text.length == 0) {
+                      focus();
+                    } else {
+                      if (focused) {
+                        _editing = false;
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      } else {
+                        clear();
+                      }
+                    }
+                  } else {
+                    if (focused && warning == null) {
+                      _editing = false;
+                      _convertAndSubmit(_controller.text);
+                    } else {
+                      if (_controller.text.length > 0) {
+                        clear();
+                      } else {
+                        focus();
+                      }
+                    }
+                  }
+                },
+                child: _getIcon(),
+              ),
       ),
     );
     return result;

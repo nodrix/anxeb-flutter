@@ -32,7 +32,7 @@ class ActionMenu with ActionItem {
       if (action.isVisible?.call() == false) {
         continue;
       }
-      if (action.divided == true) {
+      if (action.divided?.call() == true) {
         items.add(PopupMenuDivider());
       }
       items.add(action.build());
@@ -61,15 +61,17 @@ class ActionMenuItem {
   final IconData Function() icon;
   final String Function() caption;
   final Color Function() color;
+  final Color Function() iconColor;
   final bool Function() isDisabled;
   final bool Function() isVisible;
   final VoidCallback onPressed;
-  final bool divided;
+  final bool Function() divided;
 
   ActionMenuItem({
     @required this.caption,
     this.icon,
     this.color,
+    this.iconColor,
     this.isDisabled,
     this.isVisible,
     this.onPressed,
@@ -85,7 +87,7 @@ class ActionMenuItem {
       height: 35,
       child: Row(
         children: <Widget>[
-          icon != null ? Icon(icon(), color: $color) : Container(),
+          icon != null ? Icon(icon(), color: iconColor?.call() ?? $color) : Container(),
           Container(
             child: Text(caption(), style: TextStyle(color: $color)),
             padding: EdgeInsets.only(left: icon != null ? 12 : 0),

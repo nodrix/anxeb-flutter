@@ -69,7 +69,7 @@ class _StatusBlockState extends State<StatusBlock> {
       child: Row(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.all(widget.iconBorderPadding),
+            padding: EdgeInsets.all(widget.iconBorderPadding ?? 0),
             decoration: widget.iconBorderWidth != null && widget.iconBorderWidth > 0
                 ? BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(45)),

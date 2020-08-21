@@ -27,12 +27,14 @@ class ViewWidget extends StatefulWidget {
   final String name;
   final String title;
   final Application application;
+  final bool root;
   final Key key;
 
   ViewWidget(
     this.name, {
     this.title,
     this.application,
+    this.root,
     this.key,
   })  : assert(name != null),
         super(key: key);
@@ -43,7 +45,6 @@ class ViewWidget extends StatefulWidget {
 
 abstract class ViewState<T extends ViewWidget> extends State<T> {
   String name;
-
   Scope scope;
 
   Future<bool> dismiss();
@@ -213,10 +214,19 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   ViewFooter footer() => null;
 
   @protected
-  Future<bool> beforePop() async => !_scope.isBusy;
+  Future<bool> beforePop() async {
+    if (scope.isBusy) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 
   @protected
   Future closing() async {}
+
+  @protected
+  Future closed() async {}
 
   Future<bool> dismiss() async => await pop(null);
 
@@ -241,7 +251,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     return false;
   }
 
-  Future<T> push<T>(ViewWidget view, {ViewTransitionType transition, int delay}) async {
+  Future<T> push<T>(ViewWidget view, {ViewTransitionType transition, int delay, ViewPushAction action}) async {
     scope.idle();
     await scope.alerts.dispose(quick: true);
 
@@ -251,62 +261,72 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       scope: _scope,
     ));
 
-    var result = await Navigator.of(_scope.context).push(
-      transition != null
-          ? PageRouteBuilder(
-              pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
-              settings: settings,
-              transitionDuration: Duration(milliseconds: delay ?? 200),
-              transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-                if (transition == ViewTransitionType.fade) {
-                  return FadeTransition(
-                    opacity: Tween<double>(begin: 0, end: 1).animate(animation),
-                    child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
-                  );
-                } else {
-                  Offset from = Offset.zero;
-                  Offset to = Offset.zero;
+    var $route;
+    if (transition != null) {
+      $route = PageRouteBuilder(
+        pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => view,
+        settings: settings,
+        transitionDuration: Duration(milliseconds: delay ?? 200),
+        transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+          if (transition == ViewTransitionType.fade) {
+            return FadeTransition(
+              opacity: Tween<double>(begin: 0, end: 1).animate(animation),
+              child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
+            );
+          } else {
+            Offset from = Offset.zero;
+            Offset to = Offset.zero;
 
-                  switch (transition) {
-                    case ViewTransitionType.fromBottom:
-                      from = Offset(0, 1);
-                      to = Offset(0, -.5);
-                      break;
-                    case ViewTransitionType.fromLeft:
-                      from = Offset(-1, 0);
-                      to = Offset(.5, 0);
-                      break;
-                    case ViewTransitionType.fromRight:
-                      from = Offset(1, 0);
-                      to = Offset(-.5, 0);
-                      break;
-                    case ViewTransitionType.fromTop:
-                      from = Offset(0, -1);
-                      to = Offset(0, .5);
-                      break;
-                    case ViewTransitionType.fade:
-                  }
+            switch (transition) {
+              case ViewTransitionType.fromBottom:
+                from = Offset(0, 1);
+                to = Offset(0, -.5);
+                break;
+              case ViewTransitionType.fromLeft:
+                from = Offset(-1, 0);
+                to = Offset(.5, 0);
+                break;
+              case ViewTransitionType.fromRight:
+                from = Offset(1, 0);
+                to = Offset(-.5, 0);
+                break;
+              case ViewTransitionType.fromTop:
+                from = Offset(0, -1);
+                to = Offset(0, .5);
+                break;
+              case ViewTransitionType.fade:
+            }
 
-                  return SlideTransition(
-                    position: Tween<Offset>(begin: from, end: Offset.zero).animate(animation),
-                    child: SlideTransition(
-                      position: Tween<Offset>(begin: Offset.zero, end: to).animate(secondaryAnimation),
-                      child: FadeTransition(
-                        opacity: Tween<double>(begin: 1, end: 0.5).animate(secondaryAnimation),
-                        child: child,
-                      ),
-                    ),
-                  );
-                }
-              },
-            )
-          : MaterialPageRoute(builder: (BuildContext context) => view, settings: settings),
-    );
+            return SlideTransition(
+              position: Tween<Offset>(begin: from, end: Offset.zero).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(begin: Offset.zero, end: to).animate(secondaryAnimation),
+                child: FadeTransition(
+                  opacity: Tween<double>(begin: 1, end: 0.5).animate(secondaryAnimation),
+                  child: child,
+                ),
+              ),
+            );
+          }
+        },
+      );
+    } else {
+      $route = MaterialPageRoute(builder: (BuildContext context) => view, settings: settings);
+    }
 
-    setup();
-    _scope.window.overlay.apply();
-    Future.delayed(Duration(milliseconds: 150), rasterize);
-    Future.delayed(Duration(milliseconds: 250), rasterize);
+    var result;
+    if (action == ViewPushAction.replace) {
+      result = await Navigator.of(_scope.context).pushReplacement($route);
+    } else {
+      result = await Navigator.of(_scope.context).push($route);
+    }
+
+    if (mounted) {
+      setup();
+      _scope.window.overlay.apply();
+      Future.delayed(Duration(milliseconds: 150), rasterize);
+      Future.delayed(Duration(milliseconds: 250), rasterize);
+    }
     return result as T;
   }
 
@@ -362,8 +382,12 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
       scaffold.currentState.openEndDrawer();
     }
+    value = result ?? value;
     await closing();
-    Navigator.of(_scope.context).pop(result ?? value);
+    if (widget.root != true) {
+      Navigator.of(_scope.context).pop(value);
+    }
+    await closed();
   }
 
   bool equals(String name) {
@@ -390,6 +414,8 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   _ViewParts get parts => _parts;
 }
+
+enum ViewPushAction { replace, push }
 
 class _ViewParts {
   final ViewHeader header;

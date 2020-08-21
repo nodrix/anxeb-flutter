@@ -34,6 +34,7 @@ class ListTitleBlock extends StatelessWidget {
   final String subtitleTrail;
   final TextStyle subtitleTrailStyle;
   final Color subtitleTrailColor;
+  final Widget subtitleTrailBody;
   final GestureTapCallback onTap;
   final Color splashColor;
   final Color splashHihglight;
@@ -74,6 +75,7 @@ class ListTitleBlock extends StatelessWidget {
     this.subtitleTrail,
     this.subtitleTrailStyle,
     this.subtitleTrailColor,
+    this.subtitleTrailBody,
     this.onTap,
     this.splashColor,
     this.splashHihglight,
@@ -84,11 +86,14 @@ class ListTitleBlock extends StatelessWidget {
   });
 
   Widget _getMainIcons() {
-    return Column(
-      children: <Widget>[
-        icon != null ? Padding(padding: iconPadding ?? EdgeInsets.zero, child: Icon(icon, size: 43.0 * (iconScale ?? 1.0), color: iconColor ?? scope.application.settings.colors.primary)) : Container(),
-        iconAlt != null ? Padding(padding: iconAltPadding ?? EdgeInsets.zero, child: Icon(iconAlt, size: 43.0 * (iconAltScale ?? 1.0), color: iconAltColor ?? scope.application.settings.colors.primary)) : Container(),
-      ],
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          icon != null ? Padding(padding: iconPadding ?? EdgeInsets.zero, child: Icon(icon, size: 43.0 * (iconScale ?? 1.0), color: iconColor ?? scope.application.settings.colors.primary)) : Container(),
+          iconAlt != null ? Padding(padding: iconAltPadding ?? EdgeInsets.zero, child: Icon(iconAlt, size: 43.0 * (iconAltScale ?? 1.0), color: iconAltColor ?? scope.application.settings.colors.primary)) : Container(),
+        ],
+      ),
     );
   }
 
@@ -202,16 +207,17 @@ class ListTitleBlock extends StatelessWidget {
                                                   )),
                                         )
                                       : Container(),
-                                  subtitleTrail != null
+                                  subtitleTrail != null || subtitleTrailBody != null
                                       ? Expanded(
-                                          child: Text(subtitleTrail,
-                                              textAlign: TextAlign.right,
-                                              style: subtitleTrailStyle ??
-                                                  TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w300,
-                                                    color: subtitleTrailColor ?? scope.application.settings.colors.text,
-                                                  )),
+                                          child: subtitleTrailBody ??
+                                              Text(subtitleTrail,
+                                                  textAlign: TextAlign.right,
+                                                  style: subtitleTrailStyle ??
+                                                      TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.w300,
+                                                        color: subtitleTrailColor ?? scope.application.settings.colors.text,
+                                                      )),
                                         )
                                       : Container(),
                                 ],

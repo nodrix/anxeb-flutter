@@ -54,7 +54,7 @@ class TextButton extends StatefulWidget {
 
   static List<Widget> createOptions<V>(BuildContext context, List<DialogButton<V>> options, {V selectedValue, Settings settings}) {
     var $settings = settings ?? Settings();
-    return options.map(($option) {
+    return options.where(($option) => $option.visible != false).map(($option) {
       return Container(
           alignment: Alignment.center,
           child: Row(mainAxisSize: MainAxisSize.max, children: <Widget>[
@@ -86,7 +86,7 @@ class TextButton extends StatefulWidget {
 
   static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings}) {
     var $settings = settings ?? Settings();
-    return buttons.map(($button) {
+    return buttons.where(($button) => $button.visible != false).map(($button) {
       var button = TextButton(
         caption: $button.caption,
         icon: $button.icon,

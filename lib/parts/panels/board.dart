@@ -5,17 +5,18 @@ import 'package:flutter/material.dart';
 class BoardPanel extends ViewPanel {
   final Widget child;
 
-  BoardPanel({Scope scope, this.child, double height, bool Function() isDisabled})
+  BoardPanel({Scope scope, this.child, double height, bool Function() isDisabled, bool gapless})
       : super(
           scope: scope,
           height: height ?? 400,
           isDisabled: isDisabled,
+          gapless: gapless,
         );
 
   @override
   Widget content([Widget child]) {
     return super.content(Container(
-      height: height - 70,
+      height: (dynamicHeight ?? height) - 70,
       width: scope.window.available.width,
       margin: EdgeInsets.symmetric(horizontal: margins),
       padding: EdgeInsets.all(paddings),

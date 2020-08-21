@@ -7,26 +7,46 @@ class MenuPanel extends BoardPanel {
   final double textScale;
   final double iconScale;
   final bool horizontal;
+  final bool autoHide;
+  final double itemHeight;
 
   MenuPanel({
-    Scope scope,
-    this.items,
+    @required Scope scope,
+    @required this.items,
     double height,
     bool rebuild,
     bool Function() isDisabled,
+    this.itemHeight,
     this.textScale,
     this.iconScale,
     this.horizontal,
+    this.autoHide,
+    bool gapless,
   }) : super(
           scope: scope,
           height: height ?? 400,
           isDisabled: isDisabled,
+          gapless: gapless,
         ) {
     super.rebuild = rebuild;
   }
 
   @override
+  double get dynamicHeight {
+    if (itemHeight != null) {
+      var count = items.where(($item) => $item.isVisible?.call() != false && ($item.actions.any(($action) => $action.isVisible?.call() != false))).length;
+      return (itemHeight * count) + 80;
+    } else {
+      return null;
+    }
+  }
+
+  @override
   Widget content([Widget child]) {
+    if (autoHide == true && !items.any(($item) => $item.actions.any(($action) => $action.isVisible?.call() != false && $action.isDisabled?.call() != true))) {
+      return null;
+    }
+
     return super.content(Container(
       margin: EdgeInsets.only(top: 5),
       child: Column(
@@ -34,88 +54,111 @@ class MenuPanel extends BoardPanel {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: items
+              .where(($item) => $item.isVisible?.call() != false)
               .map(($item) {
-                var $actions = $item.actions.where((item) => item.isVisible?.call() != false).map(($action) {
-                  return Expanded(
-                    child: Container(
-                      margin: EdgeInsets.all(8),
+                var $actions = $item.actions.where(($action) => $action.isVisible?.call() != false).map(($action) {
+                  var button;
+
+                  var buttonContent = Container(
+                    alignment: Alignment.center,
+                    child: horizontal == true
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  $action.icon(),
+                                  color: $action.iconColor?.call() ?? Colors.white,
+                                  size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
+                                ),
+                              ),
+                              $action.label != null
+                                  ? Container(
+                                      alignment: Alignment.center,
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        $action.label().toUpperCase(),
+                                        textAlign: TextAlign.left,
+                                        textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
+                                        style: TextStyle(
+                                          color: $action.textColor?.call() ?? Colors.white,
+                                          letterSpacing: -0.1,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    )
+                                  : Container(),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  $action.icon(),
+                                  color: $action.iconColor?.call() ?? Colors.white,
+                                  size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
+                                ),
+                              ),
+                              $action.label != null
+                                  ? Container(
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.all(5),
+                                      child: Text(
+                                        $action.label().toUpperCase(),
+                                        textAlign: TextAlign.center,
+                                        textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
+                                        style: TextStyle(
+                                          color: $action.textColor?.call() ?? Colors.white,
+                                          letterSpacing: 0.3,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    )
+                                  : Container(),
+                            ],
+                          ),
+                  );
+
+                  if ($action.isDisabled?.call() == true) {
+                    button = Container(
+                      margin: const EdgeInsets.all(8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        ),
+                        child: Opacity(
+                          opacity: 0.5,
+                          child: buttonContent,
+                        ),
+                      ),
+                    );
+                  } else {
+                    button = Container(
+                      margin: const EdgeInsets.all(8),
                       child: Material(
                         key: GlobalKey(),
-                        color: $action.fillColor ?? Colors.white.withOpacity(0.2),
-                        borderRadius: new BorderRadius.all(Radius.circular(10)),
+                        color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
                         child: InkWell(
                           onTap: () {
                             super.collapse();
                             $action.onPressed?.call();
                           },
-                          borderRadius: new BorderRadius.all(Radius.circular(10)),
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: horizontal == true
-                                ? Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Container(
-                                        alignment: Alignment.center,
-                                        child: Icon(
-                                          $action.icon,
-                                          color: $action.iconColor ?? Colors.white,
-                                          size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
-                                        ),
-                                      ),
-                                      $action.label != null
-                                          ? Container(
-                                              alignment: Alignment.center,
-                                              padding: EdgeInsets.all(5),
-                                              child: Text(
-                                                $action.label.toUpperCase(),
-                                                textAlign: TextAlign.left,
-                                                textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
-                                                style: TextStyle(
-                                                  color: $action.textColor ?? Colors.white,
-                                                  letterSpacing: -0.1,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ),
-                                            )
-                                          : Container(),
-                                    ],
-                                  )
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Container(
-                                        alignment: Alignment.center,
-                                        child: Icon(
-                                          $action.icon,
-                                          color: $action.iconColor ?? Colors.white,
-                                          size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
-                                        ),
-                                      ),
-                                      $action.label != null
-                                          ? Container(
-                                              alignment: Alignment.center,
-                                              padding: EdgeInsets.all(5),
-                                              child: Text(
-                                                $action.label.toUpperCase(),
-                                                textAlign: TextAlign.center,
-                                                textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
-                                                style: TextStyle(
-                                                  color: $action.textColor ?? Colors.white,
-                                                  letterSpacing: 0.3,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ),
-                                            )
-                                          : Container(),
-                                    ],
-                                  ),
-                          ),
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          child: buttonContent,
                         ),
                       ),
-                    ),
+                    );
+                  }
+
+                  return Expanded(
+                    child: button,
                   );
                 }).toList();
 
@@ -149,27 +192,29 @@ class MenuPanel extends BoardPanel {
 
 class PanelMenuItem {
   final List<PanelMenuAction> actions;
+  final Function() isVisible;
+  final double Function() height;
 
-  PanelMenuItem({this.actions});
+  PanelMenuItem({this.actions, this.isVisible, this.height});
 }
 
 class PanelMenuAction {
-  final IconData icon;
+  final IconData Function() icon;
+  final String Function() label;
   final bool Function() isVisible;
   final bool Function() isDisabled;
-  final String label;
   final VoidCallback onPressed;
   final double iconScale;
   final double textScale;
-  final Color iconColor;
-  final Color fillColor;
-  final Color textColor;
+  final Color Function() iconColor;
+  final Color Function() fillColor;
+  final Color Function() textColor;
 
   PanelMenuAction({
-    this.icon,
+    @required this.icon,
+    @required this.label,
     this.isVisible,
     this.isDisabled,
-    this.label,
     this.onPressed,
     this.iconScale,
     this.textScale,

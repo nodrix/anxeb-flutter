@@ -8,6 +8,7 @@ class BasicContainer extends StatelessWidget {
   final EdgeInsets padding;
   final EdgeInsets margin;
   final Scope scope;
+  final bool fixedHeight;
 
   BasicContainer({
     Key key,
@@ -16,16 +17,18 @@ class BasicContainer extends StatelessWidget {
     this.fadding,
     this.padding,
     this.margin,
+    this.fixedHeight,
   })  : assert(child != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: fixedHeight == true ? scope.window.available.height : null,
       child: Padding(
         padding: padding ?? EdgeInsets.zero,
         child: Container(
-          padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
+          padding: fadding != null ? Utils.convert.fromInsetToFraction(fadding, scope.window.size) : null,
           margin: margin ?? EdgeInsets.zero,
           child: this.child,
         ),

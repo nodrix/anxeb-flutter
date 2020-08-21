@@ -5,9 +5,11 @@ import 'dart:io';
 class ViewFooter {
   final Scope scope;
   final Widget child;
+  final bool Function() isVisible;
 
   ViewFooter({
     @required this.scope,
+    this.isVisible,
     this.child,
   });
 
@@ -15,6 +17,9 @@ class ViewFooter {
   Widget content() => child;
 
   Widget build() {
+    if (this.isVisible?.call() == false) {
+      return null;
+    }
     return BottomAppBar(
       color: scope.application.settings.colors.primary,
       notchMargin: 8,

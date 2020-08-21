@@ -150,7 +150,7 @@ class Scope {
           Future.delayed(Duration(milliseconds: 100), () {
             _busyContext = null;
             _idling = false;
-            (idlePromise as Completer).complete();
+            (idlePromise as Completer)?.complete?.call();
             rasterize();
           });
         });

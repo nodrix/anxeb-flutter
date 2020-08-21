@@ -31,7 +31,7 @@ class ScrollableContainer extends StatelessWidget {
         physics: disablePhysics == true ? NeverScrollableScrollPhysics() : null,
         controller: controller,
         child: Container(
-          padding: Utils.convert.fromInsetToFraction(fadding, scope.window.size),
+          padding: fadding != null ? Utils.convert.fromInsetToFraction(fadding, scope.window.size) : null,
           child: Padding(
             padding: padding != null ? padding : const EdgeInsets.all(0),
             child: child,
