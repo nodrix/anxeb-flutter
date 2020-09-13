@@ -135,10 +135,15 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
   @override
   void reset() {
     super.reset();
-    setState(() {
+    if (mounted) {
+      setState(() {
+        _editing = false;
+        _controller.clear();
+      });
+    } else {
       _editing = false;
       _controller.clear();
-    });
+    }
   }
 
   @override

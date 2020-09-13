@@ -22,6 +22,7 @@ class ListTitleBlock extends StatelessWidget {
   final bool divisor;
   final Color divisorColor;
   final TextStyle titleStyle;
+  final TextStyle titleTrailStyle;
   final String title;
   final TextOverflow titleOverflow;
   final Color titleColor;
@@ -63,6 +64,7 @@ class ListTitleBlock extends StatelessWidget {
     this.divisor,
     this.divisorColor,
     this.titleStyle,
+    this.titleTrailStyle,
     this.title,
     this.titleOverflow,
     this.titleColor,
@@ -160,7 +162,7 @@ class ListTitleBlock extends StatelessWidget {
                             titleTrail != null
                                 ? Text(titleTrail,
                                     textAlign: TextAlign.right,
-                                    style: TextStyle(
+                                    style: titleTrailStyle ?? TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
                                       color: titleTrailColor ?? scope.application.settings.colors.primary,

@@ -123,7 +123,7 @@ class _ImageButtonState extends State<ImageButton> {
         }
       }
     });
-    
+
     _netImage = SecuredImage(
       widget.imageUrl,
       scale: widget.imageScale ?? 1,
@@ -221,13 +221,21 @@ class _ImageButtonState extends State<ImageButton> {
         onTap: widget.onTap != null
             ? () async {
                 if (widget.enabled != false) {
-                  setState(() {
+                  if (mounted) {
+                    setState(() {
+                      _busy = true;
+                    });
+                  } else{
                     _busy = true;
-                  });
+                  }
                   await widget.onTap();
-                  setState(() {
+                  if (mounted) {
+                    setState(() {
+                      _busy = false;
+                    });
+                  } else {
                     _busy = false;
-                  });
+                  }
                 }
               }
             : null,

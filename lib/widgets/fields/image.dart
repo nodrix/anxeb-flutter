@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/preview.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -12,6 +13,12 @@ enum ImageInputFieldType { front, rear, local, web }
 
 class ImageInputField extends FieldWidget<String> {
   final ImageInputFieldType type;
+  final bool fullImage;
+  final bool initFaceCamera;
+  final bool flash;
+  final double height;
+  final bool returnPath;
+  final ResolutionPreset resolution;
 
   ImageInputField({
     @required Scope scope,
@@ -33,7 +40,15 @@ class ImageInputField extends FieldWidget<String> {
     FormFieldValidator<String> validator,
     String Function(String value) parser,
     bool focusNext,
+    double fontSize,
+    double labelSize,
     this.type,
+    this.fullImage,
+    this.initFaceCamera,
+    this.flash,
+    this.height,
+    this.returnPath,
+    this.resolution,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -55,6 +70,8 @@ class ImageInputField extends FieldWidget<String> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          fontSize: fontSize,
+          labelSize: labelSize,
         );
 
   @override
@@ -73,12 +90,20 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   void _takePicture() async {
     var result = await widget.scope.view.push(CameraHelper(
       title: widget.label,
+      fullImage: widget.fullImage,
+      initFaceCamera: widget.initFaceCamera,
       allowMainCamera: widget.type == ImageInputFieldType.rear,
+      flash: widget.flash,
+      resolution: widget.resolution,
     ));
 
     if (result != null) {
       File image = result as File;
-      super.submit('data:image/png;base64,${base64Encode(image.readAsBytesSync())}');
+      if (widget.returnPath == true) {
+        super.submit(image.path);
+      } else {
+        super.submit('data:image/png;base64,${base64Encode(image.readAsBytesSync())}');
+      }
     }
   }
 
@@ -104,7 +129,11 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   void present() {
     setState(() {
       if (value != null) {
-        _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
+        if (widget.returnPath == true) {
+          _takenPicture = Image.file(File(value)).image;
+        } else {
+          _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
+        }
       } else {
         _takenPicture = null;
       }
@@ -113,6 +142,35 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
 
   @override
   Widget field() {
+    var previewImage = _takenPicture != null
+        ? GestureDetector(
+            onTap: () async {
+              var result = await widget.scope.view.push(ImagePreviewHelper(
+                title: widget.label,
+                image: _takenPicture,
+                canRemove: true,
+                fullImage: widget.fullImage,
+              ));
+              if (result == false) {
+                clear();
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10.0),
+                ),
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  image: _takenPicture,
+                ),
+              ),
+            ),
+          )
+        : null;
+
     return GestureDetector(
       onTap: () {
         if (widget.readonly == true) {
@@ -132,9 +190,11 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
               contentPadding: EdgeInsets.only(left: 0, top: 7, bottom: 0, right: 0),
               prefixIcon: Icon(
                 widget.icon ?? FontAwesome5.dot_circle,
+                size: widget.iconSize,
                 color: widget.scope.application.settings.colors.primary,
               ),
               labelText: _takenPicture != null ? widget.label : null,
+              labelStyle: widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null,
               fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
               border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
@@ -160,30 +220,15 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
                   ? Container(
                       child: Container(
                         padding: EdgeInsets.only(bottom: 10),
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: GestureDetector(
-                            onTap: () async {
-                              var result = await widget.scope.view.push(ImagePreviewHelper(title: widget.label, image: _takenPicture, canRemove: true));
-                              if (result == false) {
-                                clear();
-                              }
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10.0),
-                                ),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  image: _takenPicture,
-                                ),
+                        child: widget.height == null
+                            ? AspectRatio(
+                                aspectRatio: 1,
+                                child: previewImage,
+                              )
+                            : Container(
+                                height: widget.height,
+                                child: previewImage,
                               ),
-                            ),
-                          ),
-                        ),
                       ),
                     )
                   : Container(
@@ -191,7 +236,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
                       child: Text(
                         widget.label,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: widget.fontSize != null ? (widget.fontSize * 0.9) : 16,
                           color: Color(0x88000000),
                         ),
                       ),

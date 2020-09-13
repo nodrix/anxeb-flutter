@@ -11,6 +11,9 @@ class FieldWidget<V> extends StatefulWidget {
   final String group;
   final String label;
   final IconData icon;
+  final double iconSize;
+  final double fontSize;
+  final double labelSize;
   final EdgeInsets margin;
   final EdgeInsets padding;
   final bool readonly;
@@ -25,7 +28,7 @@ class FieldWidget<V> extends StatefulWidget {
   final V Function(dynamic value) parser;
   final bool focusNext;
   final V initialValue;
-
+  
   FieldWidget({
     @required this.scope,
     this.key,
@@ -33,6 +36,9 @@ class FieldWidget<V> extends StatefulWidget {
     this.group,
     this.label,
     this.icon,
+    this.iconSize,
+    this.fontSize,
+    this.labelSize,
     this.margin,
     this.padding,
     this.readonly,
@@ -47,9 +53,10 @@ class FieldWidget<V> extends StatefulWidget {
     this.parser,
     this.focusNext,
     this.initialValue,
-  })  : assert(scope != null && name != null),
+  })
+      : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
-
+  
   @override
   Field createState() => Field();
 }
@@ -59,17 +66,17 @@ abstract class FieldState<V, F extends FieldWidget<V>> extends State<F> {
   V value;
   bool focused;
   bool isEmpty;
-
+  
   void focus({String warning});
-
+  
   void select();
-
+  
   String validate({bool showMessage});
-
+  
   bool valid();
-
+  
   void reset();
-
+  
   dynamic data();
 }
 
@@ -79,27 +86,31 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   int index = 0;
   String _warning;
   bool _initialized = false;
-
+  
   @protected
   FocusNode focusNode;
-
+  
   @protected
   dynamic data() {
     return value;
   }
-
-  void rasterize() {
-    if (mounted == true) {
-      setState(() {});
+  
+  void rasterize([VoidCallback fn]) {
+    if (!mounted) {
+      fn?.call();
+    } else {
+      setState(() {
+        fn?.call();
+      });
     }
   }
-
+  
   @protected
   void init() {}
-
+  
   @protected
   void setup() => null;
-
+  
   @override
   void didInitState() {
     setup();
@@ -111,7 +122,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       }
     }
   }
-
+  
   @protected
   void focus({String warning}) {
     if (warning != null) {
@@ -119,46 +130,54 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
     FocusScope.of(this.context).requestFocus(focusNode);
   }
-
+  
   @protected
   void select() {}
-
+  
   void unfocus() {
     FocusScope.of(this.context).requestFocus(new FocusNode());
   }
-
+  
   void reset() {
-    setState(() {
+    if (mounted) {
+      setState(() {
+        warning = null;
+        value = null;
+      });
+    } else {
       warning = null;
       value = null;
-    });
-  }
-
-  String validate({bool showMessage}) {
-    var result = widget.visible != false && widget.validator != null ? widget.validator(getValueString(this.value)) : null;
-
-    if (showMessage != false) {
-      warning = result;
     }
-    return result;
   }
-
+  
+  String validate({bool showMessage}) {
+    var validation = _getValidation();
+    if (validation != null && showMessage != false) {
+      warning = validation;
+    } else {
+      warning = null;
+    }
+    return validation;
+  }
+  
   bool valid() {
-    return validate() == null;
+    return _getValidation() == null;
   }
-
+  
   @protected
   String getValueString(V value) {
     return value?.toString();
   }
-
+  
   @protected
   void submit(V $value) {
     if (this.value != $value && widget.onChanged != null) {
       widget.onChanged($value);
     }
     this.value = $value;
-    if (valid()) {
+    var $warning = _getValidation();
+    if ($warning == null) {
+      warning = null;
       if (widget.focusNext == false || !form.focusFrom(index)) {
         unfocus();
       }
@@ -168,16 +187,16 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
         });
       }
     } else {
-      focus();
+      focus(warning: $warning);
     }
     if (widget.onSubmitted != null) {
       widget.onSubmitted(value);
     }
   }
-
+  
   @protected
   void present() {}
-
+  
   @override
   initState() {
     super.initState();
@@ -209,18 +228,18 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
         }
       }
     });
-
+    
     form.include(this);
     init();
     if (!mounted) return;
     rasterize();
   }
-
+  
   @override
   dispose() {
     super.dispose();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     if (widget.visible == false) {
@@ -233,7 +252,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       child: field(),
     );
   }
-
+  
   @protected
   void clear() {
     validate();
@@ -244,19 +263,19 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       }
     });
   }
-
+  
   @protected
   void prebuild() {}
-
+  
   @protected
   void onFocus() {}
-
+  
   @protected
   void onBlur() {}
-
+  
   @protected
   Widget field() => Container();
-
+  
   @protected
   setValueSilent(dynamic value) {
     if (value is V) {
@@ -265,18 +284,21 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       _value = value != null ? widget.parser(value) : null;
     }
   }
-
+  
+  String _getValidation() => widget.visible != false && widget.validator != null ? widget.validator(getValueString(this.value)) : null;
+  
   @protected
   String get warning => _warning;
-
+  
   @protected
   set warning(value) {
-    _warning = value;
-    rasterize();
+    rasterize(() {
+      _warning = value;
+    });
   }
-
+  
   V get value => _value;
-
+  
   set value(dynamic value) {
     if (value is V) {
       _value = value;
@@ -286,10 +308,13 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     present();
     rasterize();
   }
-
+  
   bool get focused => _focused;
-
+  
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.view.name];
-
-  bool get isEmpty => value == null || value.toString().isEmpty;
+  
+  bool get isEmpty =>
+      value == null || value
+          .toString()
+          .isEmpty;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'data.dart';
 import 'field.dart';
 import 'model.dart';
@@ -60,19 +59,13 @@ class FieldsForm {
 
   void focusNextInvalid() {
     for (var i = 0; i <= fields.length; i++) {
-      var exit = false;
-
       for (var field in fields.values) {
         if (field.index == i) {
           if (!field.valid() && field.context != null) {
             field.focus();
-            exit = true;
             return;
           }
         }
-      }
-      if (exit) {
-        break;
       }
     }
   }
@@ -81,9 +74,15 @@ class FieldsForm {
     fields.remove(name);
   }
 
-  void clear(String name) {
-    var field = fields[name];
-    field.reset();
+  void clear([String fieldName]) {
+    if (fieldName != null) {
+      var field = fields[fieldName];
+      field.reset();
+    } else {
+      fields.entries.forEach((field) {
+        field.value.reset();
+      });
+    }
   }
 
   bool focusFrom(int index) {
@@ -124,6 +123,7 @@ class FieldsForm {
   void include(FieldState current) {
     var $field = fields[current.widget.name];
     if ($field != null) {
+      current.index = $field.index;
       current.value = $field.value;
     } else {
       current.index = fields.length;
@@ -139,12 +139,14 @@ class FieldsForm {
   bool validate({bool showMessage, bool autoFocus}) {
     var result = true;
     for (var field in fields.values) {
-      if (field.context != null && field.validate(showMessage: showMessage) != null) {
-        if (autoFocus != false) {
-          field.focus();
+      if (field.context != null) {
+        if (field.validate(showMessage: showMessage) != null) {
+          if (autoFocus != false) {
+            field.focus();
+          }
+          result = false;
+          break;
         }
-        result = false;
-        break;
       }
     }
     if (validated != result) {

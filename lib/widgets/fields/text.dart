@@ -46,6 +46,9 @@ class TextInputField<V> extends FieldWidget<V> {
     V Function(dynamic value) parser,
     bool focusNext,
     V value,
+    double iconSize,
+    double fontSize,
+    double labelSize,
     this.controller,
     this.type,
     this.autofocus,
@@ -84,6 +87,9 @@ class TextInputField<V> extends FieldWidget<V> {
           parser: parser,
           focusNext: focusNext,
           initialValue: value,
+          iconSize: iconSize,
+          labelSize: labelSize,
+          fontSize: fontSize,
         );
 
   @override
@@ -195,10 +201,15 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   @override
   void reset() {
     super.reset();
-    setState(() {
+    if (mounted) {
+      setState(() {
+        _editing = false;
+        _controller.clear();
+      });
+    } else {
       _editing = false;
       _controller.clear();
-    });
+    }
   }
 
   @override
@@ -229,7 +240,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       enableInteractiveSelection: widget.canSelect != null ? widget.canSelect : true,
       autocorrect: false,
       inputFormatters: _formatters,
-      maxLength: widget.maxLength,
+      maxLength: focused ? widget.maxLength : null,
       maxLines: (_obscureText == true && widget.type == TextInputFieldType.password) == true ? 1 : widget.maxLines,
       keyboardType: _keyboardType,
       onSubmitted: (text) {
@@ -266,13 +277,14 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         }
       },
       textAlign: TextAlign.left,
-      style: widget.label == null ? TextStyle(fontSize: 20.25) : null,
+      style: widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null),
       decoration: InputDecoration(
         filled: true,
         contentPadding: EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
         prefixIcon: widget.icon != null
             ? Icon(
                 widget.icon,
+                size: widget.iconSize,
                 color: widget.scope.application.settings.colors.primary,
               )
             : null,
@@ -284,18 +296,16 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
                 letterSpacing: 0.8,
                 fontSize: 15,
               )
-            : null,
+            : (widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null),
         floatingLabelBehavior: widget.fixedLabel == true ? FloatingLabelBehavior.always : null,
         hintText: widget.hint,
         prefixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
-        counter: Container(),
         suffixText: widget.suffix,
         fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
         errorText: warning,
         border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
-        
         suffixIcon: widget.suffixActions == false
             ? null
             : GestureDetector(

@@ -43,7 +43,7 @@ class Navigator {
     }
   }
 
-  Future<dynamic> push(Future<ViewWidget> Function(Key key) getView) async {
+  Future<T> push<T>(Future<ViewWidget> Function(Key key) getView) async {
     if (_sourceView != null) {
       var dismissed = _currentView != null ? await _currentView.dismiss() : true;
 
@@ -55,7 +55,7 @@ class Navigator {
 
         var view = await getView(_currentViewKey);
         var $openedKey = _currentViewKey;
-        var result = await _sourceView.push(
+        var result = await _sourceView.push<T>(
           view,
           transition: ViewTransitionType.fade,
         );
@@ -178,15 +178,15 @@ class Navigator {
               Text($item.caption, style: $itemStyle),
               $error != null
                   ? Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Text($error.toUpperCase(),
-                          style: TextStyle(
-                            color: $enabled == false ? _application.settings.colors.danger.withAlpha(150) : _application.settings.colors.danger,
-                            fontSize: 11,
-                            letterSpacing: 0.2,
-                            fontWeight: FontWeight.w400,
-                          )),
-                    )
+                padding: const EdgeInsets.only(top: 5),
+                child: Text($error.toUpperCase(),
+                    style: TextStyle(
+                      color: $enabled == false ? _application.settings.colors.danger.withAlpha(150) : _application.settings.colors.danger,
+                      fontSize: 11,
+                      letterSpacing: 0.2,
+                      fontWeight: FontWeight.w400,
+                    )),
+              )
                   : Container()
             ],
           ),
@@ -204,55 +204,55 @@ class Navigator {
             color: $active == true ? _application.settings.colors.navigation.withOpacity(0.05) : Colors.transparent,
             border: $item.divider == true
                 ? Border(
-                    bottom: BorderSide(width: 1.0, color: _application.settings.colors.separator),
-                  )
+              bottom: BorderSide(width: 1.0, color: _application.settings.colors.separator),
+            )
                 : null,
           ),
           child: $group != null && $group.items.length > 0
               ? Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.4)),
-                    ),
-                  ),
-                  child: ExpansionTile(
-                    initiallyExpanded: $anyChildActive,
-                    title: menuItemContent,
-                    children: $group.items.map(($subItem) {
-                      return _buildItem($subItem, $group);
-                    }).toList(),
-                  ),
-                )
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.4)),
+              ),
+            ),
+            child: ExpansionTile(
+              initiallyExpanded: $anyChildActive,
+              title: menuItemContent,
+              children: $group.items.map(($subItem) {
+                return _buildItem($subItem, $group);
+              }).toList(),
+            ),
+          )
               : Container(
-                  decoration: parent != null
-                      ? null
-                      : BoxDecoration(
-                          border: Border(
-                            left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.3)),
-                          ),
-                        ),
-                  child: ListTile(
-                    dense: $error != null,
-                    enabled: $enabled != false,
-                    title: menuItemContent,
-                    onTap: () async {
-                      if ($item.onTab != null) {
-                        var result = await $item.onTab();
-                        if (result == false) {
-                          return;
-                        }
-                      }
+            decoration: parent != null
+                ? null
+                : BoxDecoration(
+              border: Border(
+                left: BorderSide(width: 8.0, color: _application.settings.colors.navigation.withOpacity(0.3)),
+              ),
+            ),
+            child: ListTile(
+              dense: $error != null,
+              enabled: $enabled != false,
+              title: menuItemContent,
+              onTap: () async {
+                if ($item.onTab != null) {
+                  var result = await $item.onTab();
+                  if (result == false) {
+                    return;
+                  }
+                }
 
-                      if ($item.home == true) {
-                        await home();
-                      }
+                if ($item.home == true) {
+                  await home();
+                }
 
-                      if ($item.view != null) {
-                        push((key) => $item.view(key));
-                      }
-                    },
-                  ),
-                ),
+                if ($item.view != null) {
+                  push((key) => $item.view(key));
+                }
+              },
+            ),
+          ),
         ),
       ],
     );

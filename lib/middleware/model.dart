@@ -241,7 +241,7 @@ class _ModelField {
       }
     } else {
       if (enumValues != null && $rawValue != null) {
-        setValue(enumValues.firstWhere(($enum) => $enum.toString().endsWith($rawValue), orElse: () => null) ?? $defValue);
+        setValue(enumValues.firstWhere(($enum) => $enum.toString().endsWith('.${$rawValue}'), orElse: () => null) ?? $defValue);
       } else {
         setValue($rawValue ?? $defValue);
       }

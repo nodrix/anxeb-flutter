@@ -1,18 +1,19 @@
 import 'package:anxeb_flutter/middleware/utils.dart';
+import 'package:credit_card_validate/credit_card_validate.dart';
 
 class Validators {
   String firstNames(String value) {
     var err = 'Ingrese uno o dos nombres válidos';
-    
+
     Pattern pattern = r'^[a-z A-Z\\s]+$';
     RegExp regex = new RegExp(pattern);
     if (value != null && regex.hasMatch(value)) {
       var parts = value.split(' ');
-      
+
       if (parts.length > 2) {
         return err;
       }
-      
+
       for (var item in parts) {
         if (item.length < 2) {
           return err;
@@ -24,10 +25,10 @@ class Validators {
     } else {
       return err;
     }
-    
+
     return null;
   }
-  
+
   String lastNames(String value) {
     if (firstNames(value) != null) {
       return 'Ingrese uno o dos apellidos válidos';
@@ -35,7 +36,42 @@ class Validators {
       return null;
     }
   }
-  
+
+  String creditCard(String value) {
+    if (value != null && CreditCardValidator.isCreditCardValid(cardNumber: value) == true) {
+      return null;
+    }
+    return 'Ingrese un número de tarjeta válido';
+  }
+
+  String creditCardCCV(String value) {
+    if (value != null && value.length > 1 && value.length <= 4) {
+      var ccv = int.tryParse(value);
+
+      if (ccv != null && ccv >= 1 && ccv <= 9999) {
+        return null;
+      }
+    }
+    return 'Ingrese un código válido';
+  }
+
+  String creditCardDate(String value) {
+    if (value != null && value.length == 4) {
+      var mm = value.substring(0, 2);
+      var yy = value.substring(2, 4);
+      
+      var month = int.tryParse(mm);
+      var year = int.tryParse(yy);
+
+      if (month != null && month >= 1 && month <= 12) {
+        if (year != null && year >= 1 && year <= 99) {
+          return null;
+        }
+      }
+    }
+    return 'Usar formato válido MMYY';
+  }
+
   String required(String value) {
     if (value == null || value.length == 0) {
       return 'Campo requirido';
@@ -43,17 +79,17 @@ class Validators {
       return null;
     }
   }
-  
+
   String greaterZero(String value) {
     var numb = Utils.convert.fromStringToDouble(value);
-    
+
     if (numb == null || numb <= 0) {
       return 'Valor numérico requirido';
     } else {
       return null;
     }
   }
-  
+
   String greaterZeroOrNothing(String value) {
     if (value == null || value.isEmpty) {
       return null;
@@ -65,7 +101,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String barcode(String value) {
     if (value != null && value.isNotEmpty) {
       if (value.length > 1) {
@@ -76,11 +112,11 @@ class Validators {
             total += (mult * int.parse(value[i]));
             mult = mult == 3 ? 1 : 3;
           }
-          
+
           var totalStr = total.toString();
           var lastDigit = int.parse(totalStr[totalStr.length - 1]);
           var checkDigit = lastDigit > 0 ? 10 - lastDigit : 0;
-          
+
           if (value.endsWith(checkDigit.toString())) {
             return null;
           }
@@ -91,7 +127,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String phone(String value) {
     Pattern pattern = r'^[0-9]*$';
     RegExp regex = new RegExp(pattern);
@@ -100,19 +136,15 @@ class Validators {
       var number = 0;
       try {
         number = int.parse(phone);
-        if (number
-            .toString()
-            .length == 10 || number
-            .toString()
-            .length == 11) {
+        if (number.toString().length == 10 || number.toString().length == 11) {
           return null;
         }
       } catch (err) {}
     }
-    
+
     return 'Ingrese un número telefónico válido (solo números)';
   }
-  
+
   String email(String value) {
     if (value == null || value.isEmpty) {
       return 'Correo requerido';
@@ -126,7 +158,7 @@ class Validators {
       }
     }
   }
-  
+
   String password(String value) {
     if (value == null || value.isEmpty) {
       return 'Contraseña requerida';
@@ -140,7 +172,7 @@ class Validators {
     }
     return null;
   }
-  
+
   String cedula(String value) {
     var msg = 'Ingrese una cédula válida (solo números)';
     Pattern pattern = r'^[0-9]*$';
@@ -179,7 +211,7 @@ class Validators {
     }
     return msg;
   }
-  
+
   String passport(String value) {
     Pattern pattern = r'/[a-zA-Z]{2}[0-9]{7}/';
     RegExp regex = new RegExp(pattern);
@@ -189,10 +221,10 @@ class Validators {
       return null;
     }
   }
-  
+
   String posCode(String value) {
     var initial = ['A', 'B', 'C', 'D'];
-    
+
     if (value == null || value.length < 2) {
       return 'Ingrese un código mayor de 2 dígitos';
     } else if (!initial.contains(value[0].toUpperCase()) || int.tryParse(value.substring(1).replaceAll(' ', 'X').replaceAll('.', 'X').replaceAll('-', 'X')) == null) {
@@ -201,7 +233,7 @@ class Validators {
       return null;
     }
   }
-  
+
   String identity(String value) {
     if (this.cedula(value) == null || this.passport(value) == null) {
       return null;

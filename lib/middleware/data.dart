@@ -67,6 +67,11 @@ class Data {
     return _items.toString();
   }
 
+  void remove(String field) {
+    Map items = _items as Map;
+    items.remove(field);
+  }
+
   String toJson({bool pretty}) {
     if (pretty == true) {
       var encoder = new JsonEncoder.withIndent('  ');

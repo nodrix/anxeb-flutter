@@ -57,6 +57,7 @@ class UserBlock extends StatelessWidget {
                   headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
                   outerBorderColor: color ?? Colors.white,
                   failedIcon: Icons.account_circle,
+                  failedIconColor: color != null ? color.withAlpha(50) : null,
                   outerThickness: 3,
                   onTap: onTab,
                 ),

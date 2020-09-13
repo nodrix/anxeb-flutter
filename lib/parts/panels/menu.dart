@@ -41,137 +41,144 @@ class MenuPanel extends BoardPanel {
     }
   }
 
+  static Widget getButtons({List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, Future Function() collapse}) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: items
+          .where(($item) => $item.isVisible?.call() != false)
+          .map(($item) {
+            var $actions = $item.actions.where(($action) => $action.isVisible?.call() != false).map(($action) {
+              var button;
+
+              var buttonContent = Container(
+                alignment: Alignment.center,
+                child: horizontal == true
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Container(
+                            alignment: Alignment.center,
+                            child: Icon(
+                              $action.icon(),
+                              color: $action.iconColor?.call() ?? Colors.white,
+                              size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
+                            ),
+                          ),
+                          $action.label != null
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.all(5),
+                                  child: Text(
+                                    $action.label().toUpperCase(),
+                                    textAlign: TextAlign.left,
+                                    textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
+                                    style: TextStyle(
+                                      color: $action.textColor?.call() ?? Colors.white,
+                                      letterSpacing: -0.1,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                )
+                              : Container(),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Container(
+                            alignment: Alignment.center,
+                            child: Icon(
+                              $action.icon(),
+                              color: $action.iconColor?.call() ?? Colors.white,
+                              size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
+                            ),
+                          ),
+                          $action.label != null
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    $action.label().toUpperCase(),
+                                    textAlign: TextAlign.center,
+                                    textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
+                                    style: TextStyle(
+                                      color: $action.textColor?.call() ?? Colors.white,
+                                      letterSpacing: 0.3,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                )
+                              : Container(),
+                        ],
+                      ),
+              );
+
+              if ($action.isDisabled?.call() == true) {
+                button = Container(
+                  margin: const EdgeInsets.all(8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: buttonContent,
+                    ),
+                  ),
+                );
+              } else {
+                button = Container(
+                  margin: const EdgeInsets.all(8),
+                  child: Material(
+                    key: GlobalKey(),
+                    color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    child: InkWell(
+                      onTap: () {
+                        collapse?.call();
+                        $action.onPressed?.call();
+                      },
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      child: buttonContent,
+                    ),
+                  ),
+                );
+              }
+
+              return Expanded(
+                child: button,
+              );
+            }).toList();
+
+            if ($actions.length == 0) {
+              return null;
+            }
+            return Expanded(
+              child: Row(mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: $actions),
+            );
+          })
+          .where((element) => element != null)
+          .toList(),
+    );
+  }
+
   @override
   Widget content([Widget child]) {
     if (autoHide == true && !items.any(($item) => $item.actions.any(($action) => $action.isVisible?.call() != false && $action.isDisabled?.call() != true))) {
       return null;
     }
 
-    return super.content(Container(
-      margin: EdgeInsets.only(top: 5),
-      child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: items
-              .where(($item) => $item.isVisible?.call() != false)
-              .map(($item) {
-                var $actions = $item.actions.where(($action) => $action.isVisible?.call() != false).map(($action) {
-                  var button;
-
-                  var buttonContent = Container(
-                    alignment: Alignment.center,
-                    child: horizontal == true
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  $action.icon(),
-                                  color: $action.iconColor?.call() ?? Colors.white,
-                                  size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
-                                ),
-                              ),
-                              $action.label != null
-                                  ? Container(
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.all(5),
-                                      child: Text(
-                                        $action.label().toUpperCase(),
-                                        textAlign: TextAlign.left,
-                                        textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
-                                        style: TextStyle(
-                                          color: $action.textColor?.call() ?? Colors.white,
-                                          letterSpacing: -0.1,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    )
-                                  : Container(),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  $action.icon(),
-                                  color: $action.iconColor?.call() ?? Colors.white,
-                                  size: 48.0 * ($action.iconScale ?? 1) * (iconScale ?? 1),
-                                ),
-                              ),
-                              $action.label != null
-                                  ? Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.all(5),
-                                      child: Text(
-                                        $action.label().toUpperCase(),
-                                        textAlign: TextAlign.center,
-                                        textScaleFactor: ($action.textScale ?? 1.05) * (textScale ?? 1),
-                                        style: TextStyle(
-                                          color: $action.textColor?.call() ?? Colors.white,
-                                          letterSpacing: 0.3,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    )
-                                  : Container(),
-                            ],
-                          ),
-                  );
-
-                  if ($action.isDisabled?.call() == true) {
-                    button = Container(
-                      margin: const EdgeInsets.all(8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        ),
-                        child: Opacity(
-                          opacity: 0.5,
-                          child: buttonContent,
-                        ),
-                      ),
-                    );
-                  } else {
-                    button = Container(
-                      margin: const EdgeInsets.all(8),
-                      child: Material(
-                        key: GlobalKey(),
-                        color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        child: InkWell(
-                          onTap: () {
-                            super.collapse();
-                            $action.onPressed?.call();
-                          },
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          child: buttonContent,
-                        ),
-                      ),
-                    );
-                  }
-
-                  return Expanded(
-                    child: button,
-                  );
-                }).toList();
-
-                if ($actions.length == 0) {
-                  return null;
-                }
-                return Expanded(
-                  child: Row(mainAxisSize: MainAxisSize.max, crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.center, children: $actions),
-                );
-              })
-              .where((element) => element != null)
-              .toList()),
-    ));
+    return super.content(
+      Container(
+        margin: EdgeInsets.only(top: 5),
+        child: getButtons(items: items, horizontal: horizontal, iconScale: iconScale, collapse: super.collapse, textScale: textScale),
+      ),
+    );
   }
 
   @protected

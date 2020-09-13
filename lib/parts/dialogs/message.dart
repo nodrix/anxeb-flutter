@@ -28,8 +28,7 @@ class MessageDialog extends ScopeDialog {
     this.textAlign,
     this.buttons,
     bool dismissible,
-  })  : assert(icon != null),
-        super(scope) {
+  }) : super(scope) {
     super.dismissible = dismissible != null ? dismissible : (this.buttons == null);
   }
 
@@ -42,36 +41,38 @@ class MessageDialog extends ScopeDialog {
       title: title != null
           ? Row(
               children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(right: 7),
-                  margin: EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
-                    ),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: iconSize ?? 72,
-                    color: iconColor ?? scope.application.settings.colors.primary,
-                  ),
-                ),
+                icon != null
+                    ? Container(
+                        padding: EdgeInsets.only(right: 7),
+                        margin: EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+                          ),
+                        ),
+                        child: Icon(
+                          icon,
+                          size: iconSize ?? 72,
+                          color: iconColor ?? scope.application.settings.colors.primary,
+                        ),
+                      )
+                    : Container(),
                 Expanded(
                   child: Text(
                     title.toUpperCase(),
-                    textAlign: TextAlign.left,
+                    textAlign: icon == null ? TextAlign.center : TextAlign.left,
                     style: TextStyle(fontSize: 16.2, color: titleColor ?? scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
                   ),
                 ),
               ],
             )
-          : Container(
+          : icon != null ? Container(
               child: Icon(
                 icon,
                 size: iconSize ?? 150,
                 color: iconColor ?? scope.application.settings.colors.primary,
               ),
-            ),
+            ) : Container(),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

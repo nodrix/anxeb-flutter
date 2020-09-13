@@ -1,11 +1,15 @@
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
+import 'package:anxeb_flutter/parts/dialogs/panel.dart';
 import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
+import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'field.dart';
 import 'form.dart';
 import 'scope.dart';
 import 'utils.dart';
@@ -68,6 +72,17 @@ class ScopeDialogs {
     );
   }
 
+  PanelDialog panel({String title, List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale}) {
+    return PanelDialog(
+      _scope,
+      title: title,
+      items: items,
+      horizontal: horizontal,
+      iconScale: iconScale,
+      textScale: textScale,
+    );
+  }
+
   OptionsDialog options<V>(String title, {IconData icon, List<DialogButton<V>> options, V selectedValue}) {
     return OptionsDialog<V>(
       _scope,
@@ -91,17 +106,8 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon}) {
-    return MessageDialog(
-      _scope,
-      title: title,
-      message: message,
-      icon: icon ?? Icons.check_circle,
-      messageColor: _scope.application.settings.colors.text,
-      titleColor: _scope.application.settings.colors.primary,
-      iconColor: _scope.application.settings.colors.success,
-      buttons: buttons,
-    );
+  MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
+    return MessageDialog(_scope, title: title, message: message, icon: icon ?? Icons.check_circle, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.primary, iconColor: _scope.application.settings.colors.success, buttons: buttons, body: body);
   }
 
   MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon}) {
@@ -152,7 +158,51 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, int lines}) {
+  MessageDialog qr(String value, {IconData icon, String title, List<DialogButton> buttons, String tip}) {
+    final size = _scope.window.available.width * 0.6;
+
+    return MessageDialog(
+      _scope,
+      icon: icon,
+      title: title,
+      iconSize: 65,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: _scope.application.settings.colors.info,
+      buttons: buttons,
+      body: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              width: size,
+              height: size,
+              child: QrImage(
+                data: value,
+                version: QrVersions.auto,
+                foregroundColor: _scope.application.settings.colors.text,
+                size: size,
+              ),
+            ),
+            tip != null
+                ? Container(
+                    width: size,
+                    padding: EdgeInsets.all(6),
+                    child: Text(
+                      tip ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _scope.application.settings.colors.primary),
+                    ),
+                  )
+                : Container(),
+          ],
+        );
+      },
+      iconColor: _scope.application.settings.colors.primary,
+      dismissible: true,
+    );
+  }
+
+  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, String yesLabel, String noLabel, bool swap, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -160,8 +210,62 @@ class ScopeDialogs {
       Navigator.of(context).pop(null);
     };
 
+    var $formName = group ?? '_dialog_form';
+    FieldsForm form = _scope.forms[$formName];
+    form.clear();
+
     var accept = () {
-      FieldsForm form = _scope.forms['_dialog'];
+      if (form.valid() == true) {
+        Future.delayed(Duration(milliseconds: 0)).then((value) {
+          _scope.unfocus();
+        });
+        return form.data();
+      } else {
+        return null;
+      }
+    };
+
+    return MessageDialog(
+      _scope,
+      title: title,
+      icon: icon ?? Icons.edit,
+      iconSize: 48,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: _scope.application.settings.colors.info,
+      body: (context) {
+        var $fields = fields.call(_scope, context, $formName);
+        return Container(
+          child: Column(
+            children: $fields,
+          ),
+        );
+      },
+      iconColor: _scope.application.settings.colors.info,
+      buttons: swap == true
+          ? [
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+            ]
+          : [
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+            ],
+    );
+  }
+
+  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, int lines, String group}) {
+    var cancel = (BuildContext context) {
+      Future.delayed(Duration(milliseconds: 0)).then((value) {
+        _scope.unfocus();
+      });
+      Navigator.of(context).pop(null);
+    };
+
+    var $formName = group ?? '_prompt_form';
+    FieldsForm form = _scope.forms[$formName];
+    form.clear();
+
+    var accept = () {
       var field = form.fields['prompt'];
       if (field.valid() == true) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -183,7 +287,7 @@ class ScopeDialogs {
       body: (context) => TextInputField<T>(
         scope: _scope,
         name: 'prompt',
-        group: '_dialog',
+        group: $formName,
         margin: const EdgeInsets.only(top: 20),
         label: label,
         value: value,
@@ -214,7 +318,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller}) {
+  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessasge, String busyMessage}) {
     var cancel = (BuildContext context) {
       controller.cancel();
       Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -234,6 +338,10 @@ class ScopeDialogs {
       return DialogProgress(
         controller: controller,
         scope: _scope,
+        isDownload: isDownload,
+        successMessage: successMessage,
+        failedMessage: failedMessasge,
+        busyMessage: busyMessage,
       );
     }, iconColor: _scope.application.settings.colors.info, buttons: [
       DialogButton(cancelLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),

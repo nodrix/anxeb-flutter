@@ -1,13 +1,20 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as Path;
 
 class Converters {
   final _digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
   final _commaRegex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-  final _fullDateFormat = DateFormat("dd/MM/yyyy h:mm:ss a");
-  final _normalDateFormat = DateFormat("dd/MM/yyyy h:mm a");
-  final _fileDateFormat = DateFormat("dd_MM_yyyy_h_mm_a");
+  final _fullDateFormat = DateFormat('dd/MM/yyyy h:mm:ss a');
+  final _dateFormat = DateFormat('dd/MM/yyyy');
+  final _normalDateFormat = DateFormat('dd/MM/yyyy h:mm a');
+  final _fileDateFormat = DateFormat('dd_MM_yyyy_h_mm_a');
   final _humanDateFormat = DateFormat.yMMMd('es_DO');
+  final _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
+  final _timeFormat = DateFormat('h:mm aa');
   
   String fromStringToDigits(String value) {
     String result = '';
@@ -64,22 +71,37 @@ class Converters {
     return (prefix ?? '') + result;
   }
   
-  String fromDateToFullDateString(DateTime date, {bool seconds}) {
+  String fromDateToFullDateString(DateTime date, {bool seconds, bool time}) {
     if (date == null) {
       return null;
     }
-    if (seconds == true) {
+    
+    if (time == false) {
+      return _dateFormat.format(date);
+    } else if (seconds == true) {
       return _fullDateFormat.format(date);
     } else {
       return _normalDateFormat.format(date);
     }
   }
   
-  String fromDateToHumanString(DateTime date) {
+  String fromDateToHumanString(DateTime date, {bool complete, bool withTime}) {
     if (date == null) {
       return null;
     }
-    return _humanDateFormat.format(date);
+    if (withTime == true) {
+      if (complete == true) {
+        return '${_humanFullDateFormat.format(date)} ${_timeFormat.format(date)}'.replaceAll('.', '').toLowerCase();
+      } else {
+        return '${_humanDateFormat.format(date)} ${_timeFormat.format(date)}'.replaceAll('.', '').toLowerCase();
+      }
+    } else {
+      if (complete == true) {
+        return _humanFullDateFormat.format(date);
+      } else {
+        return _humanDateFormat.format(date);
+      }
+    }
   }
   
   String fromTextToEllipsis(String value, int max) {
@@ -204,6 +226,15 @@ class Converters {
     } else {
       return null;
     }
+  }
+  
+  Future<MultipartFile> fromPathToMultipartFile(path) async {
+    var contentType = lookupMimeType(path);
+    return await MultipartFile.fromFile(path, filename: Path.basename(path), contentType: MediaType.parse(contentType));
+  }
+  
+  FormData fromMapToFormData(map) {
+    return FormData.fromMap(map);
   }
   
   int fromAnyToInteger(value) {

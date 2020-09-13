@@ -15,13 +15,13 @@ class Api {
   Dio _dio;
   String token;
 
-  Api(String uri, {this.token}) {
+  Api(String uri, {this.token, int connectTimeout, int receiveTimeout}) {
     _uri = uri;
 
     _dio = Dio(BaseOptions(
       baseUrl: _uri,
-      connectTimeout: 7000,
-      receiveTimeout: 7000,
+      connectTimeout: connectTimeout ?? 7000,
+      receiveTimeout: receiveTimeout ?? 7000,
     ));
 
     _dio.interceptors.add(InterceptorsWrapper(onRequest: (RequestOptions options) {
@@ -49,12 +49,12 @@ class Api {
 
   Interceptors get interceptors => _dio.interceptors;
 
-  Future<Data> _process(ApiMethods method, String route, {data}) async {
-    var res = await request(method, route, data: data);
+  Future<Data> _process(ApiMethods method, String route, {data, Function(int count, int total) progress, CancelToken cancelToken}) async {
+    var res = await request(method, route, data: data, progress: progress, cancelToken: cancelToken);
     return Data(res.data);
   }
 
-  Future<Response> request(ApiMethods method, String route, {data}) {
+  Future<Response> request(ApiMethods method, String route, {data, Function(int count, int total) progress, CancelToken cancelToken}) {
     var promise = new Completer<Response>();
     var body;
 
@@ -84,7 +84,7 @@ class Api {
       }
     }
 
-    Future<Response> call = $method == _dio.get ? $method(route) : $method(route, data: body);
+    Future<Response> call = $method == _dio.get ? $method(route) : $method(route, data: body, onSendProgress: progress, cancelToken: cancelToken);
 
     call.then((res) {
       promise.complete(res);
@@ -103,9 +103,9 @@ class Api {
 
   Future<Data> delete(String route) => _process(ApiMethods.DELETE, route);
 
-  Future<Data> post(String route, data) => _process(ApiMethods.POST, route, data: data);
+  Future<Data> post(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.POST, route, data: data, progress: progress, cancelToken: cancelToken);
 
-  Future<Data> put(String route, data) => _process(ApiMethods.PUT, route, data: data);
+  Future<Data> put(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.PUT, route, data: data, progress: progress, cancelToken: cancelToken);
 
   Future<Data> get(String route) => _process(ApiMethods.GET, route);
 
@@ -140,7 +140,7 @@ class Api {
 
   Future<Data> upload(String route, {form, File file, String fieldName, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     var contentType = lookupMimeType(file.path);
-    
+
     try {
       form[fieldName ?? 'file'] = await MultipartFile.fromFile(file.path, filename: Path.basename(file.path), contentType: MediaType.parse(contentType));
       var res = await _dio.put(
@@ -186,10 +186,27 @@ class ApiException implements Exception {
       } else if (err.error is SocketException) {
         return ApiException('Error de comunicación, favor revisar su conexión al Internet', 0);
       } else {
-        if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
-          return ApiException(err.response.data['message'], err.response.data['code']);
-        } else {
-          return null;
+        try {
+          if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
+            var code = err.response.data['code'];
+            switch (code) {
+              case 408:
+                return ApiException('Tiempo de respuesta prolongado', 408);
+              case 500:
+                return ApiException('Error interno, recurso no encontrado en servidor', 500);
+            }
+            return ApiException(err.response.data['message'], code);
+          } else {
+            return null;
+          }
+        } catch (errc) {
+          if (err.error.toString().contains('[408]')) {
+            return ApiException('Tiempo de respuesta prolongado', 408);
+          } else if (err.error.toString().contains('[500]')) {
+            return ApiException('Error interno, recurso no encontrado en servidor', 500);
+          } else {
+            return ApiException(err.message, 0);
+          }
         }
       }
     } else {
