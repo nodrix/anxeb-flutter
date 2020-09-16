@@ -216,7 +216,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   void present() {
     _controller.text = value != null ? value.toString() : '';
     if (widget.displayText != null) {
-      _controller2.text = widget.displayText(value);
+      _controller2.text = widget.displayText(value) ?? '';
     }
     if (widget.capitalization == TextCapitalization.characters) {
       _controller.text = _controller.text.toUpperCase();

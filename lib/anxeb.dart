@@ -72,3 +72,4 @@ export 'widgets/blocks/placeholder.dart';
 export 'package:photo_view/photo_view.dart';
 export 'package:credit_card_validate/credit_card_validate.dart';
 export 'package:camera/camera.dart';
+export 'widgets/blocks/spinner.dart';

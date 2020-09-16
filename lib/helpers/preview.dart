@@ -64,15 +64,16 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
         tightMode: false,
         gaplessPlayback: true,
         backgroundDecoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: FractionalOffset.topCenter,
-          end: FractionalOffset.bottomCenter,
-          colors: [
-            Color(0xfff0f0f0),
-            Color(0xffc3c3c3),
-          ],
-          stops: [0.0, 1.0],
-        )),
+          gradient: LinearGradient(
+            begin: FractionalOffset.topCenter,
+            end: FractionalOffset.bottomCenter,
+            colors: [
+              Color(0xfff0f0f0),
+              Color(0xffc3c3c3),
+            ],
+            stops: [0.0, 1.0],
+          ),
+        ),
         controller: _controller,
         loadFailedChild: Center(
           child: Icon(
