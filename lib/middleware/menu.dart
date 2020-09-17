@@ -11,8 +11,10 @@ typedef ErrorStateCallback = String Function();
 class MenuItem {
   final String name;
   final Future<ViewWidget> Function(Key key) view;
+  final Function(dynamic data) result;
   final double iconScale;
-  final double iconOffset;
+  final double iconVOffset;
+  final double iconHOffset;
   final MenuCallback onTab;
   final ActiveStateCallback isActive;
   final EnabledStateCallback isEnabled;
@@ -21,7 +23,7 @@ class MenuItem {
   final ErrorStateCallback isError;
   final List<String> roles;
   final bool home;
-  String caption;
+  String Function() caption;
   String hint;
   IconData icon;
   bool active;
@@ -30,14 +32,16 @@ class MenuItem {
   bool visible;
   bool divider;
 
-  MenuItem(
-    this.caption, {
+  MenuItem({
+    this.caption,
     this.hint,
     this.name,
     this.view,
+    this.result,
     this.icon,
     this.iconScale,
-    this.iconOffset,
+    this.iconVOffset,
+    this.iconHOffset,
     this.active,
     this.isActive,
     this.error,
@@ -57,14 +61,16 @@ class MenuItem {
 class MenuGroup extends MenuItem {
   List<MenuItem> _items;
 
-  MenuGroup(
-    String caption, {
+  MenuGroup({
+    @required String Function() caption,
     @required String name,
     @required IconData icon,
     String hint,
     Future<ViewWidget> Function(Key key) view,
+    Function(dynamic data) result,
     double iconScale,
-    double iconOffset,
+    double iconVOffset,
+    double iconHOffset,
     bool active,
     ActiveStateCallback isActive,
     String error,
@@ -79,13 +85,15 @@ class MenuGroup extends MenuItem {
     List<String> roles,
     bool home,
   }) : super(
-          caption,
+          caption: caption,
           hint: hint,
           name: name,
           view: view,
+          result: result,
           icon: icon,
           iconScale: iconScale,
-          iconOffset: iconOffset,
+          iconVOffset: iconVOffset,
+          iconHOffset: iconHOffset,
           active: active,
           isActive: isActive,
           error: error,
