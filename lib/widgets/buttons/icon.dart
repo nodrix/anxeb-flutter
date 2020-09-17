@@ -22,6 +22,7 @@ class IconButton extends StatefulWidget {
     this.innerBorderColor,
     this.borderWidth,
     this.borderPadding,
+    this.opaque,
   });
 
   final EdgeInsets margin;
@@ -41,7 +42,8 @@ class IconButton extends StatefulWidget {
   final Color innerBorderColor;
   final double borderWidth;
   final double borderPadding;
-
+  final bool opaque;
+  
   @override
   _IconButtonState createState() => _IconButtonState();
 }
@@ -52,6 +54,9 @@ class _IconButtonState extends State<IconButton> {
 
   @override
   Widget build(BuildContext context) {
+    var $fill = widget.fillColor ?? Colors.green;
+    var $fore = widget.innerColor ?? Colors.white;
+
     return Container(
       margin: widget.margin,
       padding: widget.padding,
@@ -69,7 +74,7 @@ class _IconButtonState extends State<IconButton> {
             child: ClipOval(
               child: Material(
                 key: GlobalKey(),
-                color: widget.fillColor ?? Colors.green,
+                color: widget.opaque == true ? Colors.black.withOpacity(0.2) : $fill,
                 child: InkWell(
                   splashColor: Colors.white,
                   onTap: _enableAction == true
@@ -115,24 +120,25 @@ class _IconButtonState extends State<IconButton> {
                     width: widget.size ?? 42,
                     height: widget.size ?? 42,
                     child: Container(
-                        padding: widget.iconPadding,
-                        child: widget.busy == true || _busy == true
-                            ? Container(
-                                padding: EdgeInsets.all(5),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xf0ffffff)),
-                                ),
-                              )
-                            : AnimatedOpacity(
-                                opacity: _enableAction == true ? 1 : 0,
-                                duration: Duration(milliseconds: 300),
-                                child: Icon(
-                                  widget.icon,
-                                  size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
-                                  color: widget.innerColor ?? Colors.white,
-                                ),
-                              )),
+                      padding: widget.iconPadding,
+                      child: widget.busy == true || _busy == true
+                          ? Container(
+                              padding: EdgeInsets.all(5),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xf0ffffff)),
+                              ),
+                            )
+                          : AnimatedOpacity(
+                              opacity: _enableAction == true ? 1 : 0,
+                              duration: Duration(milliseconds: 300),
+                              child: Icon(
+                                widget.icon,
+                                size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
+                                color: widget.opaque == true ? $fore.withOpacity(0.7) : $fore,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
               ),

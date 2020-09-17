@@ -6,6 +6,7 @@ class ScrollableContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsets fadding;
   final EdgeInsets padding;
+  final Gradient gradient;
   final ScrollController controller;
   final Scope scope;
   final bool fixedHeight;
@@ -17,6 +18,7 @@ class ScrollableContainer extends StatelessWidget {
     @required this.scope,
     this.fadding,
     this.padding,
+    this.gradient,
     this.controller,
     this.fixedHeight,
     this.disablePhysics,
@@ -26,6 +28,11 @@ class ScrollableContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      decoration: gradient != null
+          ? BoxDecoration(
+        gradient: gradient,
+      )
+          : null,
       height: fixedHeight == true ? scope.window.available.height : null,
       child: SingleChildScrollView(
         physics: disablePhysics == true ? NeverScrollableScrollPhysics() : null,
