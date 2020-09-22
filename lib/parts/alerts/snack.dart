@@ -65,7 +65,7 @@ class SnackAlert extends ScopeAlert {
         stops: [0.0, 1.0],
       ),
       isDismissible: true,
-      margin: scope.window.overlay.extendBodyFullScreen ? EdgeInsets.only(left: 8, right: 8, bottom: 42) : EdgeInsets.all(8),
+      margin: scope.window.overlay.extendBodyFullScreen ? EdgeInsets.only(left: 22, right: 22, bottom: 56) : EdgeInsets.all(8),
       borderRadius: 8,
       boxShadows: [BoxShadow(offset: Offset(0, 2), blurRadius: 6, spreadRadius: 2, color: Color(0x55222222))],
       flushbarPosition: scope.window.overlay.extendBodyFullScreen ? FlushbarPosition.BOTTOM : FlushbarPosition.TOP,

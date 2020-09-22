@@ -9,6 +9,7 @@ class ViewPanel {
   final bool gapless;
   PanelController _controller;
   bool rebuild = false;
+  bool _display;
 
   ViewPanel({
     @required this.scope,
@@ -17,6 +18,7 @@ class ViewPanel {
     this.gapless,
   }) {
     _controller = PanelController();
+    _display = true;
   }
 
   Future collapse() async => await _controller?.close();
@@ -36,6 +38,14 @@ class ViewPanel {
 
     return SlidingUpPanel(
       controller: _controller,
+      onPanelSlide: (position) {
+        var disp = _controller.isAttached && position < 0.2;
+        if (_display != disp) {
+          scope.rasterize(() {
+            _display = disp;
+          });
+        }
+      },
       panel: Container(
         width: scope.window.available.width,
         color: Colors.transparent,
@@ -44,7 +54,7 @@ class ViewPanel {
           children: <Widget>[
             Container(
               child: AnimatedOpacity(
-                opacity: _controller.isAttached && _controller.isPanelClosed ? 1 : 0,
+                opacity: _display ? 1 : 0,
                 duration: Duration(milliseconds: 200),
                 child: Container(
                   height: gapless == true ? 15 : 10,

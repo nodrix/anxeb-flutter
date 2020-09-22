@@ -43,8 +43,8 @@ class Scope {
     tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
-  void rasterize() {
-    _view.rasterize();
+  void rasterize([VoidCallback fn]) {
+    _view.rasterize(fn);
   }
 
   Future _checkBusyCountDown() async {
@@ -156,7 +156,7 @@ class Scope {
         });
 
         if (timeout == null || timeout > 0) {
-          _busyCountDown = timeout ?? 8;
+          _busyCountDown = timeout ?? 30;
           _checkBusyCountDown();
         }
       }
