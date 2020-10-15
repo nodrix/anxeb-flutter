@@ -197,6 +197,9 @@ class Converters {
   }
   
   String fromStringToNameCase(String value) {
+    if (value == null) {
+      return null;
+    }
     var items = value.split(' ');
     var result = List<String>();
     

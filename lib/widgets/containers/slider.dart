@@ -246,7 +246,7 @@ class _SliderContainerState extends State<SliderContainer> {
           decoration: BoxDecoration(gradient: gradient),
         )
             : Container(),
-        Container(
+        widget.image != null ? Container(
           child: Image(
             image: widget.image,
             fit: BoxFit.fill,
@@ -254,7 +254,7 @@ class _SliderContainerState extends State<SliderContainer> {
             height: size.height,
             alignment: Alignment.topCenter,
           ),
-        ),
+        ) : Container(),
         body()
       ],
     );

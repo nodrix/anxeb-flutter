@@ -5,23 +5,28 @@ import 'package:flutter/material.dart' hide Dialog;
 
 class DateTimeDialog extends ScopeDialog {
   final DateTime value;
+  final bool pickTime;
 
-  DateTimeDialog(Scope scope, {this.value}) : super(scope);
+  DateTimeDialog(Scope scope, {this.value, this.pickTime}) : super(scope);
 
   @override
   Future show() async {
-    var initialDate = value ?? DateTime.now();
+    var initialDate = value;
     var finalDate = await showDatePicker(
       context: scope.context,
       locale: Locale('es', 'DO'),
-      initialDate: initialDate,
-      firstDate: new DateTime(1970, 8),
+      initialDate: initialDate ?? DateTime.now(),
+      firstDate: new DateTime(1900),
       lastDate: new DateTime(2101),
     );
     if (finalDate != null) {
-      final finalTime = await showTimePicker(context: scope.context, initialTime: Utils.convert.fromDateToTime(finalDate));
-      if (finalTime != null) {
-        return DateTime(finalDate.year, finalDate.month, finalDate.day, finalTime.hour, finalTime.minute);
+      if (pickTime == true) {
+        final finalTime = await showTimePicker(context: scope.context, initialTime: Utils.convert.fromDateToTime(initialDate ?? finalDate));
+        if (finalTime != null) {
+          return DateTime(finalDate.year, finalDate.month, finalDate.day, finalTime.hour, finalTime.minute);
+        }
+      } else {
+        return DateTime(finalDate.year, finalDate.month, finalDate.day);
       }
     }
   }

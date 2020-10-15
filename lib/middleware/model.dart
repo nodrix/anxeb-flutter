@@ -241,7 +241,19 @@ class _ModelField {
       }
     } else {
       if (enumValues != null && $rawValue != null) {
-        setValue(enumValues.firstWhere(($enum) => $enum.toString().endsWith('.${$rawValue}'), orElse: () => null) ?? $defValue);
+        if ($rawValue is Iterable) {
+          if ($defValue is List) {
+            for (var item in $rawValue) {
+              var eItem = enumValues.firstWhere(($enum) => $enum.toString().endsWith('.$item'), orElse: () => null);
+              if (eItem != null) {
+                $defValue.add(eItem);
+              }
+            }
+          }
+          setValue($defValue);
+        } else {
+          setValue(enumValues.firstWhere(($enum) => $enum.toString().endsWith('.${$rawValue}'), orElse: () => null) ?? $defValue);
+        }
       } else {
         setValue($rawValue ?? $defValue);
       }
@@ -258,7 +270,19 @@ class _ModelField {
         data[fieldName] = propertyValue.toObjects();
       }
     } else if (enumValues != null) {
-      data[fieldName] = propertyValue != null ? propertyValue.toString().split('.')[1] : null;
+      if (propertyValue == null) {
+        data[fieldName] = null;
+      } else if (propertyValue is List<Model>) {
+        var items = List();
+        
+        for (var item in propertyValue) {
+          print(item);
+          items.add(item.toString().split('.')[1]);
+        }
+        data[fieldName] = items;
+      } else {
+        data[fieldName] = propertyValue.toString().split('.')[1];
+      }
     } else if (propertyValue is List<Model>) {
       var items = List();
       for (var item in propertyValue) {

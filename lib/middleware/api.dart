@@ -84,7 +84,7 @@ class Api {
       }
     }
 
-    Future<Response> call = $method == _dio.get ? $method(route) : $method(route, data: body, onSendProgress: progress, cancelToken: cancelToken);
+    Future<Response> call = $method == _dio.get || $method == _dio.delete ? $method(route) : $method(route, data: body, onSendProgress: progress, cancelToken: cancelToken);
 
     call.then((res) {
       promise.complete(res);

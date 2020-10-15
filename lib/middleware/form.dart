@@ -52,6 +52,7 @@ class FieldsForm {
 
     for (var field in fields.values) {
       if ((_initialValues as Map).containsKey(field.widget.name)) {
+        field.reset();
         field.value = _initialValues[field.widget.name];
       }
     }
@@ -239,23 +240,43 @@ class ScopeForms {
     return true;
   }
 
-  Data data() {
+  Data data({bool separateByGroup}) {
     var result = Data();
-    for (var $form in _forms.values) {
-      var $data = $form.data();
-      if ($data != null) {
-        result.include($data);
+    if (separateByGroup == true) {
+      for (var $item in _forms.entries) {
+        var groupName = $item.key;
+        var $data = $item.value.data();
+        if ($data != null) {
+          result[groupName] = $data;
+        }
+      }
+    } else {
+      for (var $form in _forms.values) {
+        var $data = $form.data();
+        if ($data != null) {
+          result.include($data);
+        }
       }
     }
     return result;
   }
 
-  Data values() {
+  Data values({bool separateByGroup}) {
     var result = Data();
-    for (var $form in _forms.values) {
-      var $data = $form.value();
-      if ($data != null) {
-        result.include($data);
+    if (separateByGroup == true) {
+      for (var $item in _forms.entries) {
+        var groupName = $item.key;
+        var $value = $item.value.value();
+        if ($value != null) {
+          result[groupName] = $value;
+        }
+      }
+    } else {
+      for (var $form in _forms.values) {
+        var $value = $form.value();
+        if ($value != null) {
+          result.include($value);
+        }
       }
     }
     return result;
@@ -272,7 +293,7 @@ class ScopeForms {
 
   FieldsForm get current => _retrieve(_scope.view.name);
 
-  dynamic operator [](name) => _retrieve(name);
+  FieldsForm operator [](name) => _retrieve(name);
 
   key(String name, String field) {
     var $form = _retrieve(name);

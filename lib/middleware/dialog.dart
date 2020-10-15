@@ -364,8 +364,8 @@ class ScopeDialogs {
     );
   }
 
-  DateTimeDialog dateTime([DateTime value]) {
-    return DateTimeDialog(_scope, value: value);
+  DateTimeDialog dateTime({DateTime value, bool pickTime}) {
+    return DateTimeDialog(_scope, value: value, pickTime: pickTime);
   }
 }
 

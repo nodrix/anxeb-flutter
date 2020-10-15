@@ -8,15 +8,17 @@ class TwitterAuth extends AuthProvider {
   TwitterLogin _twitterLogin;
 
   TwitterAuth(Application application) : super(application) {
-    _twitterLogin = TwitterLogin(
-      consumerKey: application.settings.auths.twitter.apiKey,
-      consumerSecret: application.settings.auths.twitter.apiSecret,
-    );
+    if (application.settings.auths.twitter != null && application.settings.auths.twitter.apiKey != null) {
+      _twitterLogin = TwitterLogin(
+        consumerKey: application.settings.auths.twitter.apiKey,
+        consumerSecret: application.settings.auths.twitter.apiSecret,
+      );
+    }
   }
 
   @override
   Future logout() async {
-    await _twitterLogin.logOut();
+    await _twitterLogin?.logOut();
   }
 
   @override

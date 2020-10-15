@@ -10,6 +10,7 @@ class Navigator {
   List<MenuGroup> _groups;
   Drawer Function(List<MenuGroup> groups) build;
   String Function() role;
+  List<String> Function() roles;
   Function() header;
   View _sourceView;
   GlobalKey<ViewState> _currentViewKey;
@@ -20,10 +21,11 @@ class Navigator {
     build = _buildDrawer;
   }
 
-  void begin({View source, String Function() role, Widget Function() header}) {
+  void begin({View source, String Function() role, List<String> Function() roles, Widget Function() header}) {
     _sourceView = source;
     this.header = header;
     this.role = role;
+    this.roles = roles;
   }
 
   Future end() async {
@@ -110,8 +112,10 @@ class Navigator {
 
   Widget _buildItem(MenuItem $item, [MenuItem parent]) {
     var $role = role?.call();
+    var $roles = roles?.call();
+
     var $hidden = $item.visible == false || ($item.isVisible != null && $item.isVisible() == false);
-    var $unauthorized = (_sourceView == null) || ($role != null && $item.roles != null && !$item.roles.contains($role));
+    var $unauthorized = (_sourceView == null) || ($role != null && $item.roles != null && !$item.roles.contains($role)) || ($roles != null && $item.roles != null && !$roles.any(($role) => $item.roles.contains($role)));
 
     if ($hidden || $unauthorized) {
       return Container();
@@ -163,7 +167,11 @@ class Navigator {
       child: Row(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(right: 16.0 + ($item.iconHOffset != null && $item.iconHOffset < 0 ? -$item.iconHOffset : 0), left: $item.iconHOffset != null && $item.iconHOffset > 0 ? $item.iconHOffset : 0, bottom: $item.iconVOffset != null && $item.iconVOffset > 0 ? $item.iconVOffset : 0, top: $item.iconVOffset != null && $item.iconVOffset < 0 ? -$item.iconVOffset : 0),
+            padding: EdgeInsets.only(
+                right: 16.0 + ($item.iconHOffset != null && $item.iconHOffset < 0 ? -$item.iconHOffset : 0),
+                left: $item.iconHOffset != null && $item.iconHOffset > 0 ? $item.iconHOffset : 0,
+                bottom: $item.iconVOffset != null && $item.iconVOffset > 0 ? $item.iconVOffset : 0,
+                top: $item.iconVOffset != null && $item.iconVOffset < 0 ? -$item.iconVOffset : 0),
             alignment: Alignment.center,
             width: 42,
             child: Icon(
