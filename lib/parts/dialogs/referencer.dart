@@ -3,7 +3,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/blocks/referencer.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
-import 'package:flutter/material.dart' hide Dialog;
+import 'package:flutter/material.dart' hide Dialog, TextButton;
 
 class ReferencerDialog<V> extends ScopeDialog<List<V>> {
   final String title;

@@ -136,11 +136,11 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   List<TextInputFormatter> get _formatters {
     if (widget.type == TextInputFieldType.digits) {
-      return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
+      return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.positive) {
-      return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
+      return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
-      return <TextInputFormatter>[WhitelistingTextInputFormatter.digitsOnly];
+      return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else {
       return null;
     }

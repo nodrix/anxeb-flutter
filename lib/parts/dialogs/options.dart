@@ -1,7 +1,7 @@
 import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
-import 'package:flutter/material.dart' hide Dialog;
+import 'package:flutter/material.dart' hide Dialog, TextButton;
 
 class OptionsDialog<V> extends ScopeDialog {
   final String title;
