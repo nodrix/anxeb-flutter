@@ -40,7 +40,7 @@ class Data {
     return list != null ? list.map(predicate).toList() : List<T>();
   }
 
-  List<T> list<T>(T predicate(e), {String field}) {
+  List<T> list<T>(T predicate(data), {String field}) {
     var list = (field != null && _items[field] != null ? _items[field] : _items) as List<dynamic>;
     return list != null ? list.map(predicate).toList() : List<T>();
   }

@@ -9,7 +9,7 @@ import 'scope.dart';
 
 class Model<T> {
   Data _data;
-  String _pk;
+  dynamic _pk;
   String _diskKey;
   SharedPreferences _shared;
   List<_ModelField> _fields;
@@ -83,7 +83,7 @@ class Model<T> {
   }
 
   void update([data]) {
-    if (data is String) {
+    if (data is String || data is int) {
       _pk = data;
       _data = Data();
     } else {
@@ -274,7 +274,7 @@ class _ModelField {
         data[fieldName] = null;
       } else if (propertyValue is List<Model>) {
         var items = List();
-        
+
         for (var item in propertyValue) {
           print(item);
           items.add(item.toString().split('.')[1]);

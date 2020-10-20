@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class ActionIcon with ActionItem {
   final IconData Function() icon;
+  final double Function() size;
   final Color Function() color;
   final bool Function() isDisabled;
   final bool Function() isVisible;
@@ -11,6 +12,7 @@ class ActionIcon with ActionItem {
 
   ActionIcon({
     @required this.icon,
+    this.size,
     this.color,
     this.isDisabled,
     this.isVisible,
@@ -22,7 +24,7 @@ class ActionIcon with ActionItem {
     var $color = color?.call() ?? Colors.white;
 
     return IconButton(
-      icon: Icon(icon(), color: $disabled ? $color.withOpacity(0.4) : $color),
+      icon: Icon(icon(), color: $disabled ? $color.withOpacity(0.4) : $color, size: size?.call()),
       onPressed: $disabled ? null : onPressed,
     );
   }
