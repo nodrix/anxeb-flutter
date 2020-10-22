@@ -57,6 +57,7 @@ class OptionsDialog<V> extends ScopeDialog {
             context,
             options,
             selectedValue: selectedValue,
+            settings: scope.application.settings,
           ),
         ),
       ),
