@@ -1,7 +1,6 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart' hide Navigator;
-
 import 'api.dart';
 import 'disk.dart';
 import 'navigator.dart';

@@ -9,6 +9,7 @@ class MenuPanel extends BoardPanel {
   final bool horizontal;
   final bool autoHide;
   final double itemHeight;
+  final double buttonRadius;
 
   MenuPanel({
     @required Scope scope,
@@ -21,6 +22,7 @@ class MenuPanel extends BoardPanel {
     this.iconScale,
     this.horizontal,
     this.autoHide,
+    this.buttonRadius,
     bool gapless,
   }) : super(
           scope: scope,
@@ -41,7 +43,7 @@ class MenuPanel extends BoardPanel {
     }
   }
 
-  static Widget getButtons({List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, Future Function() collapse}) {
+  static Widget getButtons({List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, Future Function() collapse, double buttonRadius}) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -123,7 +125,7 @@ class MenuPanel extends BoardPanel {
                   child: Container(
                     decoration: BoxDecoration(
                       color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      borderRadius: BorderRadius.all(Radius.circular(buttonRadius ?? 10)),
                     ),
                     child: Opacity(
                       opacity: 0.5,
@@ -137,13 +139,13 @@ class MenuPanel extends BoardPanel {
                   child: Material(
                     key: GlobalKey(),
                     color: $action.fillColor?.call() ?? Colors.white.withOpacity(0.2),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    borderRadius: BorderRadius.all(Radius.circular(buttonRadius ?? 10)),
                     child: InkWell(
                       onTap: () {
                         collapse?.call();
                         $action.onPressed?.call();
                       },
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      borderRadius: BorderRadius.all(Radius.circular(buttonRadius ?? 10)),
                       child: buttonContent,
                     ),
                   ),

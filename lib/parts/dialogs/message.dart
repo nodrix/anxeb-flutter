@@ -35,7 +35,7 @@ class MessageDialog extends ScopeDialog {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
       contentPadding: EdgeInsets.only(bottom: 20, left: 24, right: 24, top: 5),
       contentTextStyle: TextStyle(fontSize: title != null ? 16.4 : 20, color: messageColor ?? scope.application.settings.colors.text, fontWeight: FontWeight.w400),
       title: title != null

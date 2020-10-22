@@ -24,6 +24,7 @@ class ImageButton extends StatefulWidget {
     this.loadingThickness,
     this.loadingColor,
     this.loadingPadding,
+    this.progressSize,
     this.imageScale,
     this.imagePadding,
     this.shape,
@@ -43,6 +44,7 @@ class ImageButton extends StatefulWidget {
     this.autohide,
     this.horizontal,
     this.expanded,
+    this.filter,
     GlobalKey key,
   }) : super(key: key);
 
@@ -63,6 +65,7 @@ class ImageButton extends StatefulWidget {
   final double loadingThickness;
   final Color loadingColor;
   final EdgeInsets loadingPadding;
+  final double progressSize;
   final double imageScale;
   final EdgeInsets imagePadding;
   final BoxShape shape;
@@ -84,6 +87,7 @@ class ImageButton extends StatefulWidget {
   final EdgeInsets innerPadding;
   final double innerRadius;
   final Color innerBorderColor;
+  final ColorFilter filter;
 
   @override
   _ImageButtonState createState() => _ImageButtonState();
@@ -225,7 +229,7 @@ class _ImageButtonState extends State<ImageButton> {
                     setState(() {
                       _busy = true;
                     });
-                  } else{
+                  } else {
                     _busy = true;
                   }
                   await widget.onTap();
@@ -279,6 +283,9 @@ class _ImageButtonState extends State<ImageButton> {
               padding: widget.loadingPadding ?? EdgeInsets.all(10),
               alignment: Alignment.center,
               child: Container(
+                height: widget.progressSize,
+                width: widget.progressSize,
+                alignment: Alignment.center,
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: CircularProgressIndicator(
@@ -313,7 +320,7 @@ class _ImageButtonState extends State<ImageButton> {
                             border: widget.innerThickness != null ? Border.all(width: widget.innerThickness, color: widget.innerBorderColor) : null,
                             image: widget.imageAsset != null || _netImage != null
                                 ? DecorationImage(
-                                    colorFilter: widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen),
+                                    colorFilter: widget.filter ?? (widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen)),
                                     fit: widget.fit ?? BoxFit.cover,
                                     alignment: Alignment.center,
                                     image: _netImage ?? widget.imageAsset,
@@ -342,7 +349,7 @@ class _ImageButtonState extends State<ImageButton> {
                             border: widget.innerThickness != null ? Border.all(width: widget.innerThickness, color: widget.innerBorderColor) : null,
                             image: widget.imageAsset != null || _netImage != null
                                 ? DecorationImage(
-                                    colorFilter: widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen),
+                                    colorFilter: widget.filter ?? (widget.enabled != false ? null : ColorFilter.mode(Colors.black.withOpacity(0.9), BlendMode.screen)),
                                     fit: widget.fit ?? BoxFit.cover,
                                     alignment: Alignment.center,
                                     image: _netImage ?? widget.imageAsset,

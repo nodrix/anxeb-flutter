@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+class _Panels {
+  double buttonRadius;
+}
+
+class _Dialogs {
+  double buttonRadius;
+  double dialogRadius;
+}
+
 class _Colors {
   Color primary = Color(0xff2e7db2);
   Color secudary = Color(0xff026299);
@@ -67,13 +76,21 @@ class _Auths {
 class Settings {
   _Colors _colors;
   _Auths _auths;
+  _Dialogs _dialogs;
+  _Panels _panels;
 
   Settings() {
     _colors = _Colors();
     _auths = _Auths();
+    _dialogs = _Dialogs();
+    _panels = _Panels();
   }
 
   _Colors get colors => _colors;
 
   _Auths get auths => _auths;
+
+  _Dialogs get dialogs => _dialogs;
+
+  _Panels get panels => _panels;
 }

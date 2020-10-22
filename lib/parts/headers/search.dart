@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/action_icon.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +21,7 @@ class SearchHeader extends ActionsHeader {
   SearchHeader({
     Scope scope,
     String Function() title,
-    List<ActionIcon> actions,
+    List<ActionItem> actions,
     VoidCallback dismiss,
     VoidCallback back,
     ActionIcon leading,
@@ -37,12 +36,14 @@ class SearchHeader extends ActionsHeader {
     this.onCompleted,
     this.onBegin,
   }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading, title: title, bottom: bottom, elevation: elevation, height: height) {
-    super.actions = actions ?? List<ActionIcon>();
+    super.actions = actions ?? List<ActionItem>();
 
     if (actionRightPositioned == true) {
-      super.actions.add(ActionIcon(icon: () => Icons.search, onPressed: _beginSearch));
+      ActionItem item = ActionIcon(icon: () => Icons.search, onPressed: _beginSearch);
+      super.actions.add(item);
     } else {
-      super.actions.insert(0, ActionIcon(icon: () => Icons.search, onPressed: _beginSearch));
+      ActionItem item = ActionIcon(icon: () => Icons.search, onPressed: _beginSearch);
+      super.actions.insert(0, item);
     }
     _init();
   }

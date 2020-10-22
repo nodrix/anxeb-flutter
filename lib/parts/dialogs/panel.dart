@@ -18,7 +18,7 @@ class PanelDialog<V> extends ScopeDialog {
   Widget build(BuildContext context) {
     var height = items.where(($item) => $item.isVisible?.call() != false && ($item.actions.any(($action) => $action.isVisible?.call() != false))).fold(0, (previousValue, element) => previousValue + (element.height?.call() ?? 0));
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
       contentPadding: EdgeInsets.only(bottom: 8, left: 10, right: 10, top: title != null ? 4 : 8),
       title: title != null
           ? Container(
@@ -31,9 +31,15 @@ class PanelDialog<V> extends ScopeDialog {
           : null,
       content: Container(
         height: height,
-        child: MenuPanel.getButtons(items: items, horizontal: horizontal, iconScale: iconScale, textScale: textScale, collapse: () async {
-          Navigator.of(context).pop();
-        }),
+        child: MenuPanel.getButtons(
+            items: items,
+            horizontal: horizontal,
+            iconScale: iconScale,
+            textScale: textScale,
+            buttonRadius: scope.application.settings.panels.buttonRadius,
+            collapse: () async {
+              Navigator.of(context).pop();
+            }),
       ),
     );
   }

@@ -24,6 +24,7 @@ class TextButton extends StatefulWidget {
   final Color iconColor;
   final Color textColor;
   final double fontSize;
+  final double radius;
   final double iconSize;
   final VoidCallback onPressed;
   final ButtonType type;
@@ -42,6 +43,7 @@ class TextButton extends StatefulWidget {
     this.iconColor,
     this.textColor,
     this.fontSize,
+    this.radius,
     this.iconSize,
     this.onPressed,
     this.type,
@@ -61,6 +63,7 @@ class TextButton extends StatefulWidget {
             Expanded(
               child: TextButton(
                 caption: $option.caption,
+                radius: settings.dialogs.buttonRadius,
                 textColor: $option.textColor ?? (selectedValue == $option.value ? $settings.colors.active : null),
                 color: $option.fillColor ?? ($option.value == '*' ? $settings.colors.asterisk : ($option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.secudary : $settings.colors.primary))),
                 icon: $option.icon,
@@ -89,6 +92,7 @@ class TextButton extends StatefulWidget {
     return buttons.where(($button) => $button.visible != false).map(($button) {
       var button = TextButton(
         caption: $button.caption,
+        radius: settings.dialogs.buttonRadius,
         icon: $button.icon,
         swapIcon: $button.swapIcon,
         color: $button.fillColor ?? $settings.colors.primary,
@@ -125,7 +129,7 @@ class _TextButtonState extends State<TextButton> {
   Widget build(BuildContext context) {
     var $padding = EdgeInsets.all(12);
     var fontSize = widget.fontSize ?? _NORMAL_SIZE;
-    var borderRadius = 30.0;
+    var borderRadius = widget.radius ?? 30.0;
 
     if (widget.size == ButtonSize.small) {
       $padding = EdgeInsets.all(8);
