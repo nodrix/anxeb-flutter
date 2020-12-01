@@ -163,13 +163,16 @@ class FieldsForm {
     return validate(autoFocus: autoFocus);
   }
 
-  Map<String, dynamic> data() {
+  Map<String, dynamic> data({bool images}) {
     if (validate()) {
       var data = Map<String, dynamic>();
 
       for (var field in fields.values) {
+        var isImage = field.runtimeType.toString().contains('_ImageInputFieldState');
         if (field.widget.visible != false) {
-          data[field.widget.name] = field.data();
+          if ((images == null) || (images == true && isImage) || (images == false && !isImage)) {
+            data[field.widget.name] = field.data();
+          }
         }
       }
       return data;

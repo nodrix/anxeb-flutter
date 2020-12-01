@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum TextInputFieldType { digits, decimals, positive, integers, text, email, date, phone, url, password }
+enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password }
 
 class TextInputField<V> extends FieldWidget<V> {
   final TextEditingController controller;
@@ -137,8 +137,6 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   List<TextInputFormatter> get _formatters {
     if (widget.type == TextInputFieldType.digits) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
-    } else if (widget.type == TextInputFieldType.positive) {
-      return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else {
@@ -153,6 +151,8 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return TextInputType.numberWithOptions(signed: true, decimal: true);
     } else if (widget.type == TextInputFieldType.positive) {
       return TextInputType.numberWithOptions(signed: false, decimal: true);
+    } else if (widget.type == TextInputFieldType.natural) {
+      return TextInputType.numberWithOptions(signed: false, decimal: false);
     } else if (widget.type == TextInputFieldType.digits) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
     } else if (widget.type == TextInputFieldType.integers) {
@@ -369,7 +369,9 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         } else if (widget.type == TextInputFieldType.phone) {
           result = Utils.convert.fromStringToDigits(text);
         } else if (widget.type == TextInputFieldType.positive) {
-          result = Utils.convert.fromStringToPositive(text);
+          result = Utils.convert.fromStringToDouble(text);
+        } else if (widget.type == TextInputFieldType.natural) {
+          result = Utils.convert.fromStringToInteger(text);
         } else {
           result = Utils.convert.fromStringToTrimedString(text);
         }

@@ -31,6 +31,13 @@ class _Colors {
   Color navigation = Color(0xff053954);
 }
 
+class _AuthsApple {
+  _AuthsApple();
+
+  String fetchCallbackRoute;
+  String Function() nonce;
+}
+
 class _AuthsGoogle {
   _AuthsGoogle();
 
@@ -59,11 +66,13 @@ class _Auths {
   _AuthsGoogle _google;
   _AuthsTwitter _twitter;
   _AuthsFacebook _facebook;
+  _AuthsApple _apple;
 
   _Auths() {
     _google = _AuthsGoogle();
     _twitter = _AuthsTwitter();
     _facebook = _AuthsFacebook();
+    _apple = _AuthsApple();
   }
 
   _AuthsGoogle get google => _google;
@@ -71,6 +80,8 @@ class _Auths {
   _AuthsTwitter get twitter => _twitter;
 
   _AuthsFacebook get facebook => _facebook;
+
+  _AuthsApple get apple => _apple;
 }
 
 class Settings {

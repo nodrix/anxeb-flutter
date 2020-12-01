@@ -17,6 +17,7 @@ class StatusBlock extends StatefulWidget {
     this.enabled,
     this.icon,
     this.iconScale,
+    this.circleScale,
     this.iconColor,
     this.titleColor,
     this.captionColor,
@@ -41,6 +42,7 @@ class StatusBlock extends StatefulWidget {
   final bool enabled;
   final IconData icon;
   final double iconScale;
+  final double circleScale;
   final Color iconColor;
   final Color titleColor;
   final Color captionColor;
@@ -122,8 +124,8 @@ class _StatusBlockState extends State<StatusBlock> {
                           }
                         },
                   child: SizedBox(
-                    width: 42,
-                    height: 42,
+                    width: (widget.circleScale ?? 1.0) * 42.0,
+                    height: (widget.circleScale ?? 1.0) * 42.0,
                     child: Container(
                         child: widget.busy == true || _busy == true
                             ? Container(

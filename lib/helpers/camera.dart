@@ -1,17 +1,19 @@
 import 'dart:io';
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/header.dart';
+import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/view.dart';
-import 'package:anxeb_flutter/misc/action_icon.dart';
-import 'package:anxeb_flutter/parts/headers/actions.dart';
+import 'package:anxeb_flutter/parts/panels/menu.dart';
+import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:anxeb_flutter/widgets/blocks/empty.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'preview.dart';
+import 'package:file_picker/file_picker.dart' as Picker;
 
 class CameraHelper extends ViewWidget {
   final String title;
@@ -21,6 +23,83 @@ class CameraHelper extends ViewWidget {
   final bool fullImage;
   final bool flash;
   final ResolutionPreset resolution;
+
+  static Future<File> takePicture({
+    Scope scope,
+    bool askPickMethod,
+    String title,
+    bool initFaceCamera,
+    bool allowMainCamera,
+    bool fullImage,
+    bool flash,
+    ResolutionPreset resolution,
+  }) async {
+    File result;
+
+    var option;
+    if (askPickMethod == true) {
+      await scope.dialogs.panel(
+        items: [
+          PanelMenuItem(
+            actions: [
+              PanelMenuAction(
+                label: () => 'Buscar\nImagen',
+                textScale: 0.9,
+                icon: () => FlutterIcons.file_image_mco,
+                fillColor: () => scope.application.settings.colors.secudary,
+                onPressed: () {
+                  option = 'image';
+                },
+              ),
+              PanelMenuAction(
+                label: () => 'Tomar\nFoto',
+                textScale: 0.9,
+                icon: () => FlutterIcons.md_camera_ion,
+                fillColor: () => scope.application.settings.colors.secudary,
+                onPressed: () {
+                  option = 'photo';
+                },
+              ),
+            ],
+            height: () => 120,
+          ),
+        ],
+      ).show();
+    } else {
+      option = 'photo';
+    }
+
+    if (option == 'photo') {
+      result = await scope.view.push(CameraHelper(
+        title: title,
+        fullImage: fullImage,
+        initFaceCamera: initFaceCamera,
+        allowMainCamera: allowMainCamera,
+        flash: flash,
+        resolution: resolution,
+      ));
+    } else if (option == 'image') {
+      try {
+        var picker = await Picker.FilePicker.platform.pickFiles(
+          type: Picker.FileType.image,
+          allowMultiple: false,
+          onFileLoading: (state) async {
+            await scope.busy();
+          },
+        );
+        await Future.delayed(Duration(milliseconds: 350));
+        await scope.idle();
+        if (picker != null) {
+          result = File(picker.files.single.path);
+        }
+      } catch (err) {
+        await scope.idle();
+        scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+      }
+    }
+
+    return result;
+  }
 
   CameraHelper({
     this.title,
@@ -65,7 +144,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   }
 
   @override
-  void setup() {}
+  void setup() {
+    window.overlay.brightness = Brightness.dark;
+    window.overlay.extendBodyFullScreen = true;
+  }
 
   void _submit(File result) {
     pop(result);
@@ -98,11 +180,12 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       //print(' HEIGHT ${properties.height}');
 
       File reduced;
-
       if (widget.fullImage != true) {
-        reduced = await ImageCrop.sampleImage(file: original, preferredSize: _reduceSize);
-        properties = await ImageCrop.getImageOptions(file: reduced);
+        reduced = await ImageCrop.sampleImage(file: original, preferredWidth: _reduceSize);
+      } else {
+        reduced = await ImageCrop.sampleImage(file: original, preferredSize: properties.width);
       }
+      properties = await ImageCrop.getImageOptions(file: reduced);
 
       //print('REDUCED');
       //print(' WIDTH  ${properties.width} vs $_reduceSize');
@@ -163,6 +246,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
           image: previewImage,
           fullImage: widget.fullImage,
           canRemove: canRemove,
+          fromCamera: true,
         ));
 
         if (result == true) {
@@ -211,33 +295,12 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   void prebuild() {}
 
   @override
-  ViewHeader header() {
-    return ActionsHeader(
-      scope: scope,
-      leading: ActionBack(),
-      actions: [
-        ActionIcon(
-          icon: () => _mainCameraActive ? Icons.camera_rear : Icons.camera_front,
-          onPressed: _swapCameras,
-          isDisabled: () => _noCamera,
-          isVisible: () => _mainCameraAvailable == true,
-        ),
-        ActionIcon(
-          icon: () => Icons.image,
-          onPressed: () => _takePicture(preview: true),
-          isVisible: () => widget.fullImage != true,
-          isDisabled: () => _noCamera || _diabled == true,
-        ),
-      ],
-    );
-  }
-
-  @override
   Widget content() {
     if (_initializeControllerFuture == null) {
       return EmptyBlock(
-        'Sin Cámara',
-        Icons.error_outline,
+        scope: scope,
+        message: 'Sin Cámara',
+        icon: Icons.error_outline,
       );
     }
     return FutureBuilder<void>(
@@ -246,8 +309,9 @@ class _CameraHelperState extends View<CameraHelper, Application> {
         if (snapshot.connectionState == ConnectionState.done) {
           if (!_camera.value.isInitialized) {
             return EmptyBlock(
-              'Sin Cámara',
-              Icons.error_outline,
+              scope: scope,
+              message: 'Sin Cámara',
+              icon: Icons.error_outline,
             );
           }
 
@@ -259,8 +323,14 @@ class _CameraHelperState extends View<CameraHelper, Application> {
           }
 
           if (widget.fullImage == true) {
-            return CameraPreview(
-              _camera,
+            return Container(
+              color: scope.application.settings.colors.navigation,
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _camera.value.aspectRatio,
+                  child: CameraPreview(_camera),
+                ),
+              ),
             );
           }
           return Stack(
@@ -308,12 +378,34 @@ class _CameraHelperState extends View<CameraHelper, Application> {
     return ViewAction(
       scope: scope,
       icon: () => Icons.camera_alt,
+      color: () => scope.application.settings.colors.secudary,
       onPressed: () => {
         _takePicture(
           preview: widget.fullImage == true,
           canRemove: widget.fullImage == true,
         )
       },
+      alternates: [
+        AltAction(
+          color: () => scope.application.settings.colors.secudary,
+          icon: () => (Platform.isAndroid ? Icons.arrow_back : Icons.chevron_left),
+          onPressed: () => dismiss(),
+        ),
+        AltAction(
+          color: () => scope.application.settings.colors.secudary,
+          icon: () => _mainCameraActive ? Icons.camera_rear : Icons.camera_front,
+          onPressed: _swapCameras,
+          isDisabled: () => _noCamera,
+          isVisible: () => _mainCameraAvailable == true,
+        ),
+        AltAction(
+          color: () => scope.application.settings.colors.secudary,
+          icon: () => Icons.image,
+          onPressed: () => _takePicture(preview: true),
+          isVisible: () => widget.fullImage != true,
+          isDisabled: () => _noCamera || _diabled == true,
+        ),
+      ],
       isDisabled: () => _noCamera,
     );
   }

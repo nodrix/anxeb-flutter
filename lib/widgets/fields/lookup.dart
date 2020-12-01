@@ -34,6 +34,7 @@ class LookupInputField<V> extends FieldWidget<V> {
     FormFieldValidator<String> validator,
     V Function(dynamic value) parser,
     bool focusNext,
+    V value,
     this.autofocus,
     this.fixedLabel,
     this.hint,
@@ -63,6 +64,7 @@ class LookupInputField<V> extends FieldWidget<V> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          initialValue: value,
         );
 
   @override

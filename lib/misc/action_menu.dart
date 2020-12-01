@@ -66,6 +66,7 @@ class ActionMenuItem {
   final bool Function() isVisible;
   final VoidCallback onPressed;
   final bool Function() divided;
+  final double iconSize;
 
   ActionMenuItem({
     @required this.caption,
@@ -76,6 +77,7 @@ class ActionMenuItem {
     this.isVisible,
     this.onPressed,
     this.divided,
+    this.iconSize,
   });
 
   Widget build() {
@@ -87,7 +89,10 @@ class ActionMenuItem {
       height: 35,
       child: Row(
         children: <Widget>[
-          icon != null ? Icon(icon(), color: iconColor?.call() ?? $color) : Container(),
+          Container(
+            child: icon != null ? Icon(icon(), size: iconSize ?? 24, color: iconColor?.call() ?? $color) : Container(),
+            width: 26,
+          ),
           Container(
             child: Text(caption(), style: TextStyle(color: $color)),
             padding: EdgeInsets.only(left: icon != null ? 12 : 0),

@@ -31,26 +31,30 @@ class Model<T> {
   void assign() {}
 
   Future _init({ModelLoadedCallback<T> callback, bool forcePush}) async {
-    bool mustPush = false;
-    if (_diskKey != null) {
-      await _checkShared();
-      var $data = await _shared?.get(_diskKey);
-      if ($data != null) {
-        _data = Data($data);
-        mustPush = true;
+    try {
+      bool mustPush = false;
+      if (_diskKey != null) {
+        await _checkShared();
+        var $data = await _shared?.get(_diskKey);
+        if ($data != null) {
+          _data = Data($data);
+          mustPush = true;
+        }
       }
-    }
-    _data = _data ?? Data();
-    _fields = List<_ModelField>();
-    init();
+      _data = _data ?? Data();
+      _fields = List<_ModelField>();
+      init();
 
-    _initializeFields();
-    if (forcePush == true || mustPush == true) {
-      _pushDataToFields();
-    }
-    assign();
-    if (callback != null) {
-      callback(this as T);
+      _initializeFields();
+      if (forcePush == true || mustPush == true) {
+        _pushDataToFields();
+      }
+      assign();
+      if (callback != null) {
+        callback(this as T);
+      }
+    } catch (err) {
+      print(err);
     }
   }
 
@@ -274,9 +278,7 @@ class _ModelField {
         data[fieldName] = null;
       } else if (propertyValue is List<Model>) {
         var items = List();
-
         for (var item in propertyValue) {
-          print(item);
           items.add(item.toString().split('.')[1]);
         }
         data[fieldName] = items;

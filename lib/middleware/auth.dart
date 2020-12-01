@@ -1,6 +1,7 @@
+import 'package:anxeb_flutter/parts/auths/apple.dart';
 import 'package:anxeb_flutter/parts/auths/facebook.dart';
 import 'package:anxeb_flutter/parts/auths/google.dart';
-import 'package:anxeb_flutter/parts/auths/twitter.dart';
+//import 'package:anxeb_flutter/parts/auths/twitter.dart';
 import 'application.dart';
 import 'model.dart';
 
@@ -44,18 +45,22 @@ class AuthResultModel extends Model<AuthResultModel> {
 
 class AuthProviders {
   GoogleAuth _google;
-  TwitterAuth _twitter;
+  //TwitterAuth _twitter;
   FacebookAuth _facebook;
+  AppleAuth _apple;
 
   AuthProviders(Application application) {
     _google = GoogleAuth(application);
-    _twitter = TwitterAuth(application);
+    //_twitter = TwitterAuth(application);
     _facebook = FacebookAuth(application);
+    _apple = AppleAuth(application);
   }
 
   GoogleAuth get google => _google;
 
-  TwitterAuth get twitter => _twitter;
+  //TwitterAuth get twitter => _twitter;
 
   FacebookAuth get facebook => _facebook;
+
+  AppleAuth get apple => _apple;
 }

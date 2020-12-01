@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 class ValueBlock extends StatefulWidget {
   final Scope scope;
   final EdgeInsets margin;
+  final EdgeInsets padding;
   final bool highlight;
   final GestureTapCallback onTap;
   final GestureTapCallback onPrefixTap;
@@ -34,10 +35,12 @@ class ValueBlock extends StatefulWidget {
   final double scale;
   final double titleSize;
   final Widget icon;
+  final BorderRadius borderRadius;
 
   ValueBlock({
     @required this.scope,
     this.margin,
+    this.padding,
     this.highlight,
     this.title,
     this.units,
@@ -63,6 +66,7 @@ class ValueBlock extends StatefulWidget {
     this.scale,
     this.titleSize,
     this.icon,
+    this.borderRadius,
   });
 
   @override
@@ -207,13 +211,14 @@ class _ValueBlockState extends State<ValueBlock> {
           )
         : valueRow;
 
-    var borderRadius = const BorderRadius.all(
-      Radius.circular(12.0),
-    );
+    var borderRadius = widget.borderRadius ??
+        BorderRadius.all(
+          Radius.circular(12.0),
+        );
 
     var container = Container(
       margin: widget.margin,
-      padding: EdgeInsets.only(top: titleRow != null ? 5 : 0, left: 5, right: 5),
+      padding: widget.padding ?? EdgeInsets.only(top: titleRow != null ? 5 : 0, left: 5, right: 5),
       decoration: BoxDecoration(
         color: widget.onTap == null ? widget.backgroundColor : null,
         gradient: widget.highlight == true
@@ -222,7 +227,6 @@ class _ValueBlockState extends State<ValueBlock> {
                 end: FractionalOffset.bottomCenter,
                 colors: [
                   Color(0x34ffffff),
-                  
                   Color(0x00ffffff),
                 ],
                 stops: [0.0, 1.0],

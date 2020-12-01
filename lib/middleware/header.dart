@@ -11,6 +11,7 @@ class ViewHeader {
   final double Function() height;
   final Widget Function() bottom;
   final bool Function() isVisible;
+  final Color Function() fill;
   Widget leading;
 
   ViewHeader({
@@ -24,6 +25,7 @@ class ViewHeader {
     this.height,
     this.bottom,
     this.isVisible,
+    this.fill,
   });
 
   @protected
@@ -39,7 +41,7 @@ class ViewHeader {
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
       brightness: scope.window.overlay.brightness,
-      backgroundColor: scope.application.settings.colors.primary,
+      backgroundColor: fill?.call() ?? scope.application.settings.colors.primary,
       bottom: scope?.view?.parts?.tabs?.header?.call(bottomBody: bottom?.call(), height: height) ?? bottom?.call(),
       actions: isVisible?.call() != false ? content() : [],
     );

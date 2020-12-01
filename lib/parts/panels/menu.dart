@@ -10,6 +10,7 @@ class MenuPanel extends BoardPanel {
   final bool autoHide;
   final double itemHeight;
   final double buttonRadius;
+  final Color fillColor;
 
   MenuPanel({
     @required Scope scope,
@@ -24,11 +25,14 @@ class MenuPanel extends BoardPanel {
     this.autoHide,
     this.buttonRadius,
     bool gapless,
+    Color barColor,
+    this.fillColor,
   }) : super(
           scope: scope,
           height: height ?? 400,
           isDisabled: isDisabled,
           gapless: gapless,
+          barColor: barColor,
         ) {
     super.rebuild = rebuild;
   }
@@ -187,7 +191,7 @@ class MenuPanel extends BoardPanel {
   BoxShadow get shadow => BoxShadow(offset: Offset(0, 0), blurRadius: 5, spreadRadius: 3, color: Color(0x3f555555));
 
   @override
-  Color get fill => scope.application.settings.colors.navigation;
+  Color get fill => fillColor ?? scope.application.settings.colors.navigation;
 
   @override
   double get paddings => 8;

@@ -18,14 +18,18 @@ class ActionsHeader extends ViewHeader {
     VoidCallback back,
     ActionIcon leading,
     bool Function() isVisible,
-  }) : super(scope: scope,
-      dismiss: dismiss,
-      back: back,
-      title: title,
-      bottom: bottom,
-      elevation: elevation,
-      height: height,
-      isVisible: isVisible) {
+    Color Function() fill,
+  }) : super(
+          scope: scope,
+          dismiss: dismiss,
+          back: back,
+          title: title,
+          bottom: bottom,
+          elevation: elevation,
+          height: height,
+          isVisible: isVisible,
+          fill: fill,
+        ) {
     super.leading = leading?.build();
   }
 

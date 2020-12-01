@@ -80,18 +80,28 @@ class UserBlock extends StatelessWidget {
                         ),
                         child: Row(
                           children: <Widget>[
-                            Text(
-                              userName,
-                              style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 18),
+                            Expanded(
+                              child: Text(
+                                userName,
+                                overflow: TextOverflow.clip,
+                                style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 18),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.only(left: 8.0, right: 10.0, bottom: 15.0, top: 7),
-                        child: Text(
-                          userTitle.toUpperCase(),
-                          style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 12, letterSpacing: 0.1),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                userTitle.toUpperCase(),
+                                overflow: TextOverflow.clip,
+                                style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w400, fontSize: 12, letterSpacing: 0.1),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/preview.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
+import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,9 @@ class ImageInputField extends FieldWidget<String> {
   final double height;
   final bool returnPath;
   final ResolutionPreset resolution;
+  final bool askPickMethod;
+  final bool showTextPreview;
+  final String url;
 
   ImageInputField({
     @required Scope scope,
@@ -49,6 +53,9 @@ class ImageInputField extends FieldWidget<String> {
     this.height,
     this.returnPath,
     this.resolution,
+    this.askPickMethod,
+    this.showTextPreview,
+    this.url,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -80,6 +87,7 @@ class ImageInputField extends FieldWidget<String> {
 
 class _ImageInputFieldState extends Field<String, ImageInputField> {
   ImageProvider _takenPicture;
+  String _previewText;
 
   @override
   void init() {}
@@ -88,21 +96,22 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   void setup() {}
 
   void _takePicture() async {
-    var result = await widget.scope.view.push(CameraHelper(
+    File result = await CameraHelper.takePicture(
+      scope: widget.scope,
       title: widget.label,
       fullImage: widget.fullImage,
       initFaceCamera: widget.initFaceCamera,
       allowMainCamera: widget.type == ImageInputFieldType.rear,
       flash: widget.flash,
       resolution: widget.resolution,
-    ));
+      askPickMethod: widget.askPickMethod,
+    );
 
     if (result != null) {
-      File image = result as File;
       if (widget.returnPath == true) {
-        super.submit(image.path);
+        super.submit(result.path);
       } else {
-        super.submit('data:image/png;base64,${base64Encode(image.readAsBytesSync())}');
+        super.submit('data:image/png;base64,${base64Encode(result.readAsBytesSync())}');
       }
     }
   }
@@ -130,46 +139,110 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
     setState(() {
       if (value != null) {
         if (widget.returnPath == true) {
-          _takenPicture = Image.file(File(value)).image;
+          var file = File(value);
+          _takenPicture = Image.file(file).image;
+          _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(file.lengthSync());
         } else {
           _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
+          _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(value.length);
         }
       } else {
         _takenPicture = null;
+        _previewText = null;
       }
     });
   }
 
   @override
   Widget field() {
-    var previewImage = _takenPicture != null
-        ? GestureDetector(
-            onTap: () async {
-              var result = await widget.scope.view.push(ImagePreviewHelper(
-                title: widget.label,
-                image: _takenPicture,
-                canRemove: true,
-                fullImage: widget.fullImage,
-              ));
-              if (result == false) {
-                clear();
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10.0),
-                ),
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  image: _takenPicture,
-                ),
+    var previewImage;
+    if (_takenPicture != null) {
+      previewImage = GestureDetector(
+        onTap: () async {
+          _preview();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              image: _takenPicture,
+            ),
+          ),
+        ),
+      );
+    } else if (widget.url != null) {
+      previewImage = GestureDetector(
+        onTap: () async {
+          _preview();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              image: NetworkImage(widget.url),
+            ),
+          ),
+        ),
+      );
+    }
+
+    var previewContent;
+
+    if (_takenPicture != null || widget.url != null) {
+      if (widget.showTextPreview == true && _previewText != null) {
+        previewContent = GestureDetector(
+          onTap: () async {
+            _preview();
+          },
+          child: Container(
+            padding: EdgeInsets.only(top: 2),
+            child: Text(
+              _previewText,
+              style: TextStyle(
+                fontSize: 16,
+                color: widget.scope.application.settings.colors.text,
               ),
             ),
-          )
-        : null;
+          ),
+        );
+      } else {
+        previewContent = Container(
+          child: Container(
+            padding: EdgeInsets.only(bottom: 10),
+            child: widget.height == null
+                ? AspectRatio(
+                    aspectRatio: 1,
+                    child: previewImage,
+                  )
+                : Container(
+                    height: widget.height,
+                    child: previewImage,
+                  ),
+          ),
+        );
+      }
+    } else {
+      previewContent = Container(
+        padding: EdgeInsets.only(top: 2),
+        child: Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: widget.fontSize != null ? (widget.fontSize * 0.9) : 16,
+            color: Color(0x88000000),
+          ),
+        ),
+      );
+    }
 
     return GestureDetector(
       onTap: () {
@@ -193,7 +266,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
                 size: widget.iconSize,
                 color: widget.scope.application.settings.colors.primary,
               ),
-              labelText: _takenPicture != null ? widget.label : null,
+              labelText: (_takenPicture != null || widget.url != null) ? widget.label : null,
               labelStyle: widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null,
               fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
@@ -216,36 +289,27 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
             ),
             child: Padding(
               padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
-              child: _takenPicture != null
-                  ? Container(
-                      child: Container(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: widget.height == null
-                            ? AspectRatio(
-                                aspectRatio: 1,
-                                child: previewImage,
-                              )
-                            : Container(
-                                height: widget.height,
-                                child: previewImage,
-                              ),
-                      ),
-                    )
-                  : Container(
-                      padding: EdgeInsets.only(top: 2),
-                      child: Text(
-                        widget.label,
-                        style: TextStyle(
-                          fontSize: widget.fontSize != null ? (widget.fontSize * 0.9) : 16,
-                          color: Color(0x88000000),
-                        ),
-                      ),
-                    ),
+              child: previewContent,
             ),
           );
         },
       ),
     );
+  }
+
+  Future _preview() async {
+    var image = _takenPicture ?? (widget.url != null ? NetworkImage(widget.url) : null);
+    if (image != null) {
+      var result = await widget.scope.view.push(ImagePreviewHelper(
+        title: widget.label,
+        image: image,
+        canRemove: true,
+        fullImage: widget.fullImage,
+      ));
+      if (result == false) {
+        clear();
+      }
+    }
   }
 
   Icon _getIcon() {
@@ -256,7 +320,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
     if (value != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
-      return Icon(Ionicons.md_camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+      return Icon(widget.askPickMethod == true ? Icons.search : Ionicons.md_camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
 }

@@ -74,3 +74,8 @@ export 'package:photo_view/photo_view.dart';
 export 'package:credit_card_validate/credit_card_validate.dart';
 export 'package:camera/camera.dart';
 export 'widgets/blocks/spinner.dart';
+export 'package:file_picker/file_picker.dart';
+export 'package:sign_in_with_apple/sign_in_with_apple.dart';
+export 'parts/dialogs/period.dart';
+export 'misc/view_action_locator.dart';
+export 'widgets/blocks/list_stats.dart';

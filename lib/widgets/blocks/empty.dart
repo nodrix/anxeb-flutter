@@ -1,95 +1,111 @@
+import 'package:anxeb_flutter/anxeb.dart';
+import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-
 import 'paragraph.dart';
 
 class EmptyBlock extends StatelessWidget {
-  const EmptyBlock(
-    this.text,
-    this.icon, {
+  const EmptyBlock({
+    @required this.scope,
+    @required this.message,
+    @required this.icon,
     this.actionCallback,
     this.actionText,
     this.visible,
-    this.iconSize,
-    this.iconPadding,
-    this.margin,
-    this.heightFactor,
-  }) : assert(text != null);
+    this.iconScale,
+    this.fawIcon,
+    this.tight,
+  });
 
-  final String text;
-  final String actionText;
-  final VoidCallback actionCallback;
-  final bool visible;
+  final Scope scope;
+  final String message;
   final IconData icon;
-  final double iconSize;
-  final EdgeInsets iconPadding;
-  final EdgeInsets margin;
-  final double heightFactor;
-  
+  final VoidCallback actionCallback;
+  final String actionText;
+  final bool visible;
+  final double iconScale;
+  final bool fawIcon;
+  final bool tight;
+
   @override
   Widget build(BuildContext context) {
-    return visible != false
-        ? Center(
-            heightFactor: heightFactor ?? 2,
+    var size = MediaQuery.of(context).size;
+
+    var $message = Container();
+    var $action = Container();
+    var $icon = Container(
+      height: 110,
+      child: Icon(
+        icon,
+        size: 110 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
+        color: scope.application.settings.colors.navigation.withOpacity(0.1),
+      ),
+    );
+
+    if (message?.isNotEmpty == true) {
+      $message = Container(
+        margin: EdgeInsets.only(top: 5),
+        child: ParagraphBlock(
+          alignment: TextAlign.center,
+          content: <TextSpan>[
+            TextSpan(style: TextStyle(), text: message),
+          ],
+        ),
+      );
+    }
+
+    if (actionText != null) {
+      $action = Container(
+        margin: EdgeInsets.only(top: 10),
+        child: Material(
+          key: GlobalKey(),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          child: InkWell(
+            onTap: actionCallback,
+            borderRadius: BorderRadius.all(Radius.circular(30)),
             child: Container(
-              margin: margin ?? EdgeInsets.only(left: 30, right: 30, bottom: 30),
-              padding: EdgeInsets.only(left: 18, right: 18, top: 0, bottom: 10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    icon,
-                    size: iconSize != null ? iconSize : 160,
-                    color: Color(0x332e7db2),
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: ParagraphBlock(
+                content: <TextSpan>[
+                  TextSpan(
+                    text: actionText.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 15,
+                      letterSpacing: 0.15,
+                      fontWeight: FontWeight.w400,
+                      color: scope.application.settings.colors.link,
+                    ),
                   ),
-                  text != null && text.isNotEmpty
-                      ? Container(
-                          margin: EdgeInsets.only(top: 5),
-                          child: ParagraphBlock(
-                            alignment: TextAlign.center,
-                            content: <TextSpan>[
-                              TextSpan(style: TextStyle(), text: text),
-                            ],
-                          ),
-                        )
-                      : Container(),
-                  actionText != null
-                      ? Container(
-                          margin: EdgeInsets.only(top: 5),
-                          child: Material(
-                            key: GlobalKey(),
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            child: InkWell(
-                              onTap: actionCallback,
-                              borderRadius: BorderRadius.all(Radius.circular(30)),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                child: ParagraphBlock(
-                                  content: <TextSpan>[
-                                    TextSpan(
-                                      text: actionText.toUpperCase(),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        letterSpacing: 0.15,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color(0xff0055f0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Container(),
                 ],
               ),
             ),
-          )
-        : Container();
+          ),
+        ),
+      );
+    }
+
+    if (tight == true) {
+      return Container(
+        width: size.width * 0.66,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [$icon, $message, $action],
+        ),
+      );
+    }
+
+    return Center(
+      child: Container(
+        width: size.width * 0.66,
+        margin: EdgeInsets.only(bottom: size.height * (0.07 + (scope?.view?.isFooter == false ? 0.03 : 0))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [$icon, $message, $action],
+        ),
+      ),
+    );
   }
 }

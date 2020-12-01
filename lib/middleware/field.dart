@@ -302,7 +302,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     if (value is V) {
       _value = value;
     } else {
-      _value = value != null ? widget.parser(value) : null;
+      _value = value != null ? widget.parser?.call(value) : null;
     }
     present();
     rasterize();

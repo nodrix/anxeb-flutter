@@ -10,7 +10,8 @@ class StateButton extends StatelessWidget {
   final Color color;
   final String tooltip;
   final bool active;
-  
+  final bool visible;
+
   StateButton({
     Key key,
     this.onTap,
@@ -21,14 +22,18 @@ class StateButton extends StatelessWidget {
     this.color,
     this.tooltip,
     this.active,
+    this.visible,
   }) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
+    if (visible == false) {
+      return Container();
+    }
     var button;
     var $color = color ?? (active == false ? Colors.white54 : Colors.yellow);
     var $size = size ?? 34;
-    
+
     if (onTap != null) {
       button = Padding(
         padding: padding ?? EdgeInsets.only(right: 4),
@@ -65,7 +70,7 @@ class StateButton extends StatelessWidget {
         ),
       );
     }
-    
+
     if (tooltip != null) {
       return Tooltip(
         message: tooltip,

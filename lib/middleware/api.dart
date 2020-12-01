@@ -49,31 +49,13 @@ class Api {
 
   Interceptors get interceptors => _dio.interceptors;
 
-  Future<Data> _process(ApiMethods method, String route, {data, Function(int count, int total) progress, CancelToken cancelToken}) async {
-    var res = await request(method, route, data: data, progress: progress, cancelToken: cancelToken);
+  Future<Data> _process(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken}) async {
+    var res = await request(method, route, data: data, query: query, progress: progress, cancelToken: cancelToken);
     return Data(res.data);
   }
 
-  Future<Response> request(ApiMethods method, String route, {data, Function(int count, int total) progress, CancelToken cancelToken}) {
-    var promise = new Completer<Response>();
+  Future<Response> request(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken}) async {
     var body;
-
-    var $method;
-    switch (method) {
-      case ApiMethods.GET:
-        $method = _dio.get;
-        break;
-      case ApiMethods.DELETE:
-        $method = _dio.delete;
-        break;
-      case ApiMethods.POST:
-        $method = _dio.post;
-        break;
-      case ApiMethods.PUT:
-        $method = _dio.put;
-        break;
-    }
-
     if (data != null) {
       if (data is Data) {
         body = data.toObjects();
@@ -83,31 +65,37 @@ class Api {
         body = data;
       }
     }
-
-    Future<Response> call = $method == _dio.get || $method == _dio.delete ? $method(route) : $method(route, data: body, onSendProgress: progress, cancelToken: cancelToken);
-
-    call.then((res) {
-      promise.complete(res);
-    }).catchError((err) {
+    try {
+      switch (method) {
+        case ApiMethods.GET:
+          return await _dio.get(route, queryParameters: query, cancelToken: cancelToken);
+        case ApiMethods.DELETE:
+          return await _dio.delete(route, queryParameters: query, cancelToken: cancelToken, data: body);
+        case ApiMethods.POST:
+          return await _dio.post(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body);
+        case ApiMethods.PUT:
+          return await _dio.put(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body);
+      }
+    } catch (err) {
       var apiException = ApiException.fromErr(err);
       if (apiException != null) {
-        promise.completeError(apiException);
+        throw apiException;
       } else {
-        promise.completeError(err);
+        throw err;
       }
-    });
-    return promise.future;
+    }
+    return null;
   }
 
   String getUri(String path) => _uri + path;
 
-  Future<Data> delete(String route) => _process(ApiMethods.DELETE, route);
+  Future<Data> delete(String route, [data]) => _process(ApiMethods.DELETE, route, data: data);
 
   Future<Data> post(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.POST, route, data: data, progress: progress, cancelToken: cancelToken);
 
   Future<Data> put(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.PUT, route, data: data, progress: progress, cancelToken: cancelToken);
 
-  Future<Data> get(String route) => _process(ApiMethods.GET, route);
+  Future<Data> get(String route, [query]) => _process(ApiMethods.GET, route, query: query);
 
   Future<File> download(String route, {String location, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
@@ -138,11 +126,19 @@ class Api {
     }
   }
 
-  Future<Data> upload(String route, {form, File file, String fieldName, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
-    var contentType = lookupMimeType(file.path);
-
+  Future<Data> upload(String route, {form, Map<String, File> files, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
-      form[fieldName ?? 'file'] = await MultipartFile.fromFile(file.path, filename: Path.basename(file.path), contentType: MediaType.parse(contentType));
+      for (var i = 0; i < files.entries.length; i++) {
+        var element = files.entries.elementAt(i);
+        var file = element.value;
+        var $key = element.key ?? 'file';
+
+        if (file != null) {
+          var contentType = lookupMimeType(file.path);
+          form[$key] = await MultipartFile.fromFile(file.path, filename: Path.basename(file.path), contentType: MediaType.parse(contentType));
+        }
+      }
+
       var res = await _dio.put(
         route,
         data: FormData.fromMap(form),

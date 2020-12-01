@@ -22,8 +22,8 @@ class Device {
         options: ScanOptions(
           strings: {
             'cancel': 'X',
-            'flash_on': 'Apagar Luz',
-            'flash_off': 'Encender Luz',
+            'flash_on': 'Encender Luz',
+            'flash_off': 'Apagar Luz',
           },
           autoEnableFlash: autoflash != null ? autoflash : true,
           android: AndroidOptions(

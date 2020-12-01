@@ -3,13 +3,14 @@ import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart';
 
 enum ButtonType { primary, secundary, link, frame }
-enum ButtonSize { normal, small, medium }
+enum ButtonSize { normal, small, medium, chip }
 
 const Color _BASE_COLOR = Color(0xff2e7db2);
 const Color _LINK_COLOR = Color(0xff0055ff);
 
 const double _NORMAL_SIZE = 18.0;
 const double _SMALL_SIZE = 16.0;
+const double _CHIP_SIZE = 14.0;
 const double _MEDIUM_SIZE = 18.0;
 
 class TextButton extends StatefulWidget {
@@ -30,7 +31,8 @@ class TextButton extends StatefulWidget {
   final ButtonType type;
   final ButtonSize size;
   final bool enabled;
-  
+  final BorderRadius borderRadius;
+
   const TextButton({
     this.padding,
     this.margin,
@@ -49,11 +51,12 @@ class TextButton extends StatefulWidget {
     this.type,
     this.size,
     this.enabled,
+    this.borderRadius,
   });
-  
+
   @override
   _TextButtonState createState() => _TextButtonState();
-  
+
   static List<Widget> createOptions<V>(BuildContext context, List<DialogButton<V>> options, {V selectedValue, Settings settings}) {
     var $settings = settings ?? Settings();
     return options.where(($option) => $option.visible != false).map(($option) {
@@ -86,7 +89,7 @@ class TextButton extends StatefulWidget {
           ]));
     }).toList();
   }
-  
+
   static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings}) {
     var $settings = settings ?? Settings();
     return buttons.where(($button) => $button.visible != false).map(($button) {
@@ -111,9 +114,9 @@ class TextButton extends StatefulWidget {
         type: ButtonType.primary,
         size: ButtonSize.small,
       );
-      
+
       var isLast = buttons.last.value == $button.value;
-      
+
       return Expanded(
         child: Container(
           child: button,
@@ -129,23 +132,28 @@ class _TextButtonState extends State<TextButton> {
   Widget build(BuildContext context) {
     var $padding = EdgeInsets.all(12);
     var fontSize = widget.fontSize ?? _NORMAL_SIZE;
-    var borderRadius = widget.radius ?? 30.0;
-    
+    var $borderRadius = widget.borderRadius ?? BorderRadius.circular(widget.radius ?? 30.0);
+
+    if (widget.size == ButtonSize.chip) {
+      $padding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+      fontSize = widget.fontSize ?? _CHIP_SIZE;
+    }
+
     if (widget.size == ButtonSize.small) {
       $padding = EdgeInsets.all(8);
       fontSize = widget.fontSize ?? _SMALL_SIZE;
     }
-    
+
     if (widget.size == ButtonSize.medium) {
       $padding = EdgeInsets.all(10);
       fontSize = widget.fontSize ?? _MEDIUM_SIZE;
     }
-    
+
     var textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.white, fontWeight: FontWeight.normal);
     var subtitleStyle = TextStyle(fontSize: fontSize - 5, color: (widget.textColor ?? Colors.white).withOpacity(0.9), fontWeight: FontWeight.w300);
     var color = widget.color ?? _BASE_COLOR;
     var $shape;
-    
+
     if (widget.type == ButtonType.secundary) {
       textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: FontWeight.normal);
       color = widget.color ?? Colors.white.withOpacity(0.5);
@@ -157,94 +165,88 @@ class _TextButtonState extends State<TextButton> {
       textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: FontWeight.normal);
       color = widget.color ?? Colors.transparent;
       $shape = RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: $borderRadius,
         side: BorderSide(color: widget.textColor ?? Colors.black, width: 1.5),
       );
     }
-    
+
     final button = Material(
       key: GlobalKey(),
       color: color,
       shape: $shape,
-      borderRadius: $shape == null
-          ? BorderRadius.all(
-        Radius.circular(borderRadius),
-      )
-          : null,
+      borderRadius: $shape == null ? $borderRadius : null,
       child: InkWell(
         onTap: widget.enabled != false ? widget.onPressed : () {},
-        borderRadius: new BorderRadius.all(
-          Radius.circular(borderRadius),
-        ),
+        borderRadius: $borderRadius,
         child: Padding(
             padding: $padding ?? EdgeInsets.only(left: 8, right: 8),
             child: Column(
               children: <Widget>[
                 widget.icon != null
                     ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: widget.swapIcon == true
-                      ? <Widget>[
-                    Text(
-                      widget.caption,
-                      style: textStyle,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6.0),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                        size: widget.iconSize != null ? widget.iconSize : 20,
-                      ),
-                    ),
-                  ]
-                      : <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                        size: widget.iconSize != null ? widget.iconSize : 20,
-                      ),
-                    ),
-                    Text(
-                      widget.caption,
-                      style: textStyle,
-                    ),
-                  ],
-                )
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: widget.swapIcon == true
+                            ? <Widget>[
+                                Text(
+                                  widget.caption,
+                                  style: textStyle,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 6.0),
+                                  child: Icon(
+                                    widget.icon,
+                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                                    size: widget.iconSize != null ? widget.iconSize : 20,
+                                  ),
+                                ),
+                              ]
+                            : <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: Icon(
+                                    widget.icon,
+                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                                    size: widget.iconSize != null ? widget.iconSize : 20,
+                                  ),
+                                ),
+                                Text(
+                                  widget.caption,
+                                  style: textStyle,
+                                ),
+                              ],
+                      )
                     : Text(
-                  widget.caption,
-                  textAlign: TextAlign.center,
-                  style: textStyle,
-                ),
+                        widget.caption,
+                        textAlign: TextAlign.center,
+                        style: textStyle,
+                      ),
                 widget.subtitle != null
                     ? Container(
-                  margin: EdgeInsets.only(top: 2),
-                  child: Text(
-                    widget.subtitle.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: subtitleStyle,
-                  ),
-                )
+                        margin: EdgeInsets.only(top: 2),
+                        child: Text(
+                          widget.subtitle.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: subtitleStyle,
+                        ),
+                      )
                     : Container()
               ],
             )),
       ),
     );
-    
+
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
         boxShadow: widget.type == ButtonType.frame ? null : widget.shadow,
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: $borderRadius,
       ),
       child: widget.enabled == false
           ? Opacity(
-        child: button,
-        opacity: 0.3,
-      )
+              child: button,
+              opacity: 0.3,
+            )
           : button,
     );
   }

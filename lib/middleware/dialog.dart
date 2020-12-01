@@ -2,12 +2,14 @@ import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
 import 'package:anxeb_flutter/parts/dialogs/panel.dart';
+import 'package:anxeb_flutter/parts/dialogs/period.dart';
 import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
 import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'field.dart';
 import 'form.dart';
@@ -103,6 +105,16 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.primary,
       iconColor: _scope.application.settings.colors.primary,
       buttons: buttons,
+    );
+  }
+
+  PeriodDialog period(String title, {IconData icon, PeriodValue selectedValue, bool allowAllMonths}) {
+    return PeriodDialog(
+      _scope,
+      title: title,
+      icon: icon ?? FlutterIcons.calendar_week_mco,
+      selectedValue: selectedValue,
+      allowAllMonths: allowAllMonths,
     );
   }
 

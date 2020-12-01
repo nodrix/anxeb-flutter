@@ -74,7 +74,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
-    _locator = ViewActionLocator();
+    //_locator = ViewActionLocator();
   }
 
   void rasterize([VoidCallback fn]) {
@@ -126,6 +126,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   @override
   Widget build(BuildContext context) {
     _checkParts();
+    _locator = _locator ?? _action?.locator ?? ViewActionLocator();
 
     prebuild();
     var $drawer = drawer();
@@ -410,6 +411,10 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   String get title => widget?.title ?? application.title;
 
+  bool get isFooter => _footer != null;
+
+  bool get isHeader => _header != null;
+  
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
   _ViewParts get parts => _parts;

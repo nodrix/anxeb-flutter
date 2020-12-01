@@ -1,7 +1,8 @@
+import 'dart:io';
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/header.dart';
 import 'package:anxeb_flutter/middleware/view.dart';
+import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +11,9 @@ class ImagePreviewHelper extends ViewWidget {
   final ImageProvider image;
   final bool canRemove;
   final bool fullImage;
+  final bool fromCamera;
 
-  ImagePreviewHelper({this.title, this.image, this.canRemove, this.fullImage}) : super('anxeb_preview_helper', title: title);
+  ImagePreviewHelper({this.title, this.image, this.canRemove, this.fullImage, this.fromCamera}) : super('anxeb_preview_helper', title: title);
 
   @override
   _ImagePreviewState createState() => new _ImagePreviewState();
@@ -21,11 +23,9 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   PhotoViewControllerBase _controller;
 
   @override
-  ViewHeader header() {
-    return ViewHeader(
-      scope: scope,
-      leading: BackButton(onPressed: dismiss),
-    );
+  void setup() {
+    window.overlay.brightness = Brightness.light;
+    window.overlay.extendBodyFullScreen = true;
   }
 
   @override
@@ -63,6 +63,7 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
         imageProvider: widget.image,
         tightMode: false,
         gaplessPlayback: true,
+        initialScale: PhotoViewComputedScale.covered,
         backgroundDecoration: BoxDecoration(
           gradient: LinearGradient(
             begin: FractionalOffset.topCenter,
@@ -114,7 +115,17 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   ViewAction action() {
     return ViewAction(
       scope: scope,
+      color: () => scope.application.settings.colors.secudary,
+      icon: () => widget.fromCamera == true ? null : (Platform.isAndroid ? Icons.arrow_back : Icons.chevron_left),
       onPressed: () => pop(true),
+      alternates: [
+        AltAction(
+          color: () => scope.application.settings.colors.secudary,
+          isVisible: () => widget.fromCamera == true,
+          icon: () => Icons.delete,
+          onPressed: () => dismiss(),
+        ),
+      ],
     );
   }
 }
