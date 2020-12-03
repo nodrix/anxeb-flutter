@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart' hide Navigator;
+import 'analytics.dart';
 import 'api.dart';
 import 'disk.dart';
 import 'navigator.dart';
@@ -12,6 +13,7 @@ class Application {
   Disk _disk;
   Navigator _navigator;
   AuthProviders _auths;
+  Analytics _analytics;
 
   Application() {
     _settings = Settings();
@@ -20,6 +22,14 @@ class Application {
     _navigator = Navigator(this);
     init();
     _auths = AuthProviders(this);
+    _analytics = Analytics();
+  }
+
+  Future setup() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    if (_settings.analytics.available == true) {
+      await _analytics.init();
+    }
   }
 
   @protected
@@ -46,6 +56,8 @@ class Application {
   }
 
   Navigator get navigator => _navigator;
+
+  Analytics get analytics => _analytics;
 
   @protected
   set navigator(value) {

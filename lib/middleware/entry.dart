@@ -2,7 +2,6 @@ library anxeb_flutter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'view.dart';
 
 class Entry extends StatelessWidget {
@@ -15,6 +14,7 @@ class Entry extends StatelessWidget {
   Widget build(BuildContext context) {
     var app = MaterialApp(
         home: this.home,
+        navigatorObservers: this.home.application.settings.analytics.available == true ? [this.home.application.analytics.observer] : [],
         theme: this.theme ??
             ThemeData(
               primaryColor: this.home.application.settings.colors.primary,

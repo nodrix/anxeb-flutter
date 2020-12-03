@@ -79,3 +79,7 @@ export 'package:sign_in_with_apple/sign_in_with_apple.dart';
 export 'parts/dialogs/period.dart';
 export 'misc/view_action_locator.dart';
 export 'widgets/blocks/list_stats.dart';
+export 'package:percent_indicator/linear_percent_indicator.dart';
+export 'package:firebase_analytics/firebase_analytics.dart';
+export 'package:firebase_analytics/observer.dart';
+export 'package:firebase_messaging/firebase_messaging.dart';

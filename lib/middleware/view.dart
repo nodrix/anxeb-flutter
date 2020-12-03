@@ -108,6 +108,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _action = action();
     _tabs = tabs();
     _footer = footer();
+    await _scope.init();
     setup();
     _scope.window.overlay.apply();
   }

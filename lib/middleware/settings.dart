@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+class _Analytics {
+  bool available;
+}
+
 class _Panels {
   double buttonRadius;
 }
@@ -89,12 +93,14 @@ class Settings {
   _Auths _auths;
   _Dialogs _dialogs;
   _Panels _panels;
+  _Analytics _analytics;
 
   Settings() {
     _colors = _Colors();
     _auths = _Auths();
     _dialogs = _Dialogs();
     _panels = _Panels();
+    _analytics = _Analytics();
   }
 
   _Colors get colors => _colors;
@@ -104,4 +110,6 @@ class Settings {
   _Dialogs get dialogs => _dialogs;
 
   _Panels get panels => _panels;
+
+  _Analytics get analytics => _analytics;
 }

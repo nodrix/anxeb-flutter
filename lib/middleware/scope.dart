@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'api.dart';
@@ -7,6 +6,7 @@ import 'application.dart';
 import 'auth.dart';
 import 'dialog.dart';
 import 'disk.dart';
+import 'analytics.dart';
 import 'form.dart';
 import 'view.dart';
 import 'alert.dart';
@@ -61,6 +61,12 @@ class Scope {
 
   void retick() {
     tick = DateTime.now().toUtc().millisecondsSinceEpoch;
+  }
+
+  Future init() async {
+    if (application.settings.analytics.available == true) {
+      application.analytics.setup(scope: this);
+    }
   }
 
   Future busy({int timeout, String text}) {
@@ -188,6 +194,8 @@ class Scope {
   BuildContext get context => _context;
 
   Window get window => _window;
+
+  Analytics get analytics => application.analytics;
 
   Application get application => _view.application;
 

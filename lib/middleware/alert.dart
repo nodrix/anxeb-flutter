@@ -56,6 +56,15 @@ class ScopeAlerts {
     return current;
   }
 
+  SnackAlert notification(String title, {String message, int delay, Color color}) => _initialize(SnackAlert(
+        _scope,
+        title: title,
+        message: message,
+        icon: Icons.notifications,
+        fillColor: color ?? _scope.application.settings.colors.info,
+        delay: delay,
+      ));
+
   SnackAlert information(String title, {String message, int delay}) => _initialize(SnackAlert(
         _scope,
         title: title,
