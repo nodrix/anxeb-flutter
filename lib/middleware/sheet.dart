@@ -1,7 +1,7 @@
+import 'package:anxeb_flutter/parts/sheets/notification.dart';
 import 'package:anxeb_flutter/parts/sheets/tip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-
 import 'scope.dart';
 
 class ScopeSheet {
@@ -17,11 +17,20 @@ class ScopeSheet {
   Future show() async {
     return showModalBottomSheet<void>(
       context: scope.context,
+      elevation: elevation,
+      barrierColor: barrierColor,
+      isScrollControlled: true,
       builder: (BuildContext context) {
         return build(context);
       },
     );
   }
+
+  @protected
+  double get elevation => 10.0;
+
+  @protected
+  Color get barrierColor => Colors.black54;
 }
 
 class ScopeSheets {
@@ -99,6 +108,19 @@ class ScopeSheets {
       flat: true,
       foreground: Colors.white,
       icon: icon ?? Icons.info_outline,
+    );
+  }
+
+  NotificationSheet notification({String title, String message, Widget body, IconData icon, List<NotificationSheetAction> actions, VoidCallback onDelete, DateTime date}) {
+    return NotificationSheet(
+      _scope,
+      title: title,
+      message: message,
+      body: body,
+      actions: actions,
+      onDelete: onDelete,
+      icon: icon,
+      date: date,
     );
   }
 }

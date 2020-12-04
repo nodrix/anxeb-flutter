@@ -63,9 +63,15 @@ class Scope {
     tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
-  Future init() async {
+  Future setup() async {
     if (application.settings.analytics.available == true) {
       application.analytics.setup(scope: this);
+    }
+  }
+
+  void dispose() {
+    if (application.settings.analytics.available == true) {
+      application.analytics.reset();
     }
   }
 

@@ -108,7 +108,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _action = action();
     _tabs = tabs();
     _footer = footer();
-    await _scope.init();
+    await _scope.setup();
     setup();
     _scope.window.overlay.apply();
   }
@@ -323,6 +323,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       result = await Navigator.of(_scope.context).push($route);
     }
 
+    await _scope.setup();
     if (mounted) {
       setup();
       _scope.window.overlay.apply();
@@ -415,7 +416,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   bool get isFooter => _footer != null;
 
   bool get isHeader => _header != null;
-  
+
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
   _ViewParts get parts => _parts;

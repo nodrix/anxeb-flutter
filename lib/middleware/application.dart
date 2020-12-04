@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart' hide Navigator;
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'analytics.dart';
 import 'api.dart';
 import 'disk.dart';
@@ -14,6 +15,7 @@ class Application {
   Navigator _navigator;
   AuthProviders _auths;
   Analytics _analytics;
+  bool _badgesSupport;
 
   Application() {
     _settings = Settings();
@@ -25,15 +27,31 @@ class Application {
     _analytics = Analytics();
   }
 
+  void setBadge(int value) {
+    if (_badgesSupport == true) {
+      if (value != null && value > 0) {
+        FlutterAppBadger.updateBadgeCount(value);
+      } else {
+        FlutterAppBadger.removeBadge();
+      }
+    }
+  }
+
   Future setup() async {
     WidgetsFlutterBinding.ensureInitialized();
+    _badgesSupport = await FlutterAppBadger.isAppBadgeSupported();
     if (_settings.analytics.available == true) {
-      await _analytics.init();
+      await _analytics.init(onMessage: onMessage);
     }
   }
 
   @protected
   void init() {}
+
+  @protected
+  void onMessage(Map<String, dynamic> message, MessageEventType event) {
+    setBadge(analytics.notifications.length);
+  }
 
   Settings get settings => _settings;
 

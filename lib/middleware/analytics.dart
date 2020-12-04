@@ -13,17 +13,21 @@ class Analytics {
   FirebaseAnalyticsObserver _observer;
   Function(String token) _onToken;
   Function(Map<String, dynamic> message, MessageEventType event) _onMessage;
+  Function(Map<String, dynamic> message, MessageEventType event) _onMessageGlobal;
+  List<dynamic> notifications;
 
   Analytics() {
+    notifications = [];
     _analytics = FirebaseAnalytics();
     _messaging = FirebaseMessaging();
     _observer = FirebaseAnalyticsObserver(analytics: _analytics);
   }
 
-  Future init() async {
+  Future init({Function(Map<String, dynamic> message, MessageEventType event) onMessage}) async {
+    _onMessageGlobal = onMessage;
     try {
       await Firebase.initializeApp();
-
+      reset();
       _token = await _messaging.getToken();
       if (Platform.isIOS) {
         _messaging.requestNotificationPermissions();
@@ -49,7 +53,6 @@ class Analytics {
   }
 
   void reset() {
-    _scope = null;
     _onToken = null;
     _onMessage = null;
   }
@@ -91,11 +94,14 @@ class Analytics {
       } else if (message['aps'] != null && message['aps']['body'] != null && message['aps']['alert']['body'] != null) {
         $body = message['aps']['alert']['body'];
       }
+      notifications.add(message);
     }
 
     if (_scope != null && _scope.view.mounted == true && $title != null && $body != null) {
       _scope.alerts.notification($title, message: $body).show();
     }
+
+    _onMessageGlobal?.call(message, event);
     _onMessage?.call(message, event);
   }
 

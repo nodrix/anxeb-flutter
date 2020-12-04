@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:flutter/material.dart' hide Dialog;

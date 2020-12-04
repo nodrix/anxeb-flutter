@@ -83,3 +83,6 @@ export 'package:percent_indicator/linear_percent_indicator.dart';
 export 'package:firebase_analytics/firebase_analytics.dart';
 export 'package:firebase_analytics/observer.dart';
 export 'package:firebase_messaging/firebase_messaging.dart';
+export 'parts/sheets/notification.dart';
+export 'parts/sheets/tip.dart';
+export 'middleware/analytics.dart';
