@@ -1,7 +1,7 @@
 name: anxeb_flutter
 description: Highly scalable mobile Flutter cross-platform library
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.3.0
+version: 1.3.1
 author: Nodrix
 homepage: https://github.com/nodrix/anxeb-flutter
 

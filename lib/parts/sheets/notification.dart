@@ -7,13 +7,14 @@ import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 class NotificationSheet extends ScopeSheet {
   final String title;
   final String message;
+  final String imageUrl;
   final DateTime date;
   final IconData icon;
   final Widget body;
   final VoidCallback onDelete;
   final List<NotificationSheetAction> actions;
 
-  NotificationSheet(Scope scope, {this.title, this.message, this.icon, this.body, this.actions, this.onDelete, this.date})
+  NotificationSheet(Scope scope, {this.title, this.message, this.imageUrl, this.icon, this.body, this.actions, this.onDelete, this.date})
       : assert(title != null),
         super(scope);
 
@@ -23,7 +24,7 @@ class NotificationSheet extends ScopeSheet {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: scope.window.vertical(0.9),
+        maxHeight: scope.window.available.height,
         minHeight: 0,
       ),
       child: Container(
@@ -83,18 +84,30 @@ class NotificationSheet extends ScopeSheet {
                           ),
                         )
                       : Container(),
+                  imageUrl != null
+                      ? Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                          ),
+                          height: 200,
+                        )
+                      : Container(),
                   message != null
                       ? Container(
                           padding: EdgeInsets.only(top: 12, bottom: 8),
                           child: Row(
                             children: [
-                              Text(
-                                message,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  height: 1.3,
-                                  fontWeight: FontWeight.w300,
-                                  color: foreground,
+                              Expanded(
+                                child: Text(
+                                  message,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    height: 1.3,
+                                    fontWeight: FontWeight.w300,
+                                    color: foreground,
+                                  ),
                                 ),
                               ),
                             ],

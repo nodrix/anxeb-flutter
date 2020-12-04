@@ -43,7 +43,7 @@ class PropertyBlock extends StatefulWidget {
 class _PropertyBlockState extends State<PropertyBlock> {
   @override
   Widget build(BuildContext context) {
-    if (widget.visible == false || (widget.value == null && widget.showOnNull != true)) {
+    if (widget.visible == false || ((widget.value == null || widget.value.length == 0) && widget.showOnNull != true)) {
       return Container();
     }
 

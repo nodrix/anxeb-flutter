@@ -59,10 +59,33 @@ class Analytics {
 
   void setup({Scope scope}) {
     _scope = scope;
+    if (_scope?.view?.name != null) {
+      firebase.logEvent(name: 'view_navigation', parameters: {'name': _scope.view.name});
+    }
   }
 
   Future<void> log(String name, {Map<String, dynamic> params}) {
     return firebase.logEvent(name: name, parameters: params);
+  }
+
+  Future<void> property(String name, String value) {
+    return firebase.setUserProperty(name: name, value: value);
+  }
+
+  Future<void> setUserId(String id) {
+    return firebase.setUserId(id);
+  }
+
+  Future<void> login() {
+    return firebase.logEvent(name: 'login');
+  }
+
+  Future<void> logout() {
+    return firebase.logEvent(name: 'logout');
+  }
+
+  Future<void> signUp() {
+    return firebase.logEvent(name: 'sign_up');
   }
 
   void configure({Function(String token) onToken, Function(Map<String, dynamic> message, MessageEventType event) onMessage}) {

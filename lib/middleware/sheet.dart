@@ -111,7 +111,7 @@ class ScopeSheets {
     );
   }
 
-  NotificationSheet notification({String title, String message, Widget body, IconData icon, List<NotificationSheetAction> actions, VoidCallback onDelete, DateTime date}) {
+  NotificationSheet notification({String title, String message, String imageUrl, Widget body, IconData icon, List<NotificationSheetAction> actions, VoidCallback onDelete, DateTime date}) {
     return NotificationSheet(
       _scope,
       title: title,
@@ -121,6 +121,7 @@ class ScopeSheets {
       onDelete: onDelete,
       icon: icon,
       date: date,
+      imageUrl: imageUrl,
     );
   }
 }
