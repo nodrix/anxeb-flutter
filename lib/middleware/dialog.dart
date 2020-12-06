@@ -279,7 +279,7 @@ class ScopeDialogs {
 
     var accept = () {
       var field = form.fields['prompt'];
-      if (field.valid() == true) {
+      if (field.validate(showMessage: true) == null) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
           _scope.unfocus();
         });
@@ -309,6 +309,7 @@ class ScopeDialogs {
         type: type ?? TextInputFieldType.text,
         hint: hint,
         autofocus: true,
+        selected: true,
         focusNext: false,
         onActionSubmit: (value) {
           var data = accept();
@@ -360,12 +361,12 @@ class ScopeDialogs {
     ]);
   }
 
-  custom({String message, String title, Widget Function(BuildContext context) body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
+  MessageDialog custom({String message, String title, Widget Function(BuildContext context) body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
     return MessageDialog(
       _scope,
-      title: title ?? 'Confirmar Acción',
+      title: title,
       message: message,
-      icon: icon ?? Icons.chat_bubble,
+      icon: icon,
       iconSize: 48,
       messageColor: _scope.application.settings.colors.text,
       titleColor: color ?? _scope.application.settings.colors.info,

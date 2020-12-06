@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart' as Launcher;
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
@@ -19,6 +21,8 @@ class PropertyBlock extends StatefulWidget {
     this.labelColor,
     this.valueColor,
     this.showOnNull,
+    this.isPhone,
+    this.isEmail,
   });
 
   final EdgeInsets margin;
@@ -35,6 +39,8 @@ class PropertyBlock extends StatefulWidget {
   final Color labelColor;
   final Color valueColor;
   final bool showOnNull;
+  final bool isPhone;
+  final bool isEmail;
 
   @override
   _PropertyBlockState createState() => _PropertyBlockState();
@@ -57,8 +63,8 @@ class _PropertyBlockState extends State<PropertyBlock> {
                   margin: widget.iconMargin ?? EdgeInsets.only(right: 5),
                   child: ClipOval(
                     child: SizedBox(
-                      width: 30* (widget.iconScale ?? 1.0),
-                      height: 30* (widget.iconScale ?? 1.0),
+                      width: 30 * (widget.iconScale ?? 1.0),
+                      height: 30 * (widget.iconScale ?? 1.0),
                       child: Container(
                         color: widget.iconColor ?? Colors.blue,
                         child: Icon(
@@ -90,17 +96,7 @@ class _PropertyBlockState extends State<PropertyBlock> {
                     child: Row(
                       children: <Widget>[
                         Expanded(
-                          child: Text(
-                            widget.value,
-                            overflow: TextOverflow.clip,
-                            style: TextStyle(
-                              height: 0.95,
-                              fontSize: 17.5 * (widget.valueScale ?? 1),
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 0.1,
-                              color: widget.valueColor ?? Colors.indigo,
-                            ),
-                          ),
+                          child: _getValueWidget(),
                         ),
                       ],
                     ),
@@ -112,5 +108,60 @@ class _PropertyBlockState extends State<PropertyBlock> {
         ],
       ),
     );
+  }
+
+  Widget _getValueWidget() {
+    if (widget.isPhone == true) {
+      var phones = widget.value.replaceAll(' ', '').split(',');
+      if (phones.length > 1) {
+        return Row(
+          children: phones.map((phone) {
+            return Padding(
+              padding: EdgeInsets.only(right: phone == phones.last ? 0 : 8),
+              child: GestureDetector(
+                onTap: () => _launchValueLink(phone),
+                child: _getValueTextWidget(phone),
+              ),
+            );
+          }).toList(),
+        );
+      }
+    }
+
+    return GestureDetector(
+      onTap: () => _launchValueLink(widget.value),
+      child: _getValueTextWidget(widget.value),
+    );
+  }
+
+  Widget _getValueTextWidget(String text) {
+    return Text(
+      text,
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+        height: 0.95,
+        fontSize: 17.5 * (widget.valueScale ?? 1),
+        decoration: widget.isEmail == true || widget.isPhone == true ? TextDecoration.underline : null,
+        fontWeight: FontWeight.w300,
+        letterSpacing: 0.1,
+        color: widget.valueColor ?? Colors.indigo,
+      ),
+    );
+  }
+
+  void _launchValueLink(String value) {
+    if (widget.isPhone == true) {
+      Launcher.canLaunch("tel://$value").then((canLaunch) {
+        if (canLaunch == true) {
+          Launcher.launch("tel://$value");
+        }
+      });
+    } else if (widget.isEmail == true) {
+      Launcher.canLaunch("mailto:$value").then((canLaunch) {
+        if (canLaunch == true) {
+          Launcher.launch("mailto:$value");
+        }
+      });
+    }
   }
 }

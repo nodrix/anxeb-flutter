@@ -153,6 +153,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
     pop(result);
   }
 
+  void _debug(String text) {
+    //print(text);
+  }
+  
   void _takePicture({bool preview, bool canRemove}) async {
     if (_noCamera || _diabled == true) {
       return;
@@ -168,28 +172,30 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       await _initializeControllerFuture;
       final path = join((await getTemporaryDirectory()).path, '${DateTime.now()}.jpg');
 
-      //print('TAKING PICTURE...');
+      _debug('TAKING PICTURE...');
       await _camera.takePicture(path);
 
-      //print('NORMALIZING...');
+      _debug('NORMALIZING...');
       File original = File(path);
       var properties = await ImageCrop.getImageOptions(file: original);
 
-      //print('NORMALIZED');
-      //print(' WIDTH  ${properties.width}');
-      //print(' HEIGHT ${properties.height}');
+      _debug('NORMALIZED');
+      _debug(' WIDTH  ${properties.width}');
+      _debug(' HEIGHT ${properties.height}');
 
       File reduced;
       if (widget.fullImage != true) {
-        reduced = await ImageCrop.sampleImage(file: original, preferredWidth: _reduceSize);
+        reduced = await ImageCrop.sampleImage(file: original, preferredSize: _reduceSize);
       } else {
-        reduced = await ImageCrop.sampleImage(file: original, preferredSize: properties.width);
+        reduced = await ImageCrop.sampleImage(file: original, preferredSize: properties.width ?? _reduceSize);
       }
+      
+      _debug('REFRESHING IMAGE PROPERTIES');
       properties = await ImageCrop.getImageOptions(file: reduced);
 
-      //print('REDUCED');
-      //print(' WIDTH  ${properties.width} vs $_reduceSize');
-      //print(' HEIGHT ${properties.height} vs $_reduceSize');
+      _debug('REDUCED');
+      _debug(' WIDTH  ${properties.width} vs $_reduceSize');
+      _debug(' HEIGHT ${properties.height} vs $_reduceSize');
 
       var cropped;
       if (widget.fullImage != true) {
@@ -201,12 +207,12 @@ class _CameraHelperState extends View<CameraHelper, Application> {
         double $size;
 
         if ($horizontal) {
-          //print('HORIZONTAL CALC');
+          _debug('HORIZONTAL CALC');
           $size = $height * 0.9;
           $l = (properties.height / properties.width) * _topOffset;
           $t = ((properties.height - $size) / 2) / properties.height;
         } else {
-          //print('VERTICAL CALC');
+          _debug('VERTICAL CALC');
           $size = $width * 0.9;
           $l = ((properties.width - $size) / 2) / properties.width;
           $t = (properties.width / properties.height) * _topOffset;
@@ -215,10 +221,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
         double $w = $size / properties.width;
         double $h = $size / properties.height;
 
-        //print('CROPPING RATIOS');
-        //print(' T ${$t}');
-        //print(' L ${$l}');
-        //print(' S ${$w} x ${$h}');
+        _debug('CROPPING RATIOS');
+        _debug(' T ${$t}');
+        _debug(' L ${$l}');
+        _debug(' S ${$w} x ${$h}');
 
         cropped = await ImageCrop.cropImage(
           file: reduced,
@@ -227,10 +233,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
 
         properties = await ImageCrop.getImageOptions(file: cropped);
 
-        //print('CROPPED');
-        //print(' WIDTH  ${properties.width}');
-        //print(' HEIGHT ${properties.height}');
-        //print(' SIZE   ${(cropped.readAsBytesSync().length / 1024).round()}KB');
+        _debug('CROPPED');
+        _debug(' WIDTH  ${properties.width}');
+        _debug(' HEIGHT ${properties.height}');
+        _debug(' SIZE   ${(cropped.readAsBytesSync().length / 1024).round()}KB');
       }
 
       File $finalFile = cropped ?? reduced ?? original;

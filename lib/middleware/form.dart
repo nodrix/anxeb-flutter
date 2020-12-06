@@ -159,8 +159,8 @@ class FieldsForm {
     return result;
   }
 
-  bool valid({bool autoFocus}) {
-    return validate(autoFocus: autoFocus);
+  bool valid({bool autoFocus, bool showMessage}) {
+    return validate(autoFocus: autoFocus, showMessage: showMessage);
   }
 
   Map<String, dynamic> data({bool images}) {

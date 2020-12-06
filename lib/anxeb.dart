@@ -86,3 +86,4 @@ export 'package:firebase_messaging/firebase_messaging.dart';
 export 'parts/sheets/notification.dart';
 export 'parts/sheets/tip.dart';
 export 'middleware/analytics.dart';
+export 'package:url_launcher/url_launcher.dart';

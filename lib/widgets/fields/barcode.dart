@@ -40,6 +40,8 @@ class BarcodeInputField extends FieldWidget<String> {
     FormFieldValidator<String> validator,
     String Function(dynamic value) parser,
     bool focusNext,
+    String value,
+    bool selected,
     this.controller,
     this.type,
     this.autofocus,
@@ -71,6 +73,8 @@ class BarcodeInputField extends FieldWidget<String> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          initialValue: value,
+          initialSelected: selected,
         );
 
   @override

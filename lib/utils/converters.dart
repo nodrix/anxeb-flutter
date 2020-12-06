@@ -16,6 +16,19 @@ class Converters {
   final _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
   final _timeFormat = DateFormat('h:mm aa');
 
+  String fromNamesToSingleName(String names) {
+    var parts = names.split(' ');
+    if (parts.length > 2 && parts[0].toLowerCase() == 'de') {
+      return '${parts[0]} ${parts[1]} ${parts[2]}';
+    } else {
+      return parts[0];
+    }
+  }
+
+  String fromNamesToFullName(String firstNames, String lastNames) {
+    return '${fromNamesToSingleName(firstNames)} ${fromNamesToSingleName(lastNames)}'.trim();
+  }
+
   String fromStringToDigits(String value) {
     String result = '';
     for (var i = 0; i < value.length; i++) {
@@ -216,9 +229,7 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date
-        .toUtc()
-        .millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {

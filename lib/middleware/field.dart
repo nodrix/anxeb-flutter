@@ -28,6 +28,7 @@ class FieldWidget<V> extends StatefulWidget {
   final V Function(dynamic value) parser;
   final bool focusNext;
   final V initialValue;
+  final bool initialSelected;
 
   FieldWidget({
     @required this.scope,
@@ -53,6 +54,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.parser,
     this.focusNext,
     this.initialValue,
+    this.initialSelected,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
 
@@ -117,7 +119,9 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       _initialized = true;
       if (widget.initialValue != null) {
         value = widget.initialValue;
-        select();
+        if (widget.initialSelected == true) {
+          select();
+        }
       }
     }
   }
