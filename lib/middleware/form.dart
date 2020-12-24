@@ -86,10 +86,10 @@ class FieldsForm {
     }
   }
 
-  bool focusFrom(int index) {
+  bool focusFrom(int index, {bool onlyEmpty}) {
     for (var field in fields.values) {
       if (field.index == index + 1) {
-        if (field.isEmpty) {
+        if (onlyEmpty != true || field.isEmpty) {
           field.focus();
           return true;
         }

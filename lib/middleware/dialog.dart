@@ -95,11 +95,12 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon}) {
+  MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
     return MessageDialog(
       _scope,
       title: title,
       message: message,
+      body: body,
       icon: icon ?? Icons.info,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.primary,

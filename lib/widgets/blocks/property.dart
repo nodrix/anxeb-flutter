@@ -47,11 +47,16 @@ class PropertyBlock extends StatefulWidget {
 }
 
 class _PropertyBlockState extends State<PropertyBlock> {
+
+  Widget _valueWidget;
+
   @override
   Widget build(BuildContext context) {
     if (widget.visible == false || ((widget.value == null || widget.value.length == 0) && widget.showOnNull != true)) {
       return Container();
     }
+
+    _valueWidget = _valueWidget ?? _getValueWidget();
 
     return Container(
       margin: widget.margin,
@@ -96,7 +101,7 @@ class _PropertyBlockState extends State<PropertyBlock> {
                     child: Row(
                       children: <Widget>[
                         Expanded(
-                          child: _getValueWidget(),
+                          child: _valueWidget
                         ),
                       ],
                     ),
@@ -114,10 +119,12 @@ class _PropertyBlockState extends State<PropertyBlock> {
     if (widget.isPhone == true) {
       var phones = widget.value.replaceAll(' ', '').split(',');
       if (phones.length > 1) {
-        return Row(
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: phones.map((phone) {
             return Padding(
-              padding: EdgeInsets.only(right: phone == phones.last ? 0 : 8),
+              padding: EdgeInsets.only(bottom: phone == phones.last ? 0 : 8),
               child: GestureDetector(
                 onTap: () => _launchValueLink(phone),
                 child: _getValueTextWidget(phone),

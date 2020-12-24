@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/parts/auths/google.dart';
 //import 'package:anxeb_flutter/parts/auths/twitter.dart';
 import 'application.dart';
 import 'model.dart';
+import 'utils.dart';
 
 class AuthProvider {
   final Application application;
@@ -40,7 +41,7 @@ class AuthResultModel extends Model<AuthResultModel> {
   dynamic meta;
 
   @override
-  String toString() => lastNames?.isNotEmpty == true ? '$firstNames $lastNames' : firstNames;
+  String toString() => Utils.convert.fromNamesToFullName(firstNames, lastNames);
 }
 
 class AuthProviders {

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
+import 'package:anxeb_flutter/widgets/blocks/image.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 
@@ -87,8 +88,8 @@ class NotificationSheet extends ScopeSheet {
                   imageUrl != null
                       ? Container(
                           margin: EdgeInsets.only(top: 10),
-                          child: Image.network(
-                            imageUrl,
+                          child: ImageLinkBlock(
+                            url: imageUrl,
                             fit: BoxFit.cover,
                           ),
                           height: 200,
@@ -103,7 +104,7 @@ class NotificationSheet extends ScopeSheet {
                                 child: Text(
                                   message,
                                   style: TextStyle(
-                                    fontSize: 22,
+                                    fontSize: 21.5,
                                     height: 1.3,
                                     fontWeight: FontWeight.w300,
                                     color: foreground,
@@ -171,7 +172,7 @@ class NotificationSheet extends ScopeSheet {
                             ],
                           ),
                         )
-                      : null,
+                      : Container(),
                 ],
               ),
             ),

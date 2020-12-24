@@ -27,6 +27,7 @@ class FieldWidget<V> extends StatefulWidget {
   final FormFieldValidator<String> validator;
   final V Function(dynamic value) parser;
   final bool focusNext;
+  final bool focusOnlyEmpty;
   final V initialValue;
   final bool initialSelected;
 
@@ -53,6 +54,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.validator,
     this.parser,
     this.focusNext,
+    this.focusOnlyEmpty,
     this.initialValue,
     this.initialSelected,
   })  : assert(scope != null && name != null),
@@ -181,7 +183,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     var $warning = _getValidation();
     if ($warning == null) {
       warning = null;
-      if (widget.focusNext == false || !form.focusFrom(index)) {
+      if (widget.focusNext == false || !form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty)) {
         unfocus();
       }
       if (widget.onValidSubmit != null) {
@@ -316,5 +318,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.view.name];
 
-  bool get isEmpty => value == null || value.toString() == null || value.toString().isEmpty;
+  bool get isEmpty {
+    return value?.toString()?.isNotEmpty != true;
+  }
 }

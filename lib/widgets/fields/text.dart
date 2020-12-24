@@ -45,6 +45,7 @@ class TextInputField<V> extends FieldWidget<V> {
     FormFieldValidator<String> validator,
     V Function(dynamic value) parser,
     bool focusNext,
+    bool focusOnlyEmpty,
     V value,
     double iconSize,
     double fontSize,
@@ -87,6 +88,7 @@ class TextInputField<V> extends FieldWidget<V> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          focusOnlyEmpty: focusOnlyEmpty,
           initialValue: value,
           initialSelected: selected,
           iconSize: iconSize,
@@ -245,6 +247,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       maxLength: focused ? widget.maxLength : null,
       maxLines: (_obscureText == true && widget.type == TextInputFieldType.password) == true ? 1 : widget.maxLines,
       keyboardType: _keyboardType,
+      onEditingComplete: () {},
       onSubmitted: (text) {
         _editing = false;
         _convertAndSubmit(text);
