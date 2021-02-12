@@ -173,10 +173,12 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       final path = join((await getTemporaryDirectory()).path, '${DateTime.now()}.jpg');
 
       _debug('TAKING PICTURE...');
-      await _camera.takePicture(path);
+      var xfile = await _camera.takePicture();
+      xfile.saveTo(path);
 
       _debug('NORMALIZING...');
-      File original = File(path);
+      File original = File(xfile.path);
+
       var properties = await ImageCrop.getImageOptions(file: original);
 
       _debug('NORMALIZED');
@@ -333,7 +335,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
               color: scope.application.settings.colors.navigation,
               child: Center(
                 child: AspectRatio(
-                  aspectRatio: _camera.value.aspectRatio,
+                  aspectRatio: 1/_camera.value.aspectRatio,
                   child: CameraPreview(_camera),
                 ),
               ),
@@ -351,7 +353,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
                       fit: BoxFit.fitWidth,
                       child: Container(
                         width: window.size.width,
-                        height: window.size.width / _camera.value.aspectRatio,
+                        height: window.size.width * _camera.value.aspectRatio,
                         child: CameraPreview(
                           _camera,
                         ),

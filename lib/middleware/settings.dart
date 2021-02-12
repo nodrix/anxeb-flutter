@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+class _General {
+  bool badges;
+}
+
 class _Analytics {
   bool available;
 }
@@ -94,6 +98,7 @@ class Settings {
   _Dialogs _dialogs;
   _Panels _panels;
   _Analytics _analytics;
+  _General _general;
 
   Settings() {
     _colors = _Colors();
@@ -101,7 +106,10 @@ class Settings {
     _dialogs = _Dialogs();
     _panels = _Panels();
     _analytics = _Analytics();
+    _general = _General();
   }
+
+
 
   _Colors get colors => _colors;
 
@@ -112,4 +120,6 @@ class Settings {
   _Panels get panels => _panels;
 
   _Analytics get analytics => _analytics;
+
+  _General get general => _general;
 }

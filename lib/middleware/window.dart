@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:keyboard_visibility/keyboard_visibility.dart';
-
 import 'overlay.dart';
 import 'scope.dart';
 import 'utils.dart';

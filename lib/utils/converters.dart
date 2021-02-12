@@ -194,7 +194,7 @@ class Converters {
 
   DateTime fromTickToDate(int timestamp) {
     if (timestamp != null) {
-      return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
     } else {
       return null;
     }
@@ -229,7 +229,9 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date
+        .toUtc()
+        .millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {

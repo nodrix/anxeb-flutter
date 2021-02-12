@@ -24,7 +24,9 @@ class Application {
     _navigator = Navigator(this);
     init();
     _auths = AuthProviders(this);
-    _analytics = Analytics();
+    if (_settings.analytics.available == true) {
+      _analytics = Analytics();
+    }
   }
 
   void setBadge(int value) {
@@ -39,7 +41,7 @@ class Application {
 
   Future setup() async {
     WidgetsFlutterBinding.ensureInitialized();
-    _badgesSupport = await FlutterAppBadger.isAppBadgeSupported();
+    _badgesSupport = _settings.general.badges == true && await FlutterAppBadger.isAppBadgeSupported();
     if (_settings.analytics.available == true) {
       await _analytics.init(onMessage: onMessage);
     }
