@@ -165,49 +165,79 @@ class Api {
 
 class ApiException implements Exception {
   final String message;
-  final int code;
+  final dynamic code;
+  final dynamic raw;
 
-  ApiException(this.message, this.code);
+  ApiException(this.message, this.code, this.raw);
 
   factory ApiException.fromErr(err) {
     if (err is DioError) {
       if (err.type == DioErrorType.CONNECT_TIMEOUT) {
-        return ApiException('Error de comunicación, favor revisar su conexión a la red', 0);
+        return ApiException('Error de comunicación, favor revisar su conexión a la red', 0, err);
       } else if (err.type == DioErrorType.RECEIVE_TIMEOUT) {
-        return ApiException('Tiempo de respuesta prolongado', 408);
+        return ApiException('Tiempo de respuesta prolongado', 408, err);
       } else if (err.type == DioErrorType.SEND_TIMEOUT) {
-        return ApiException('Tiempo de petición prolongado', 408);
+        return ApiException('Tiempo de petición prolongado', 408, err);
       } else if (err.type == DioErrorType.CANCEL) {
-        return ApiException('Conexión desestimada por usuario o administrador', 408);
+        return ApiException('Conexión desestimada por usuario o administrador', 408, err);
       } else if (err.error is SocketException) {
-        return ApiException('Error de comunicación, favor revisar su conexión al Internet', 0);
+        return ApiException('Error de comunicación, favor revisar su conexión al Internet', 0, err);
       } else {
         try {
-          if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
+          if (err != null && err.response != null && err.response.data != null && err.response.data['data'] != null && err.response.data['data']['status'] != null) {
+            var status = err.response.data['data']['status'];
+            return ApiException._getStatusException(err, status: status) ?? ApiException(err.response.data['message'] ?? 'Error interno', status, err);
+          } else if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
             var code = err.response.data['code'];
-            switch (code) {
-              case 408:
-                return ApiException('Tiempo de respuesta prolongado', 408);
-              case 500:
-                return ApiException('Error interno, recurso no encontrado en servidor', 500);
-            }
-            return ApiException(err.response.data['message'], code);
+            return ApiException._getStatusException(err, status: code) ?? ApiException(err.response.data['message'] ?? 'Error interno', code, err);
           } else {
             return null;
           }
         } catch (errc) {
-          if (err.error.toString().contains('[408]')) {
-            return ApiException('Tiempo de respuesta prolongado', 408);
-          } else if (err.error.toString().contains('[500]')) {
-            return ApiException('Error interno, recurso no encontrado en servidor', 500);
-          } else {
-            return ApiException(err.message, 0);
-          }
+          return ApiException._getStatusException(err, body: err.error.toString()) ?? ApiException(err.message ?? 'Error interno', 0, err);
         }
       }
     } else {
       return null;
     }
+  }
+
+  static ApiException _getStatusException(err, {dynamic status, String body}) {
+    var bodyStatus;
+
+    if (body != null) {
+      var codes = [400, 401, 402, 403, 404, 405, 408, 500];
+      for (var ic in codes) {
+        if (body.contains('[$ic]')) {
+          bodyStatus = ic;
+          break;
+        }
+      }
+    }
+
+    var statusStr = status != null ? status.toString() : bodyStatus;
+    if (statusStr == null) {
+      return null;
+    }
+    switch (statusStr) {
+      case '400':
+        return ApiException('Instrucción o llamada inválida', 400, err);
+      case '401':
+        return ApiException('Acceso al recurso denegado', 401, err);
+      case '402':
+        return ApiException('Pago requerido', 402, err);
+      case '403':
+        return ApiException('Acceso al recurso denegado', 403, err);
+      case '404':
+        return ApiException('Recurso no encontrado', 404, err);
+      case '405':
+        return ApiException('Instrucción o llamada inválida', 405, err);
+      case '408':
+        return ApiException('Tiempo de respuesta prolongado', 408, err);
+      case '500':
+        return ApiException('Error interno, recurso no encontrado en servidor', 500, err);
+    }
+    return null;
   }
 
   String toString() {

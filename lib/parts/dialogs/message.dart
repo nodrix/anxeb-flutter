@@ -14,6 +14,9 @@ class MessageDialog extends ScopeDialog {
   final Color iconColor;
   final List<DialogButton> buttons;
   final TextAlign textAlign;
+  final EdgeInsets contentPadding;
+  final EdgeInsets insetPadding;
+  final BorderRadius borderRadius;
 
   MessageDialog(
     Scope scope, {
@@ -25,8 +28,11 @@ class MessageDialog extends ScopeDialog {
     this.iconColor,
     this.messageColor,
     this.titleColor,
-    this.textAlign,
     this.buttons,
+    this.textAlign,
+    this.contentPadding,
+    this.insetPadding,
+    this.borderRadius,
     bool dismissible,
   }) : super(scope) {
     super.dismissible = dismissible != null ? dismissible : (this.buttons == null);
@@ -35,8 +41,9 @@ class MessageDialog extends ScopeDialog {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
-      contentPadding: EdgeInsets.only(bottom: 20, left: 24, right: 24, top: 5),
+      shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
+      contentPadding: contentPadding ?? EdgeInsets.only(bottom: 20, left: 24, right: 24, top: 5),
+      insetPadding: insetPadding ?? EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
       contentTextStyle: TextStyle(fontSize: title != null ? 16.4 : 20, color: messageColor ?? scope.application.settings.colors.text, fontWeight: FontWeight.w400),
       title: title != null
           ? Row(
@@ -66,13 +73,15 @@ class MessageDialog extends ScopeDialog {
                 ),
               ],
             )
-          : icon != null ? Container(
-              child: Icon(
-                icon,
-                size: iconSize ?? 150,
-                color: iconColor ?? scope.application.settings.colors.primary,
-              ),
-            ) : Container(),
+          : icon != null
+              ? Container(
+                  child: Icon(
+                    icon,
+                    size: iconSize ?? 150,
+                    color: iconColor ?? scope.application.settings.colors.primary,
+                  ),
+                )
+              : Container(),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

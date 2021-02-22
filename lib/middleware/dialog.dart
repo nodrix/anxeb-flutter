@@ -362,7 +362,18 @@ class ScopeDialogs {
     ]);
   }
 
-  MessageDialog custom({String message, String title, Widget Function(BuildContext context) body, IconData icon, Color color, List<DialogButton> buttons, bool dismissible}) {
+  MessageDialog custom({
+    String message,
+    String title,
+    Widget Function(BuildContext context) body,
+    IconData icon,
+    Color color,
+    List<DialogButton> buttons,
+    bool dismissible,
+    EdgeInsets contentPadding,
+    EdgeInsets insetPadding,
+    BorderRadius borderRadius,
+  }) {
     return MessageDialog(
       _scope,
       title: title,
@@ -375,6 +386,9 @@ class ScopeDialogs {
       iconColor: color ?? _scope.application.settings.colors.info,
       buttons: buttons,
       dismissible: dismissible,
+      contentPadding: contentPadding,
+      insetPadding: insetPadding,
+      borderRadius: borderRadius,
     );
   }
 
