@@ -22,6 +22,7 @@ class ImageButton extends StatefulWidget {
     this.padding,
     this.margin,
     this.onTap,
+    this.onLoaded,
     this.loadingThickness,
     this.loadingColor,
     this.loadingPadding,
@@ -64,6 +65,7 @@ class ImageButton extends StatefulWidget {
   final EdgeInsets padding;
   final EdgeInsets margin;
   final Future Function() onTap;
+  final Function(bool) onLoaded;
   final double loadingThickness;
   final Color loadingColor;
   final EdgeInsets loadingPadding;
@@ -147,12 +149,14 @@ class _ImageButtonState extends State<ImageButton> {
           } else {
             _displayImage = true;
           }
+          widget.onLoaded?.call(_imageLoaded);
         });
         if (mounted) {
           setState(() {});
         }
       }, onError: (exception, StackTrace stackTrace) {
         //TODO, try again
+        _imageLoaded = false;
         Future.delayed(Duration(milliseconds: 50), () {
           if (mounted) {
             setState(() {
@@ -161,8 +165,8 @@ class _ImageButtonState extends State<ImageButton> {
           } else {
             _displayImage = true;
           }
+          widget.onLoaded?.call(_imageLoaded);
         });
-        _imageLoaded = false;
         if (mounted) {
           setState(() {});
         }
