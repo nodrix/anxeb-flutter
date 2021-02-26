@@ -12,6 +12,7 @@ class Navigator {
   String Function() role;
   List<String> Function() roles;
   Function() header;
+  Function() footer;
   View _sourceView;
   GlobalKey<ViewState> _currentViewKey;
 
@@ -21,9 +22,10 @@ class Navigator {
     build = _buildDrawer;
   }
 
-  void begin({View source, String Function() role, List<String> Function() roles, Widget Function() header}) {
+  void begin({View source, String Function() role, List<String> Function() roles, Widget Function() header, Widget Function() footer}) {
     _sourceView = source;
     this.header = header;
+    this.footer = footer;
     this.role = role;
     this.roles = roles;
   }
@@ -35,6 +37,7 @@ class Navigator {
 
     _sourceView = null;
     this.header = null;
+    this.footer = null;
   }
 
   Future<bool> exit([result]) async => _sourceView != null ? await _sourceView.pop(result) : false;
@@ -86,7 +89,7 @@ class Navigator {
     if (_sourceView == null) {
       return null;
     }
-    if ($groups.length > 0 || header != null) {
+    if ($groups.length > 0 || header != null || footer != null) {
       return Drawer(
         elevation: 20.0,
         child: Column(
@@ -98,10 +101,10 @@ class Navigator {
               child: Container(
                 child: ListView(
                   padding: EdgeInsets.zero,
-                  children: $groups.map(($group) => _buildItem($group)).toList(),
+                  children: $groups.map(($group) => _buildItem($group)).toList() + (footer != null ? [footer()] : []),
                 ),
               ),
-            )
+            ),
           ],
         ),
       );
