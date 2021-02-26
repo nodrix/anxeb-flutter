@@ -65,7 +65,7 @@ class ImageButton extends StatefulWidget {
   final EdgeInsets padding;
   final EdgeInsets margin;
   final Future Function() onTap;
-  final Function(bool) onLoaded;
+  final Function(bool, [ImageInfo]) onLoaded;
   final double loadingThickness;
   final Color loadingColor;
   final EdgeInsets loadingPadding;
@@ -149,7 +149,7 @@ class _ImageButtonState extends State<ImageButton> {
           } else {
             _displayImage = true;
           }
-          widget.onLoaded?.call(_imageLoaded);
+          widget.onLoaded?.call(_imageLoaded, image);
         });
         if (mounted) {
           setState(() {});
