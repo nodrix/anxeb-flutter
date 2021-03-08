@@ -7,6 +7,7 @@ class UserBlock extends StatelessWidget {
   final ImageProvider background;
   final Color color;
   final bool safeArea;
+  final bool includeImageProfile;
   final EdgeInsets padding;
   final String imageUrl;
   final String authToken;
@@ -18,6 +19,7 @@ class UserBlock extends StatelessWidget {
     this.background,
     this.color,
     this.safeArea,
+    this.includeImageProfile = true,
     this.padding,
     this.imageUrl,
     this.authToken,
@@ -48,18 +50,21 @@ class UserBlock extends StatelessWidget {
           padding: padding ?? Utils.convert.fromInsetToFraction(EdgeInsets.only(left: 0.03, top: 0.03, bottom: 0.03), size),
           child: Row(
             children: <Widget>[
-              Container(
-                child: ImageButton(
-                  height: 90,
-                  width: 90,
-                  imageUrl: imageUrl,
-                  innerPadding: EdgeInsets.all(5),
-                  headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
-                  outerBorderColor: color ?? Colors.white,
-                  failedIcon: Icons.account_circle,
-                  failedIconColor: color != null ? color.withAlpha(50) : null,
-                  outerThickness: 3,
-                  onTap: onTab,
+              Visibility(
+                visible: includeImageProfile,
+                child: Container(
+                  child: ImageButton(
+                    height: 90,
+                    width: 90,
+                    imageUrl: imageUrl,
+                    innerPadding: EdgeInsets.all(5),
+                    headers: authToken != null ? {'Authorization': 'Bearer ${this.authToken}'} : null,
+                    outerBorderColor: color ?? Colors.white,
+                    failedIcon: Icons.account_circle,
+                    failedIconColor: color != null ? color.withAlpha(50) : null,
+                    outerThickness: 3,
+                    onTap: onTab,
+                  ),
                 ),
               ),
               Expanded(
