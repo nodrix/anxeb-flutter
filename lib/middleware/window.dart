@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart' hide Overlay;
-import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'overlay.dart';
 import 'scope.dart';
 import 'utils.dart';
 
 class Window {
+  KeyboardVisibilityController _keyboardVisibilityController;
   Scope _scope;
   Overlay _overlay;
   bool _isKeyboardActive;
@@ -13,17 +14,16 @@ class Window {
   Window(Scope scope) {
     _scope = scope;
     _overlay = Overlay(navigationDefaultFill: scope.application.settings.colors.navigation);
+    _keyboardVisibilityController = KeyboardVisibilityController();
     this.update(context: context);
   }
 
   Window update({BuildContext context, BoxConstraints constraints}) {
-    KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool visible) {
-        _isKeyboardActive = visible;
-        _scope.alerts.dispose(quick: true);
-        _scope.rasterize();
-      },
-    );
+    _keyboardVisibilityController.onChange.listen((bool visible) {
+      _isKeyboardActive = visible;
+      _scope.alerts.dispose(quick: true);
+      _scope.rasterize();
+    });
 
     _available = constraints != null ? Size(constraints.maxWidth, constraints.maxHeight + (insets?.bottom ?? 0)) : size;
     return this;
