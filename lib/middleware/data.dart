@@ -49,6 +49,10 @@ class Data {
     return Data(toObjects());
   }
 
+  bool isList() {
+    return _items is List;
+  }
+
   void $print() {
     final pattern = RegExp('.{1,800}');
     pattern.allMatches(toJson(pretty: true)).forEach((match) => print(match.group(0)));
