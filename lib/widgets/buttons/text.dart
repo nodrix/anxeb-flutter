@@ -210,10 +210,10 @@ class _TextButtonState extends State<TextButton> {
                                     size: widget.iconSize != null ? widget.iconSize : 20,
                                   ),
                                 ),
-                                Text(
+                                Flexible(child: Text(
                                   widget.caption,
                                   style: textStyle,
-                                ),
+                                )),
                               ],
                       )
                     : Text(
