@@ -21,6 +21,7 @@ export 'helpers/camera.dart';
 export 'widgets/actions/float.dart';
 export 'widgets/fields/lookup.dart';
 export 'widgets/fields/date.dart';
+export 'widgets/fields/checkbox.dart';
 export 'misc/key_value.dart';
 export 'middleware/api.dart';
 export 'middleware/model.dart';
