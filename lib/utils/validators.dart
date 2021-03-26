@@ -5,16 +5,14 @@ import 'package:credit_card_validate/credit_card_validate.dart';
 class Validators {
   String firstNames(String value) {
     var err = 'Ingrese uno o dos nombres válidos';
+    var validCharacters = RegExp(r'^[^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$');
+    var spaces = RegExp(r'\s\s');
 
-    Pattern pattern = r'^[a-z A-Z\\s]+$';
-    RegExp regex = new RegExp(pattern);
-    if (value != null && regex.hasMatch(value)) {
+    if (value != null && value.contains(validCharacters) && !value.contains(spaces)) {
       var parts = value.split(' ');
-
       if (parts.length > 7) {
         return err;
       }
-
       for (var item in parts) {
         if (item.length < 2) {
           return err;
@@ -26,7 +24,6 @@ class Validators {
     } else {
       return err;
     }
-
     return null;
   }
 
