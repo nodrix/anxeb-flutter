@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'api.dart';
+
 class _General {
   bool badges;
 }
@@ -44,6 +46,7 @@ class _AuthsApple {
 
   String fetchCallbackRoute;
   String Function() nonce;
+  Api api;
 }
 
 class _AuthsGoogle {

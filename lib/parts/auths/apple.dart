@@ -5,10 +5,12 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class AppleAuth extends AuthProvider {
   String _fetchCallbackRoute;
   String Function() _nonce;
+  Api _api;
 
   AppleAuth(Application application) : super(application) {
     _fetchCallbackRoute = application.settings.auths.apple.fetchCallbackRoute;
     _nonce = application.settings.auths.apple.nonce;
+    _api = application.settings.auths.apple.api ?? application.api;
   }
 
   @override
@@ -26,7 +28,7 @@ class AppleAuth extends AuthProvider {
       );
 
       if (session != null) {
-        var res = await application.api.post(_fetchCallbackRoute, {
+        var res = await _api.post(_fetchCallbackRoute, {
           'identifier': session.userIdentifier,
           'first_name': session.givenName,
           'last_name': session.familyName,
@@ -51,7 +53,8 @@ class AppleAuth extends AuthProvider {
         return result;
       }
     } on SignInWithAppleAuthorizationException catch (err) {
-      if (err.code == AuthorizationErrorCode.canceled || err.code == AuthorizationErrorCode.unknown) {
+      if (err.code == AuthorizationErrorCode.canceled ||
+          err.code == AuthorizationErrorCode.unknown) {
         return null;
       }
       throw err;
