@@ -30,7 +30,7 @@ class Api {
       }
 
       options.headers['origin-service-key'] = 'control';
-      options.headers['content-type'] = 'application/json';
+      options.headers['content-type'] = options.headers['content-type'] ?? 'application/json';
 
       return options;
     }, onResponse: (Response response) {
@@ -49,12 +49,12 @@ class Api {
 
   Interceptors get interceptors => _dio.interceptors;
 
-  Future<Data> _process(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken}) async {
-    var res = await request(method, route, data: data, query: query, progress: progress, cancelToken: cancelToken);
+  Future<Data> _process(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken, Options options}) async {
+    var res = await request(method, route, data: data, query: query, progress: progress, cancelToken: cancelToken, options: options);
     return Data(res.data);
   }
 
-  Future<Response> request(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken}) async {
+  Future<Response> request(ApiMethods method, String route, {data, query, Function(int count, int total) progress, CancelToken cancelToken, Options options}) async {
     var body;
     if (data != null) {
       if (data is Data) {
@@ -72,7 +72,7 @@ class Api {
         case ApiMethods.DELETE:
           return await _dio.delete(route, queryParameters: query, cancelToken: cancelToken, data: body);
         case ApiMethods.POST:
-          return await _dio.post(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body);
+          return await _dio.post(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body, options: options);
         case ApiMethods.PUT:
           return await _dio.put(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body);
       }
@@ -91,7 +91,7 @@ class Api {
 
   Future<Data> delete(String route, [data]) => _process(ApiMethods.DELETE, route, data: data);
 
-  Future<Data> post(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.POST, route, data: data, progress: progress, cancelToken: cancelToken);
+  Future<Data> post(String route, data, {Function(int count, int total) progress, CancelToken cancelToken, Options options}) => _process(ApiMethods.POST, route, data: data, progress: progress, cancelToken: cancelToken, options: options);
 
   Future<Data> put(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.PUT, route, data: data, progress: progress, cancelToken: cancelToken);
 
