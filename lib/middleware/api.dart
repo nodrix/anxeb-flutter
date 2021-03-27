@@ -29,9 +29,7 @@ class Api {
         options.headers['Authorization'] = 'Bearer $token';
       }
 
-      options.headers['origin-service-key'] = 'control';
       options.headers['content-type'] = options.headers['content-type'] ?? 'application/json';
-
       return options;
     }, onResponse: (Response response) {
       return response;
