@@ -18,6 +18,7 @@ class Application {
   bool _badgesSupport;
 
   Application() {
+    WidgetsFlutterBinding.ensureInitialized();
     _settings = Settings();
     _title = 'Anxeb';
     _disk = Disk();
@@ -40,7 +41,6 @@ class Application {
   }
 
   Future setup() async {
-    WidgetsFlutterBinding.ensureInitialized();
     _badgesSupport = _settings.general.badges == true && await FlutterAppBadger.isAppBadgeSupported();
     if (_settings.analytics.available == true) {
       await _analytics.init(onMessage: onMessage);
