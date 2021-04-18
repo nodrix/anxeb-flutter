@@ -21,6 +21,7 @@ class _Dialogs {
 }
 
 class _Colors {
+  Color background = Color(0xfffafafa);
   Color primary = Color(0xff2e7db2);
   Color secudary = Color(0xff026299);
   Color accent = Color(0xffef6c00);
@@ -39,6 +40,9 @@ class _Colors {
   Color focus = Color(0x15111111);
   Color input = Color(0x10111111);
   Color navigation = Color(0xff053954);
+  Color backdrop = Color(0x8A000000);
+  Color busybox = Color(0x8A000000);
+  Color foreground = Color(0xffffffff);
 }
 
 class _AuthsApple {
@@ -111,8 +115,6 @@ class Settings {
     _analytics = _Analytics();
     _general = _General();
   }
-
-
 
   _Colors get colors => _colors;
 

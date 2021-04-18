@@ -30,13 +30,13 @@ class ViewWidget extends StatefulWidget {
   final bool root;
   final Key key;
 
-  ViewWidget(
-    this.name, {
+  ViewWidget(this.name, {
     this.title,
     this.application,
     this.root,
     this.key,
-  })  : assert(name != null),
+  })
+      : assert(name != null),
         super(key: key);
 
   @override
@@ -139,6 +139,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: _footer?.build(),
+      backgroundColor: _scope.application.settings.colors.background,
       extendBody: _scope.window.overlay.extendBody,
       extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
       body: WillPopScope(
@@ -259,9 +260,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
     var settings = RouteSettings(
         arguments: _PushedViewArguments<A>(
-      application: application,
-      scope: _scope,
-    ));
+          application: application,
+          scope: _scope,
+        ));
 
     var $route;
     if (transition != null) {
@@ -393,6 +394,17 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     await closed();
   }
 
+  Future process(Future Function() func, {String busyLabel}) async {
+    await scope.busy(text: busyLabel ?? 'Cargando');
+    try {
+      await func();
+    } catch (err) {
+      scope.alerts.error(err).show();
+    } finally {
+      await scope.idle();
+    }
+  }
+
   bool equals(String name) {
     return this.name == name;
   }
@@ -417,7 +429,11 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   bool get isHeader => _header != null;
 
-  _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
+  _PushedViewArguments get arguments =>
+      ModalRoute
+          .of(context)
+          .settings
+          ?.arguments;
 
   _ViewParts get parts => _parts;
 }

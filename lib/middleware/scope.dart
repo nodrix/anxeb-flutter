@@ -106,33 +106,45 @@ class Scope {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                           margin: EdgeInsets.only(bottom: 20),
                           decoration: BoxDecoration(
-                            color: Color(0xd9666666),
-                            //boxShadow: [BoxShadow(offset: Offset(0, 4), blurRadius: 4, spreadRadius: 2, color: Color(0xc9888888))],
+                            color: application.settings.colors.busybox ?? Color(0xd9666666),
+                            boxShadow: [
+                              BoxShadow(
+                                offset: Offset(0, 8),
+                                blurRadius: 20,
+                                spreadRadius: -10,
+                                color: Color(0x98000000),
+                              )
+                            ],
                             borderRadius: new BorderRadius.all(
                               Radius.circular(12.0),
                             ),
                           ),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(right: 12.0),
-                                child: SizedBox(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
-                                  ),
-                                  height: 30,
-                                  width: 30,
+                              SizedBox(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(application.settings.colors.foreground ?? Color(0xffefefef)),
                                 ),
+                                height: 38,
+                                width: 38,
                               ),
                               Container(
-                                padding: EdgeInsets.all(5),
-                                child: Text(text ?? 'Cargando', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400, letterSpacing: -0.1, color: Colors.white, decoration: TextDecoration.none)),
+                                padding: EdgeInsets.only(top: 18),
+                                child: Text(text ?? 'Cargando',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w300,
+                                      color: application.settings.colors.foreground ?? Colors.white,
+                                      decoration: TextDecoration.none,
+                                    )),
                               )
                             ],
                           ),
@@ -156,7 +168,7 @@ class Scope {
           },
           barrierDismissible: false,
           barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-          barrierColor: textedDialog ? Color(0x00999999) : Colors.black54,
+          barrierColor: textedDialog ? Colors.transparent : (application.settings.colors.backdrop ?? Colors.black54),
           transitionDuration: const Duration(milliseconds: 150),
         ).then((idlePromise) {
           Future.delayed(Duration(milliseconds: 100), () {

@@ -4,12 +4,12 @@ import 'package:anxeb_flutter/misc/action_icon.dart';
 import 'package:flutter/material.dart';
 
 class ActionsHeader extends ViewHeader {
-  @protected
-  List<ActionItem> actions;
+  Widget Function() _body;
 
   ActionsHeader({
     Scope scope,
     String Function() title,
+    Widget Function() body,
     Widget Function() bottom,
     double Function() elevation,
     double Function() height,
@@ -31,6 +31,15 @@ class ActionsHeader extends ViewHeader {
           fill: fill,
         ) {
     super.leading = leading?.build();
+    _body = body;
+  }
+
+  @protected
+  List<ActionItem> actions;
+
+  @override
+  Widget body() {
+    return _body?.call() ?? null;
   }
 
   @override
