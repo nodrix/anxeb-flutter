@@ -24,7 +24,7 @@ class AuthResultModel extends Model<AuthResultModel> {
     field(() => firstNames, (v) => firstNames = v, 'first_names');
     field(() => lastNames, (v) => lastNames = v, 'last_names');
     field(() => email, (v) => email = v, 'email');
-    field(() => photo, (v) => photo = v, 'photoUrl');
+    field(() => photo, (v) => photo = v, 'photo');
     field(() => token, (v) => token = v, 'token');
     field(() => provider, (v) => provider = v, 'provider');
     field(() => meta, (v) => meta = v, 'meta');
