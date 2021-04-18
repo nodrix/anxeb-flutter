@@ -88,3 +88,6 @@ export 'parts/sheets/notification.dart';
 export 'parts/sheets/tip.dart';
 export 'middleware/analytics.dart';
 export 'package:url_launcher/url_launcher.dart';
+export 'package:sliding_up_panel/sliding_up_panel.dart';
+export 'parts/sheets/form.dart';
+export 'widgets/blocks/photo.dart';
