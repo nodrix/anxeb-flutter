@@ -9,6 +9,8 @@ class ActionIcon with ActionItem {
   final bool Function() isDisabled;
   final bool Function() isVisible;
   final VoidCallback onPressed;
+  final int Function() notifications;
+  final BoxDecoration notificationDecoration;
 
   ActionIcon({
     @required this.icon,
@@ -17,16 +19,47 @@ class ActionIcon with ActionItem {
     this.isDisabled,
     this.isVisible,
     this.onPressed,
+    this.notifications,
+    this.notificationDecoration,
   });
 
   Widget build() {
     var $disabled = isDisabled?.call() == true;
     var $color = color?.call() ?? Colors.white;
-
-    return IconButton(
+    var button = IconButton(
       icon: Icon(icon(), color: $disabled ? $color.withOpacity(0.4) : $color, size: size?.call()),
       onPressed: $disabled ? null : onPressed,
     );
+
+    var nots = notifications?.call();
+    if (nots != null) {
+      return Stack(
+        alignment: Alignment.center,
+        overflow: Overflow.visible,
+        children: [
+          button,
+          Positioned(
+            right: 6,
+            top: 3,
+            child: Container(
+              padding: EdgeInsets.all(4),
+              decoration: notificationDecoration ??
+                  BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                    border: Border.all(width: 1.5, color: $color),
+                  ),
+              child: Text(
+                nots.toString(),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return button;
+    }
   }
 }
 
