@@ -17,6 +17,9 @@ class Converters {
   final _timeFormat = DateFormat('h:mm aa');
 
   String fromNamesToSingleName(String names) {
+    if (names == null) {
+      return null;
+    }
     var parts = names.split(' ');
     if (parts.length > 2 && parts[0].toLowerCase() == 'de') {
       return '${parts[0]} ${parts[1]} ${parts[2]}';
@@ -25,8 +28,18 @@ class Converters {
     }
   }
 
+  Color fromHexToColor(String hexString) {
+    if (hexString == null) {
+      return null;
+    }
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', '').replaceFirst('0x', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
   String fromNamesToFullName(String firstNames, String lastNames) {
-    return '${fromNamesToSingleName(firstNames)} ${fromNamesToSingleName(lastNames)}'.trim();
+    return '${fromNamesToSingleName(firstNames) ?? ''} ${fromNamesToSingleName(lastNames) ?? ''}'.trim();
   }
 
   String fromStringToDigits(String value) {
