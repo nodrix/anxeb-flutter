@@ -19,6 +19,7 @@ class ScopeSheet {
       context: scope.context,
       elevation: elevation,
       barrierColor: barrierColor,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (BuildContext context) {
         return build(context);
