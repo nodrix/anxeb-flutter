@@ -33,6 +33,9 @@ class ScopeDialog<V> {
 
   Future<V> show() async {
     try {
+      scope.unfocus();
+      scope.rasterize();
+      await scope.idle();
       await setup();
       return showDialog<V>(
         context: scope.context,
