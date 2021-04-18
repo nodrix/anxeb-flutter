@@ -36,12 +36,13 @@ class AppleAuth extends AuthProvider {
           'token': session.identityToken,
           'code': session.authorizationCode,
         });
+        var info = res['info'] ?? {};
 
         AuthResultModel result = AuthResultModel();
         result.id = session.userIdentifier;
-        result.firstNames = session.givenName ?? res['first_name'];
-        result.lastNames = session.familyName ?? res['last_name'];
-        result.email = session.email ?? res['email'];
+        result.firstNames = session.givenName ?? info['first_name'];
+        result.lastNames = session.familyName ?? info['last_name'];
+        result.email = session.email ?? info['email'];
         result.photo = null;
         result.token = session.identityToken;
         result.provider = 'apple';
@@ -49,12 +50,10 @@ class AppleAuth extends AuthProvider {
           'state': session.state,
           'authorizationCode': session.authorizationCode,
         };
-
         return result;
       }
     } on SignInWithAppleAuthorizationException catch (err) {
-      if (err.code == AuthorizationErrorCode.canceled ||
-          err.code == AuthorizationErrorCode.unknown) {
+      if (err.code == AuthorizationErrorCode.canceled || err.code == AuthorizationErrorCode.unknown) {
         return null;
       }
       throw err;
