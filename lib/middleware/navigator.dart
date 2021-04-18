@@ -52,7 +52,7 @@ class Navigator {
     if (_sourceView != null) {
       var dismissed = _currentView != null ? await _currentView.dismiss() : true;
 
-      if (dismissed) {
+      if (dismissed != false) {
         if (_currentView == null) {
           collapse();
         }
@@ -170,11 +170,7 @@ class Navigator {
       child: Row(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(
-                right: 16.0 + ($item.iconHOffset != null && $item.iconHOffset < 0 ? -$item.iconHOffset : 0),
-                left: $item.iconHOffset != null && $item.iconHOffset > 0 ? $item.iconHOffset : 0,
-                bottom: $item.iconVOffset != null && $item.iconVOffset > 0 ? $item.iconVOffset : 0,
-                top: $item.iconVOffset != null && $item.iconVOffset < 0 ? -$item.iconVOffset : 0),
+            padding: EdgeInsets.only(right: 16.0 + ($item.iconHOffset != null && $item.iconHOffset < 0 ? -$item.iconHOffset : 0), left: $item.iconHOffset != null && $item.iconHOffset > 0 ? $item.iconHOffset : 0, bottom: $item.iconVOffset != null && $item.iconVOffset > 0 ? $item.iconVOffset : 0, top: $item.iconVOffset != null && $item.iconVOffset < 0 ? -$item.iconVOffset : 0),
             alignment: Alignment.center,
             width: 42,
             child: Icon(

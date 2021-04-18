@@ -89,7 +89,7 @@ class _IconButtonState extends State<IconButton> {
                             _enableAction = false;
                           }
                           try {
-                            await widget.action();
+                            await widget.action?.call();
                           } finally {
                             if (mounted) {
                               setState(() {
@@ -126,7 +126,7 @@ class _IconButtonState extends State<IconButton> {
                               padding: EdgeInsets.all(5),
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xf0ffffff)),
+                                valueColor: AlwaysStoppedAnimation<Color>($fore ?? Color(0xf0ffffff)),
                               ),
                             )
                           : AnimatedOpacity(
