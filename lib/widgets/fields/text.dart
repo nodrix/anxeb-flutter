@@ -24,6 +24,7 @@ class TextInputField<V> extends FieldWidget<V> {
   final int maxLines;
   final int maxLength;
   final bool suffixActions;
+  final int errorMaxLines;
 
   TextInputField({
     @required Scope scope,
@@ -67,6 +68,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.maxLines,
     this.maxLength,
     this.suffixActions,
+    this.errorMaxLines,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -310,6 +312,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         suffixText: widget.suffix,
         fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
         errorText: warning,
+        errorMaxLines: widget.errorMaxLines,
         border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
         suffixIcon: widget.suffixActions == false
             ? null
