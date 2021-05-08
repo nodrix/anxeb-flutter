@@ -179,7 +179,7 @@ class Navigator {
               size: 25.0 * ($item.iconScale ?? 1),
             ),
           ),
-          Column(
+          Flexible(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text($item.caption(), style: $itemStyle),
@@ -196,7 +196,7 @@ class Navigator {
                     )
                   : Container()
             ],
-          ),
+          )),
         ],
       ),
     );
