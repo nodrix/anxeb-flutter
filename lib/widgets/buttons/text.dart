@@ -179,7 +179,7 @@ class _TextButtonState extends State<TextButton> {
         onTap: widget.enabled != false ? widget.onPressed : () {},
         borderRadius: $borderRadius,
         child: Padding(
-            padding: $padding ?? EdgeInsets.only(left: 8, right: 8),
+            padding: widget.padding ?? $padding ?? EdgeInsets.only(left: 8, right: 8),
             child: Column(
               children: <Widget>[
                 widget.icon != null
