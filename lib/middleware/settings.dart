@@ -21,6 +21,7 @@ class _Dialogs {
 }
 
 class _Colors {
+  Color action = Colors.blue.shade500;
   Color background = Color(0xfffafafa);
   Color primary = Color(0xff2e7db2);
   Color secudary = Color(0xff026299);
