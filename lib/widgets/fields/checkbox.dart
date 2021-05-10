@@ -19,6 +19,7 @@ class CheckBoxField extends FieldWidget<bool> {
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
     bool focusNext,
+    bool readonly,
     this.title,
     this.controlAffinity,
   })  : assert(name != null),
@@ -29,6 +30,7 @@ class CheckBoxField extends FieldWidget<bool> {
           group: group,
           margin: margin,
           padding: padding,
+          readonly: readonly,
           onChanged: onChanged,
           onFocus: onFocus,
           validator: validator,
@@ -45,6 +47,7 @@ class _CheckBoxFieldState extends Field<bool, CheckBoxField> {
     var result = FormField(
       builder: (FormFieldState state) {
         return CheckboxListTile(
+          contentPadding: widget.padding,
           title: widget.title,
           subtitle: warning != null
               ? Text(
@@ -55,7 +58,7 @@ class _CheckBoxFieldState extends Field<bool, CheckBoxField> {
                 )
               : null,
           value: value ?? false,
-          onChanged: (newValue) {
+          onChanged: widget.readonly? null : (newValue) {
             value = newValue;
             validate();
             if (widget.onChanged != null) widget.onChanged(newValue);
