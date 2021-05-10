@@ -91,3 +91,4 @@ export 'package:url_launcher/url_launcher.dart';
 export 'package:sliding_up_panel/sliding_up_panel.dart';
 export 'parts/sheets/form.dart';
 export 'widgets/blocks/photo.dart';
+export 'widgets/buttons/chip.dart';
