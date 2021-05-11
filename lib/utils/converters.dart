@@ -38,6 +38,17 @@ class Converters {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
+  IconData fromHexToIconData(String hexString) {
+    if (hexString == null) {
+      return null;
+    }
+    final int iconCode = int.tryParse(hexString);
+    if (iconCode == null) {
+      return null;
+    }
+    return IconData(iconCode, fontFamily: 'MaterialIcons');
+  }
+
   String fromNamesToFullName(String firstNames, String lastNames) {
     return '${fromNamesToSingleName(firstNames) ?? ''} ${fromNamesToSingleName(lastNames) ?? ''}'.trim();
   }
