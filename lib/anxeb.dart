@@ -16,6 +16,7 @@ export 'widgets/containers/scrollable.dart';
 export 'widgets/containers/gradient.dart';
 export 'widgets/containers/basic.dart';
 export 'widgets/fields/image.dart';
+export 'widgets/fields/file.dart';
 export 'widgets/fields/options.dart';
 export 'helpers/camera.dart';
 export 'widgets/actions/float.dart';
