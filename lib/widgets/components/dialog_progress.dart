@@ -53,7 +53,7 @@ class _DialogProgressState extends State<DialogProgress> {
             Container(
               margin: EdgeInsets.only(top: 1),
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(widget.failedMessage ?? 'Error completando ${(widget.isDownload == true ? 'descarga' : 'carga')} de archivo', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.danger)),
+              child: Text(widget.controller.failedMessage ?? widget.failedMessage ?? 'Error completando ${(widget.isDownload == true ? 'descarga' : 'carga')} de archivo', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.danger)),
             )
           ],
         ),
@@ -138,6 +138,7 @@ class DialogProcessController {
   bool Function() _refreshHandler;
   Function() _completeHandler;
   Function() _cancelHandler;
+  String _failedMessage;
 
   void _subscribe(Function() refresher) {
     _refreshHandler = refresher;
@@ -182,8 +183,10 @@ class DialogProcessController {
     }
   }
 
-  Future failed() async {
+  Future failed({String message}) async {
+    _failedMessage = message;
     _state = DialogProcessState.failed;
+
     _refreshHandler?.call();
   }
 
@@ -218,6 +221,8 @@ class DialogProcessController {
       }
     }
   }
+
+  String get failedMessage => _failedMessage;
 
   bool get isDone => _state == DialogProcessState.done;
 

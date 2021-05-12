@@ -276,7 +276,7 @@ class _ModelField {
     } else if (enumValues != null) {
       if (propertyValue == null) {
         data[fieldName] = null;
-      } else if (propertyValue is List<Model>) {
+      } else if (propertyValue is List<Model> || propertyValue is Iterable) {
         var items = List();
         for (var item in propertyValue) {
           items.add(item.toString().split('.')[1]);
