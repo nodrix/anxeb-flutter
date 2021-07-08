@@ -1,6 +1,6 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
 class FacebookAuth extends AuthProvider {
   FacebookLogin _facebook;
@@ -20,14 +20,16 @@ class FacebookAuth extends AuthProvider {
       FacebookAccessToken session;
 
       if (silent != false && await _facebook.isLoggedIn) {
-        session = await _facebook.currentAccessToken;
+        session = await _facebook.accessToken;
       } else {
-        var auth = await _facebook.logIn(['email']);
+        var auth = await _facebook.logIn(permissions: [
+          FacebookPermission.email,
+        ]);
         if (auth != null) {
           if (auth.status == FacebookLoginStatus.error) {
-            throw Exception(auth.errorMessage);
+            throw Exception(auth.error.localizedTitle);
           }
-          if (auth.status == FacebookLoginStatus.loggedIn) {
+          if (auth.status == FacebookLoginStatus.success) {
             session = auth.accessToken;
           }
         }
