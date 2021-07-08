@@ -32,6 +32,8 @@ class TextButton extends StatefulWidget {
   final ButtonSize size;
   final bool enabled;
   final BorderRadius borderRadius;
+  final bool subtitleUppercase;
+  final double width;
 
   const TextButton({
     this.padding,
@@ -52,6 +54,8 @@ class TextButton extends StatefulWidget {
     this.size,
     this.enabled,
     this.borderRadius,
+    this.subtitleUppercase,
+    this.width,
   });
 
   @override
@@ -170,74 +174,92 @@ class _TextButtonState extends State<TextButton> {
       );
     }
 
-    final button = Material(
-      key: GlobalKey(),
-      color: color,
-      shape: $shape,
-      borderRadius: $shape == null ? $borderRadius : null,
-      child: InkWell(
-        onTap: widget.enabled != false ? widget.onPressed : () {},
-        borderRadius: $borderRadius,
-        child: Padding(
-            padding: widget.padding ?? $padding ?? EdgeInsets.only(left: 8, right: 8),
-            child: Column(
-              children: <Widget>[
-                widget.icon != null
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: widget.swapIcon == true
-                            ? <Widget>[
-                                Text(
-                                  widget.caption,
-                                  style: textStyle,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6.0),
-                                  child: Icon(
-                                    widget.icon,
-                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                                    size: widget.iconSize != null ? widget.iconSize : 20,
-                                  ),
-                                ),
-                              ]
-                            : <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: Icon(
-                                    widget.icon,
-                                    color: widget.iconColor != null ? widget.iconColor : Colors.white,
-                                    size: widget.iconSize != null ? widget.iconSize : 20,
-                                  ),
-                                ),
-                                Flexible(child: Text(
-                                  widget.caption,
-                                  style: textStyle,
-                                )),
-                              ],
-                      )
-                    : Text(
-                        widget.caption,
-                        textAlign: TextAlign.center,
-                        style: textStyle,
-                      ),
-                widget.subtitle != null
-                    ? Container(
-                        margin: EdgeInsets.only(top: 2),
-                        child: Text(
-                          widget.subtitle.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: subtitleStyle,
-                        ),
-                      )
-                    : Container()
-              ],
-            )),
+    final $buttonContent = Padding(
+      padding: widget.padding ?? $padding ?? EdgeInsets.only(left: 8, right: 8),
+      child: Column(
+        children: <Widget>[
+          widget.icon != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: widget.swapIcon == true
+                      ? <Widget>[
+                          Text(
+                            widget.caption,
+                            style: textStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6.0),
+                            child: Icon(
+                              widget.icon,
+                              color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                              size: widget.iconSize != null ? widget.iconSize : 20,
+                            ),
+                          ),
+                        ]
+                      : <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: Icon(
+                              widget.icon,
+                              color: widget.iconColor != null ? widget.iconColor : Colors.white,
+                              size: widget.iconSize != null ? widget.iconSize : 20,
+                            ),
+                          ),
+                          Flexible(
+                              child: Text(
+                            widget.caption,
+                            style: textStyle,
+                          )),
+                        ],
+                )
+              : Text(
+                  widget.caption,
+                  textAlign: TextAlign.center,
+                  style: textStyle,
+                ),
+          widget.subtitle != null
+              ? Container(
+                  margin: EdgeInsets.only(top: 2),
+                  child: Text(
+                    widget.subtitleUppercase == false ? widget.subtitle : widget.subtitle.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: subtitleStyle,
+                  ),
+                )
+              : Container()
+        ],
       ),
     );
 
+    Widget button;
+
+    if (widget.enabled == false) {
+      button = Container(
+        decoration: BoxDecoration(
+          color: color,
+          boxShadow: widget.type == ButtonType.frame ? null : widget.shadow,
+          borderRadius: $borderRadius,
+        ),
+        child: $buttonContent,
+      );
+    } else {
+      button = Material(
+        key: GlobalKey(),
+        color: color,
+        shape: $shape,
+        borderRadius: $shape == null ? $borderRadius : null,
+        child: InkWell(
+          onTap: widget.enabled != false ? widget.onPressed : () {},
+          borderRadius: $borderRadius,
+          child: $buttonContent,
+        ),
+      );
+    }
+
     return Container(
       margin: widget.margin,
+      width: widget.width,
       decoration: BoxDecoration(
         boxShadow: widget.type == ButtonType.frame ? null : widget.shadow,
         borderRadius: $borderRadius,
