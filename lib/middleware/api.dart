@@ -63,6 +63,11 @@ class Api {
         body = data;
       }
     }
+
+    if (options == null) {
+      options = Options(contentType: 'application/json');
+    }
+
     try {
       switch (method) {
         case ApiMethods.GET:
