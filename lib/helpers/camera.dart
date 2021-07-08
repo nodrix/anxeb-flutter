@@ -23,6 +23,7 @@ class CameraHelper extends ViewWidget {
   final bool fullImage;
   final bool flash;
   final ResolutionPreset resolution;
+  final String fileName;
 
   static Future<File> takePicture({
     Scope scope,
@@ -33,6 +34,7 @@ class CameraHelper extends ViewWidget {
     bool fullImage,
     bool flash,
     ResolutionPreset resolution,
+    String fileName,
   }) async {
     File result;
 
@@ -77,6 +79,7 @@ class CameraHelper extends ViewWidget {
         allowMainCamera: allowMainCamera,
         flash: flash,
         resolution: resolution,
+        fileName: fileName,
       ));
     } else if (option == 'image') {
       try {
@@ -109,6 +112,7 @@ class CameraHelper extends ViewWidget {
     this.fullImage,
     this.flash,
     this.resolution,
+    this.fileName,
   }) : super('anxeb_camera_helper', title: title);
 
   @override
@@ -156,7 +160,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   void _debug(String text) {
     //print(text);
   }
-  
+
   void _takePicture({bool preview, bool canRemove}) async {
     if (_noCamera || _diabled == true) {
       return;
@@ -170,7 +174,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       final _reduceSize = 1000;
 
       await _initializeControllerFuture;
-      final path = join((await getTemporaryDirectory()).path, '${DateTime.now()}.jpg');
+      final path = join((await getTemporaryDirectory()).path, '${widget.fileName ?? DateTime.now()}.jpg');
 
       _debug('TAKING PICTURE...');
       var xfile = await _camera.takePicture();
@@ -191,7 +195,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       } else {
         reduced = await ImageCrop.sampleImage(file: original, preferredSize: properties.width ?? _reduceSize);
       }
-      
+
       _debug('REFRESHING IMAGE PROPERTIES');
       properties = await ImageCrop.getImageOptions(file: reduced);
 
@@ -242,6 +246,10 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       }
 
       File $finalFile = cropped ?? reduced ?? original;
+
+
+        $finalFile = await $finalFile.copy(path);
+
 
       if (preview == true) {
         var previewImage = Image.file($finalFile).image;
@@ -335,7 +343,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
               color: scope.application.settings.colors.navigation,
               child: Center(
                 child: AspectRatio(
-                  aspectRatio: 1/_camera.value.aspectRatio,
+                  aspectRatio: 1 / _camera.value.aspectRatio,
                   child: CameraPreview(_camera),
                 ),
               ),
