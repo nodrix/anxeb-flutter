@@ -1,13 +1,17 @@
 import 'dart:io';
+import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/icons.dart';
+import 'package:anxeb_flutter/parts/panels/menu.dart';
+import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:path/path.dart';
+import 'package:photo_view/photo_view.dart';
 
 class FileInputValue {
   FileInputValue({this.url, this.path, this.title, this.extension});
@@ -87,32 +91,78 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
   @override
   void setup() {}
 
-  void _takePicture() async {
-    try {
-      final picker = await FilePicker.platform.pickFiles(
-        type: widget.allowedExtensions.isEmpty ? FileType.any : FileType.custom,
-        allowMultiple: false,
-        allowedExtensions: widget.allowedExtensions,
-        onFileLoading: (state) async {
-          await widget.scope.busy();
-        },
-      );
+  void _pickFile() async {
+    var option;
+    await widget.scope.dialogs.panel(
+      items: [
+        PanelMenuItem(
+          actions: [
+            PanelMenuAction(
+              label: () => 'Buscar\nDocumento',
+              textScale: 0.9,
+              icon: () => FlutterIcons.file_mco,
+              fillColor: () => widget.scope.application.settings.colors.secudary,
+              onPressed: () {
+                option = 'document';
+              },
+            ),
+            PanelMenuAction(
+              label: () => 'Tomar\nFoto',
+              textScale: 0.9,
+              icon: () => FlutterIcons.md_camera_ion,
+              fillColor: () => widget.scope.application.settings.colors.secudary,
+              onPressed: () {
+                option = 'photo';
+              },
+            ),
+          ],
+          height: () => 120,
+        ),
+      ],
+    ).show();
 
-      await Future.delayed(Duration(milliseconds: 350));
-      await widget.scope.idle();
+    File result;
 
-      if (picker != null && picker.files.first != null) {
-        var result = File(picker.files.first.path);
-        super.submit(FileInputValue(
-          path: result.path,
-          title: basename(result.path),
-          extension: (extension(result.path ?? '') ?? '').replaceFirst('.', ''),
-          url: null,
-        ));
+    if (option == 'photo') {
+      result = await widget.scope.view.push(CameraHelper(
+        title: widget.label,
+        fullImage: true,
+        initFaceCamera: false,
+        allowMainCamera: true,
+        fileName: widget.label.toLowerCase().replaceAll(' ', '_'),
+        flash: true,
+        resolution: ResolutionPreset.high,
+      ));
+    } else if (option == 'document') {
+      try {
+        final picker = await FilePicker.platform.pickFiles(
+          type: widget.allowedExtensions.isEmpty ? FileType.any : FileType.custom,
+          allowMultiple: false,
+          allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
+          onFileLoading: (state) async {
+            await widget.scope.busy();
+          },
+        );
+
+        await Future.delayed(Duration(milliseconds: 350));
+        await widget.scope.idle();
+
+        if (picker != null && picker.files.first != null) {
+          result = File(picker.files.first.path);
+        }
+      } catch (err) {
+        await widget.scope.idle();
+        widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
       }
-    } catch (err) {
-      await widget.scope.idle();
-      widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+    }
+
+    if (result != null) {
+      super.submit(FileInputValue(
+        path: result.path,
+        title: basename(result.path),
+        extension: (extension(result.path ?? '') ?? '').replaceFirst('.', ''),
+        url: null,
+      ));
     }
   }
 
@@ -203,7 +253,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         }
         focus();
         if (value == null) {
-          _takePicture();
+          _pickFile();
         }
       },
       child: new FormField(
@@ -233,7 +283,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
                   if (value != null) {
                     clear();
                   } else {
-                    _takePicture();
+                    _pickFile();
                   }
                 },
                 child: _getIcon(),
@@ -251,9 +301,10 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
 
   Future _preview() async {
     if (value != null) {
-      var result = await await widget.scope.view.push(DocumentView(
+      var result = await widget.scope.view.push(DocumentView(
         launchUrl: widget.launchUrlPrefix,
         file: value,
+        initialScale: PhotoViewComputedScale.contained,
         readonly: widget.readonly,
       ));
       present();
