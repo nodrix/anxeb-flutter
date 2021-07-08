@@ -72,6 +72,52 @@ class Converters {
     return value.trim();
   }
 
+  String fromSecondsToDurationCaption(int seconds) {
+    if (seconds == null) {
+      return null;
+    }
+    Duration duration = Duration(seconds: seconds);
+    int value;
+    String sufix;
+    bool isFuture = duration.inSeconds < 0;
+
+    if (isFuture) {
+      if (-duration.inHours >= 24) {
+        value = -duration.inDays;
+        sufix = 'd';
+      } else if (-duration.inMinutes >= 60) {
+        value = -duration.inHours;
+        sufix = 'h';
+      } else if (-duration.inSeconds >= 60) {
+        value = -duration.inMinutes;
+        sufix = 'm';
+      } else {
+        value = -duration.inSeconds;
+        sufix = 's';
+      }
+    } else {
+      if (duration.inHours >= 24) {
+        value = duration.inDays;
+        sufix = 'd';
+      } else if (duration.inMinutes >= 60) {
+        value = duration.inHours;
+        sufix = 'h';
+      } else if (duration.inSeconds >= 60) {
+        value = duration.inMinutes;
+        sufix = 'm';
+      } else {
+        value = duration.inSeconds;
+        sufix = 's';
+      }
+    }
+
+    if (isFuture) {
+      return fromAnyToNumber(value, comma: true, decimals: 0) + sufix + ' res';
+    } else {
+      return fromAnyToNumber(value, comma: true, decimals: 0) + sufix;
+    }
+  }
+
   String fromDateToDurationCaption(DateTime date) {
     if (date == null) {
       return null;
@@ -116,6 +162,21 @@ class Converters {
     } else {
       return fromAnyToNumber(value, comma: true, decimals: 0) + sufix;
     }
+  }
+
+  String fromMetersToDistanceCaption(double meters) {
+    if (meters == null) {
+      return null;
+    }
+    double value = meters;
+    String sufix = 'm';
+
+    if (meters >= 1000) {
+      value = (meters / 1000.0);
+      sufix = 'km';
+    }
+
+    return fromAnyToNumber(value, comma: true, decimals: 0) + sufix;
   }
 
   String fromAnyToNumber(value, {int decimals, bool comma, String prefix}) {
@@ -253,9 +314,7 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date
-        .toUtc()
-        .millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {
