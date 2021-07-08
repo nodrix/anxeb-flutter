@@ -22,12 +22,14 @@ class DocumentView extends ViewWidget {
   final String launchUrl;
   final bool readonly;
   final String tag;
+  final PhotoViewComputedScale initialScale;
 
   DocumentView({
     @required this.file,
     this.launchUrl,
     this.readonly = true,
     this.tag,
+    this.initialScale,
   })  : assert(file != null),
         super('anxeb_document_helper', title: file?.title ?? 'Vista Archivo');
 
@@ -136,7 +138,7 @@ class _DocumentState extends View<DocumentView, Application> {
               stops: [0.0, 1.0],
             )),
             controller: _controller,
-            initialScale: PhotoViewComputedScale.covered,
+            initialScale: widget.initialScale ?? PhotoViewComputedScale.covered,
             loadFailedChild: Center(
               child: Icon(
                 Icons.broken_image,
@@ -225,7 +227,7 @@ class _DocumentState extends View<DocumentView, Application> {
 
   void _share() {
     var $title = widget.file.title;
-    var $msg = '${$title}\n\nCompartido desde la plataforma GestorHub - www.gestorhub.es';
+    var $msg = 'Archivo Compartido\n\n${$title}';
     var $mime = _isPdf ? 'application/pdf' : 'image/${widget.file.extension}';
     var $extension = _isPdf ? '.pdf' : '.${widget.file.extension}';
     var haveExt = Path.extension(_data.path)?.isNotEmpty == true;
@@ -277,14 +279,7 @@ class _DocumentState extends View<DocumentView, Application> {
 
   Future<File> _fetch({bool silent}) async {
     var controller = DialogProcessController();
-    scope.dialogs
-        .progress(
-          'Descargando Archivo',
-          icon: Icons.file_download,
-          controller: controller,
-          isDownload: true,
-        )
-        .show();
+    scope.dialogs.progress('Descargando Archivo', icon: Icons.file_download, controller: controller, isDownload: true).show();
     var cacheDirectory = await getTemporaryDirectory();
 
     var cancelToken = CancelToken();
@@ -316,24 +311,6 @@ class _DocumentState extends View<DocumentView, Application> {
       scope.alerts.error(err).show();
     }
     return null;
-  }
-
-  Future _changeTitle() async {
-    var title = await scope.dialogs
-        .prompt(
-          'Título Nuevo',
-          hint: 'Título',
-          type: TextInputFieldType.text,
-          value: widget.file.title,
-          icon: Icons.text_fields,
-        )
-        .show();
-
-    if (title != null && title != widget.file.title) {
-      rasterize(() {
-        widget.file.title = title;
-      });
-    }
   }
 
   Future _refresh() async {
@@ -402,6 +379,24 @@ class _DocumentState extends View<DocumentView, Application> {
     rasterize(() {
       _refreshing = false;
     });
+  }
+
+  Future _changeTitle() async {
+    var title = await scope.dialogs
+        .prompt(
+          'Título Nuevo',
+          hint: 'Título',
+          type: TextInputFieldType.text,
+          value: widget.file.title,
+          icon: Icons.text_fields,
+        )
+        .show();
+
+    if (title != null && title != widget.file.title) {
+      rasterize(() {
+        widget.file.title = title;
+      });
+    }
   }
 
   bool get _isImage => widget.file.isImage;
