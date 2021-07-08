@@ -1,8 +1,12 @@
+import 'package:anxeb_flutter/widgets/fields/file.dart';
+import 'package:anxeb_flutter/widgets/fields/image.dart';
 import 'package:flutter/material.dart';
 import 'data.dart';
 import 'field.dart';
 import 'model.dart';
 import 'scope.dart';
+import 'utils.dart';
+import 'dart:io' as io;
 
 class FieldsForm {
   Map<String, FieldState> fields;
@@ -163,14 +167,16 @@ class FieldsForm {
     return validate(autoFocus: autoFocus, showMessage: showMessage);
   }
 
-  Map<String, dynamic> data({bool images}) {
+  Map<String, dynamic> data({bool images, bool files}) {
     if (validate()) {
       var data = Map<String, dynamic>();
 
       for (var field in fields.values) {
-        var isImage = field.runtimeType.toString().contains('_ImageInputFieldState');
+        var isImage = field.widget is ImageInputField;
+        var isFile = field.widget is FileInputField;
+
         if (field.widget.visible != false) {
-          if ((images == null) || (images == true && isImage) || (images == false && !isImage)) {
+          if (((images == null) || (images == true && isImage) || (images == false && !isImage)) && ((files == null) || (files == true && isFile) || (files == false && !isFile))) {
             data[field.widget.name] = field.data();
           }
         }
@@ -179,6 +185,32 @@ class FieldsForm {
     } else {
       return null;
     }
+  }
+
+  Map<String, FileInputValue> files() {
+    var result = Map<String, FileInputValue>();
+
+    var payload = data(files: true);
+    payload.forEach((key, value) {
+      final FileInputValue fileValue = value;
+      if (fileValue?.title?.isNotEmpty == true) {
+        result[key] = value;
+      }
+    });
+    return result;
+  }
+
+  Future<Map<String, dynamic>> multipart() async {
+    Map<String, FileInputValue> files = this.files();
+    final Map<String, dynamic> multiPayload = {};
+
+    final entries = files.entries;
+    for (final entry in entries) {
+      if (entry.value.path != null && await io.File(entry.value.path).exists()) {
+        multiPayload[entry.key] = await Utils.convert.fromPathToMultipartFile(entry.value.path);
+      }
+    }
+    return multiPayload;
   }
 
   Map<String, dynamic> value() {
