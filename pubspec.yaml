@@ -1,7 +1,7 @@
 name: anxeb_flutter
 description: Highly scalable mobile Flutter cross-platform library
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.4.7
+version: 1.4.8
 author: Nodrix
 homepage: https://github.com/nodrix/anxeb-flutter
 
@@ -30,7 +30,7 @@ dependencies:
   pull_to_refresh: 1.6.3
   google_sign_in: ^4.5.9
   oauth1: ^1.0.5
-  flutter_facebook_login: ^3.0.0
+  flutter_login_facebook: ^0.5.0
   device_info: ^1.0.0
   percent_indicator: ^2.1.8
   flushbar: ^1.10.4
