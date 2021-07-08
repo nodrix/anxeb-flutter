@@ -9,6 +9,7 @@ class ChipButton extends StatefulWidget {
   final Color textColor;
   final bool disabled;
   final EdgeInsets margin;
+  final IconData icon;
 
   final borderRadius = const BorderRadius.all(
     Radius.circular(12.0),
@@ -21,6 +22,7 @@ class ChipButton extends StatefulWidget {
     this.textColor,
     this.disabled,
     this.margin,
+    this.icon,
   });
 
   @override
@@ -31,15 +33,25 @@ class _ChipButtonState extends State<ChipButton> {
   @override
   Widget build(BuildContext context) {
     var body = Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      child: Text(
-        widget.text,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: widget.textColor ?? Colors.white,
-        ),
+      padding: EdgeInsets.only(left: widget.icon != null ? 8 : 10, right: 10, top: 2, bottom: 2),
+      child: Row(
+        children: [
+          widget.icon != null
+              ? Container(
+                  child: Icon(widget.icon, color: widget.textColor ?? Colors.white, size: 13),
+                  padding: EdgeInsets.only(right: 4),
+                )
+              : Container(),
+          Text(
+            widget.text,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: widget.textColor ?? Colors.white,
+            ),
+          ),
+        ],
       ),
     );
 
