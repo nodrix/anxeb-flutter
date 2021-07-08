@@ -29,6 +29,7 @@ class NotificationSheet extends ScopeSheet {
         minHeight: 0,
       ),
       child: Container(
+        color: Colors.white,
         child: SafeArea(
           top: false,
           bottom: true,

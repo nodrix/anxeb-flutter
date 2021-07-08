@@ -37,7 +37,7 @@ class TipSheet extends ScopeSheet {
                 ),
               )
             : null,
-        color: flat == true ? fill : null,
+        color: flat == true ? (fill ?? Colors.white) : null,
         child: SafeArea(
           top: false,
           bottom: true,
