@@ -5,6 +5,7 @@ import 'package:anxeb_flutter/helpers/preview.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
+import 'package:anxeb_flutter/widgets/blocks/photo.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -135,13 +136,26 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   }
 
   @override
+  void clear() {
+    rasterize(() {
+      _takenPicture = null;
+    });
+    return super.clear();
+  }
+
+  @override
   void present() {
     setState(() {
       if (value != null) {
         if (widget.returnPath == true) {
           var file = File(value);
-          _takenPicture = Image.file(file).image;
-          _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(file.lengthSync());
+          if (file.existsSync()) {
+            _takenPicture = Image.file(file).image;
+            _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(file.lengthSync());
+          } else {
+            _takenPicture = null;
+            _previewText = null;
+          }
         } else {
           _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
           _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(value.length);
@@ -155,7 +169,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
 
   @override
   Widget field() {
-    var previewImage;
+    Widget previewImage;
     if (_takenPicture != null) {
       previewImage = GestureDetector(
         onTap: () async {
@@ -176,23 +190,28 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
         ),
       );
     } else if (widget.url != null) {
-      previewImage = GestureDetector(
-        onTap: () async {
-          _preview();
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              image: NetworkImage(widget.url),
-            ),
-          ),
+      previewImage = PhotoBlock(
+        scope: widget.scope,
+        tick: widget.scope.tick,
+        url: widget.url,
+        quality: 80,
+        fill: Colors.white,
+        border: BorderRadius.all(
+          Radius.circular(10.0),
         ),
+        failIcon: Icon(
+          Icons.photo,
+          color: Colors.black12,
+          size: 80,
+        ),
+        onTap: (isFailed) async {
+          if (isFailed != true) {
+            _preview();
+          } else if (_takenPicture == null) {
+            _takePicture();
+          }
+        },
+        fit: BoxFit.cover,
       );
     }
 
@@ -233,7 +252,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       }
     } else {
       previewContent = Container(
-        padding: EdgeInsets.only(top: 2),
+        padding: EdgeInsets.only(top: 7),
         child: Text(
           widget.label,
           style: TextStyle(
@@ -278,7 +297,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
                   if (widget.readonly == true) {
                     return;
                   }
-                  if (value != null) {
+                  if (value != null && _takenPicture != null) {
                     clear();
                   } else {
                     _takePicture();
@@ -287,10 +306,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
                 child: _getIcon(),
               ),
             ),
-            child: Padding(
-              padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
-              child: previewContent,
-            ),
+            child: previewContent,
           );
         },
       ),
@@ -317,7 +333,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       return Icon(Icons.lock_outline);
     }
 
-    if (value != null) {
+    if (value != null && _takenPicture != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
       return Icon(widget.askPickMethod == true ? Icons.search : Ionicons.md_camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
