@@ -15,9 +15,11 @@ class PhotoBlock extends StatefulWidget {
   final BoxFit fit;
   final Alignment alignment;
   final Icon failIcon;
-  final GestureTapCallback onTap;
+  final Function(bool isFailed) onTap;
+  final Widget failWidget;
   final Color progressColor;
   final double progressSize;
+  final bool ignoreFailIcon;
 
   PhotoBlock({
     @required this.scope,
@@ -33,8 +35,10 @@ class PhotoBlock extends StatefulWidget {
     this.alignment,
     this.failIcon,
     this.onTap,
+    this.failWidget,
     this.progressColor,
     this.progressSize,
+    this.ignoreFailIcon,
   });
 
   @override
@@ -104,15 +108,18 @@ class _PhotoBlockState extends State<PhotoBlock> {
         AnimatedOpacity(
           opacity: isError ? 1.0 : 0,
           duration: Duration(milliseconds: 300),
-          child: Container(
-            alignment: Alignment.center,
-            child: widget.failIcon ??
-                Icon(
-                  Anxeb.FlutterIcons.broken_image_mdi,
-                  color: Colors.black12,
-                  size: 90,
-                ),
-          ),
+          child: widget.failWidget ??
+              (widget.ignoreFailIcon == true
+                  ? Container()
+                  : Container(
+                      alignment: Alignment.center,
+                      child: widget.failIcon ??
+                          Icon(
+                            Anxeb.FlutterIcons.broken_image_mdi,
+                            color: Colors.black12,
+                            size: 90,
+                          ),
+                    )),
         ),
         widget.onTap != null
             ? Material(
@@ -120,7 +127,9 @@ class _PhotoBlockState extends State<PhotoBlock> {
                 color: Colors.transparent,
                 borderRadius: widget.border,
                 child: InkWell(
-                  onTap: widget.onTap,
+                  onTap: () {
+                    widget.onTap(_imageLoaded == false);
+                  },
                   highlightColor: Colors.transparent,
                   splashColor: Colors.black12,
                   borderRadius: widget.border,
@@ -145,12 +154,20 @@ class _PhotoBlockState extends State<PhotoBlock> {
     _tick = widget.tick;
     _setLoadedState(null);
 
+    String $url;
+    if (widget.url != null && widget.url.startsWith('http')) {
+      $url = widget.url;
+    } else {
+      $url = widget.scope.application.api.getUri(widget.url);
+    }
+    $url = $url + ($url.contains('?') ? '&' : '?') + 'webp=${widget.quality ?? '60'}&width=${widget.width ?? '300'}&tick=${_tick ?? '0'}';
+
     if (_stream != null && _listener != null) {
       _stream.removeListener(_listener);
     }
 
     _netImage = Anxeb.SecuredImage(
-      widget.scope.application.api.getUri('${widget.url}?webp=${widget.quality ?? '60'}&width=${widget.width ?? '300'}&tick=${_tick ?? '0'}'),
+      $url,
       scale: 1,
     );
 
