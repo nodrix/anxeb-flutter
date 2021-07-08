@@ -23,6 +23,8 @@ class PropertyBlock extends StatefulWidget {
     this.showOnNull,
     this.isPhone,
     this.isEmail,
+    this.iconSize,
+    this.onTap,
   });
 
   final EdgeInsets margin;
@@ -41,13 +43,14 @@ class PropertyBlock extends StatefulWidget {
   final bool showOnNull;
   final bool isPhone;
   final bool isEmail;
+  final double iconSize;
+  final GestureTapCallback onTap;
 
   @override
   _PropertyBlockState createState() => _PropertyBlockState();
 }
 
 class _PropertyBlockState extends State<PropertyBlock> {
-
   Widget _valueWidget;
 
   @override
@@ -58,8 +61,7 @@ class _PropertyBlockState extends State<PropertyBlock> {
 
     _valueWidget = _valueWidget ?? _getValueWidget();
 
-    return Container(
-      margin: widget.margin,
+    final content = Container(
       padding: widget.padding,
       child: Row(
         children: <Widget>[
@@ -74,7 +76,7 @@ class _PropertyBlockState extends State<PropertyBlock> {
                         color: widget.iconColor ?? Colors.blue,
                         child: Icon(
                           widget.icon,
-                          size: 20 * (widget.iconScale ?? 1.0),
+                          size: widget.iconSize ?? (20 * (widget.iconScale ?? 1.0)),
                           color: Colors.white,
                         ),
                       ),
@@ -100,9 +102,7 @@ class _PropertyBlockState extends State<PropertyBlock> {
                     padding: EdgeInsets.only(top: 3),
                     child: Row(
                       children: <Widget>[
-                        Expanded(
-                          child: _valueWidget
-                        ),
+                        Expanded(child: _valueWidget),
                       ],
                     ),
                   ),
@@ -112,6 +112,11 @@ class _PropertyBlockState extends State<PropertyBlock> {
           ),
         ],
       ),
+    );
+
+    return Container(
+      margin: widget.margin,
+      child: content,
     );
   }
 
@@ -135,9 +140,19 @@ class _PropertyBlockState extends State<PropertyBlock> {
       }
     }
 
-    return GestureDetector(
-      onTap: () => _launchValueLink(widget.value),
-      child: _getValueTextWidget(widget.value),
+    return Material(
+      key: GlobalKey(),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: () {
+          _launchValueLink(widget.value);
+        },
+        highlightColor: Colors.transparent,
+        splashColor: Colors.black12,
+        borderRadius: BorderRadius.circular(20),
+        child: _getValueTextWidget(widget.value),
+      ),
     );
   }
 
@@ -169,6 +184,8 @@ class _PropertyBlockState extends State<PropertyBlock> {
           Launcher.launch("mailto:$value");
         }
       });
+    } else if (widget.onTap != null) {
+      widget.onTap();
     }
   }
 }
