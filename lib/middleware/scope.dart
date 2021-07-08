@@ -28,6 +28,7 @@ class Scope {
   bool _busying;
   int _busyCountDown;
   int tick;
+  dynamic box;
 
   Scope(BuildContext context, View view) {
     _context = context;
