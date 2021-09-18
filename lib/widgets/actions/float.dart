@@ -87,7 +87,7 @@ class _FloatActionState extends State<FloatAction> {
     );
 
     return Stack(
-      overflow: Overflow.visible,
+      clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: $actions,
     );

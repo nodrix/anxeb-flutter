@@ -37,12 +37,12 @@ class Data {
 
   List<T> map<T>(String field, T predicate(e)) {
     var list = _items[field] != null ? (_items[field] as List<dynamic>) : null;
-    return list != null ? list.map(predicate).toList() : List<T>();
+    return list != null ? list.map(predicate).toList() : <T>[];
   }
 
   List<T> list<T>(T predicate(data), {String field}) {
     var list = (field != null && _items[field] != null ? _items[field] : _items) as List<dynamic>;
-    return list != null ? list.map(predicate).toList() : List<T>();
+    return list != null ? list.map(predicate).toList() : <T>[];
   }
 
   Data clone() {

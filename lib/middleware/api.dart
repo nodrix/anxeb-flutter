@@ -24,18 +24,22 @@ class Api {
       receiveTimeout: receiveTimeout ?? 7000,
     ));
 
-    _dio.interceptors.add(InterceptorsWrapper(onRequest: (RequestOptions options) {
-      if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
 
-      options.headers['content-type'] = options.headers['content-type'] ?? 'application/json';
-      return options;
-    }, onResponse: (Response response) {
-      return response;
-    }, onError: (DioError e) {
-      return e;
-    }));
+        options.headers['content-type'] = options.headers['content-type'] ?? 'application/json';
+        return handler.next(options);
+      },
+      onResponse: (Response response, ResponseInterceptorHandler handler) {
+        return handler.next(response);
+      },
+      onError: (DioError e, ErrorInterceptorHandler handler) {
+        return handler.next(e);
+      },
+    ));
 
     (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
       client.badCertificateCallback = (X509Certificate cert, String host, int port) {
@@ -175,13 +179,13 @@ class ApiException implements Exception {
 
   factory ApiException.fromErr(err) {
     if (err is DioError) {
-      if (err.type == DioErrorType.CONNECT_TIMEOUT) {
+      if (err.type == DioErrorType.connectTimeout) {
         return ApiException('Error de comunicación, favor revisar su conexión a la red', 0, err);
-      } else if (err.type == DioErrorType.RECEIVE_TIMEOUT) {
+      } else if (err.type == DioErrorType.receiveTimeout) {
         return ApiException('Tiempo de respuesta prolongado', 408, err);
-      } else if (err.type == DioErrorType.SEND_TIMEOUT) {
+      } else if (err.type == DioErrorType.sendTimeout) {
         return ApiException('Tiempo de petición prolongado', 408, err);
-      } else if (err.type == DioErrorType.CANCEL) {
+      } else if (err.type == DioErrorType.cancel) {
         return ApiException('Conexión desestimada por usuario o administrador', 408, err);
       } else if (err.error is SocketException) {
         return ApiException('Error de comunicación, favor revisar su conexión al Internet', 0, err);

@@ -36,7 +36,7 @@ class SearchHeader extends ActionsHeader {
     this.onCompleted,
     this.onBegin,
   }) : super(scope: scope, dismiss: dismiss, back: back, leading: leading, title: title, bottom: bottom, elevation: elevation, height: height) {
-    super.actions = actions ?? List<ActionItem>();
+    super.actions = actions ?? <ActionItem>[];
 
     if (actionRightPositioned == true) {
       ActionItem item = ActionIcon(icon: () => Icons.search, onPressed: _beginSearch);
@@ -144,7 +144,7 @@ class SearchHeader extends ActionsHeader {
   }
 
   AppBar _buildSearchBar() {
-    var $actions = List<Widget>();
+    var $actions = <Widget>[];
 
     if (_busy) {
       $actions.add(Container(

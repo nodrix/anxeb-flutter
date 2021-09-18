@@ -82,7 +82,7 @@ class FieldsForm {
   void clear([String fieldName]) {
     if (fieldName != null) {
       var field = fields[fieldName];
-      field.reset();
+      field?.reset();
     } else {
       fields.entries.forEach((field) {
         field.value.reset();

@@ -136,7 +136,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
     } else if (option == 'document') {
       try {
         final picker = await FilePicker.platform.pickFiles(
-          type: widget.allowedExtensions.isEmpty ? FileType.any : FileType.custom,
+          type: FileType.custom,
           allowMultiple: false,
           allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
           onFileLoading: (state) async {

@@ -136,6 +136,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
       key: _scaffold,
       appBar: _header?.build(),
       drawer: $drawer == true ? application.navigator.drawer() : ($drawer is Drawer ? $drawer : null),
+      resizeToAvoidBottomInset: true,
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: _footer?.build(),

@@ -13,7 +13,11 @@ class Window {
 
   Window(Scope scope) {
     _scope = scope;
-    _overlay = Overlay(navigationDefaultFill: scope.application.settings.colors.navigation);
+    if (_scope?.application?.overlay != null) {
+      _overlay = _scope?.application?.overlay;
+    } else {
+      _overlay = Overlay(navigationDefaultFill: scope.application.settings.colors.navigation);
+    }
     _keyboardVisibilityController = KeyboardVisibilityController();
     this.update(context: context);
   }

@@ -4,8 +4,10 @@ import 'package:anxeb_flutter/parts/dialogs/options.dart';
 import 'package:anxeb_flutter/parts/dialogs/panel.dart';
 import 'package:anxeb_flutter/parts/dialogs/period.dart';
 import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
+import 'package:anxeb_flutter/parts/dialogs/selectors.dart';
 import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
+import 'package:anxeb_flutter/widgets/blocks/selector.dart';
 import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
@@ -363,6 +365,10 @@ class ScopeDialogs {
     }, iconColor: _scope.application.settings.colors.info, buttons: [
       DialogButton(cancelLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
     ]);
+  }
+
+  SelectorsDialog selector({List<SelectorBlock> Function(BuildContext) selectors}) {
+    return SelectorsDialog(_scope, selectors: selectors);
   }
 
   MessageDialog custom({

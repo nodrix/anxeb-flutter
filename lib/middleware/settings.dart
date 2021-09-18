@@ -60,7 +60,7 @@ class _AuthsGoogle {
   String clientId;
   String hostedDomain;
   SignInOption signInOption = SignInOption.standard;
-  List<String> scopes = List<String>();
+  List<String> scopes = <String>[];
 }
 
 class _AuthsTwitter {

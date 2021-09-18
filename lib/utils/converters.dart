@@ -333,7 +333,7 @@ class Converters {
       return null;
     }
     var items = value.split(' ');
-    var result = List<String>();
+    var result = <String>[];
 
     for (var item in items) {
       if (item.length > 1) {

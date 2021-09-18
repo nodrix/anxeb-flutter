@@ -22,7 +22,7 @@ class Disk {
 
   Future<T> retrieve<T>(String key) async {
     await _check();
-    var $value = await _shared?.get(key);
+    var $value = _shared?.get(key);
 
     if (T is Data) {
       return Data($value as String) as T;

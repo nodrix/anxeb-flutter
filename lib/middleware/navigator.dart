@@ -18,7 +18,7 @@ class Navigator {
 
   Navigator(Application application) {
     _application = application;
-    _groups = List<MenuGroup>();
+    _groups = <MenuGroup>[];
     build = _buildDrawer;
   }
 

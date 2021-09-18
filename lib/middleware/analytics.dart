@@ -12,41 +12,38 @@ class Analytics {
   FirebaseMessaging _messaging;
   FirebaseAnalyticsObserver _observer;
   Function(String token) _onToken;
-  Function(Map<String, dynamic> message, MessageEventType event) _onMessage;
-  Function(Map<String, dynamic> message, MessageEventType event) _onMessageGlobal;
+  Function(RemoteMessage message, MessageEventType event) _onMessage;
+  Function(RemoteMessage message, MessageEventType event) _onMessageGlobal;
   List<dynamic> notifications;
 
   Analytics() {
     notifications = [];
     _analytics = FirebaseAnalytics();
-    _messaging = FirebaseMessaging();
     _observer = FirebaseAnalyticsObserver(analytics: _analytics);
   }
 
-  Future init({Function(Map<String, dynamic> message, MessageEventType event) onMessage}) async {
+  Future init({Function(RemoteMessage message, MessageEventType event) onMessage}) async {
     _onMessageGlobal = onMessage;
     try {
       await Firebase.initializeApp();
+      _messaging = FirebaseMessaging.instance;
       reset();
       _token = await _messaging.getToken();
       if (Platform.isIOS) {
-        _messaging.requestNotificationPermissions();
+        _messaging.requestPermission();
       }
       _messaging.onTokenRefresh.listen((token) {
         _token = token;
         _onToken?.call(_token);
       });
-      _messaging.configure(
-        onMessage: (Map<String, dynamic> message) async {
-          _handleMessage(message, MessageEventType.none);
-        },
-        onResume: (Map<String, dynamic> message) async {
-          _handleMessage(message, MessageEventType.resume);
-        },
-        onLaunch: (Map<String, dynamic> message) async {
-          _handleMessage(message, MessageEventType.launch);
-        },
-      );
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        _handleMessage(message, MessageEventType.none);
+      });
+
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        _handleMessage(message, MessageEventType.resume);
+      });
     } catch (err) {
       print(err);
     }
@@ -88,7 +85,7 @@ class Analytics {
     return firebase.logEvent(name: 'sign_up');
   }
 
-  void configure({Function(String token) onToken, Function(Map<String, dynamic> message, MessageEventType event) onMessage}) {
+  void configure({Function(String token) onToken, Function(RemoteMessage message, MessageEventType event) onMessage}) {
     if (onToken != null) {
       _onToken = onToken;
     }
@@ -97,26 +94,15 @@ class Analytics {
     }
   }
 
-  void _handleMessage(Map<String, dynamic> message, MessageEventType event) {
+  void _handleMessage(RemoteMessage message, MessageEventType event) {
+    RemoteNotification notification = message?.notification;
+
     var $title;
     var $body;
 
-    if (message != null) {
-      if (message['title'] != null) {
-        $title = message['title'];
-      } else if (message['data'] != null && message['data']['title'] != null) {
-        $title = message['data']['title'];
-      } else if (message['aps'] != null && message['aps']['alert'] != null && message['aps']['alert']['title'] != null) {
-        $title = message['aps']['alert']['title'];
-      }
-
-      if (message['body'] != null) {
-        $body = message['body'];
-      } else if (message['data'] != null && message['data']['body'] != null) {
-        $body = message['data']['body'];
-      } else if (message['aps'] != null && message['aps']['body'] != null && message['aps']['alert']['body'] != null) {
-        $body = message['aps']['alert']['body'];
-      }
+    if (notification != null) {
+      $title = notification.title;
+      $body = notification.body;
       notifications.add(message);
     }
 
@@ -137,4 +123,4 @@ class Analytics {
   FirebaseAnalyticsObserver get observer => _observer;
 }
 
-enum MessageEventType { none, resume, launch }
+enum MessageEventType { none, resume }

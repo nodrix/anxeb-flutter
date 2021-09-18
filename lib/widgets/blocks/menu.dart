@@ -20,7 +20,7 @@ class ContextMenuBlock extends StatelessWidget {
       },
       padding: EdgeInsets.all(0),
       itemBuilder: (BuildContext context) {
-        var result = List<PopupMenuEntry<Function>>();
+        var result = <PopupMenuEntry<Function>>[];
 
         for (var i = 0; i < items.length; i++) {
           var item = items[i];

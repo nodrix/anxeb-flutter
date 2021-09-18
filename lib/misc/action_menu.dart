@@ -26,7 +26,7 @@ class ActionMenu with ActionItem {
     var $disabled = isDisabled?.call() == true;
     var $color = color?.call() ?? Colors.white;
 
-    var items = List<PopupMenuEntry<dynamic>>();
+    var items = <PopupMenuEntry<dynamic>>[];
 
     for (var action in actions) {
       if (action.isVisible?.call() == false) {

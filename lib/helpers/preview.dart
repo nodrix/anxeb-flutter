@@ -76,13 +76,15 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
           ),
         ),
         controller: _controller,
-        loadFailedChild: Center(
-          child: Icon(
-            Icons.broken_image,
-            size: 140,
-            color: application.settings.colors.primary.withOpacity(0.2),
-          ),
-        ),
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Icon(
+              Icons.broken_image,
+              size: 140,
+              color: application.settings.colors.primary.withOpacity(0.2),
+            ),
+          );
+        },
         loadingBuilder: (context, event) {
           return _getLoading();
         },

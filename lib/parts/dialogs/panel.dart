@@ -37,6 +37,7 @@ class PanelDialog<V> extends ScopeDialog {
             iconScale: iconScale,
             textScale: textScale,
             buttonRadius: scope.application.settings.panels.buttonRadius,
+            context: context,
             collapse: () async {
               Navigator.of(context).pop();
             }),

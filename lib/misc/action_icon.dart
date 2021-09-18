@@ -34,8 +34,8 @@ class ActionIcon with ActionItem {
     var nots = notifications?.call();
     if (nots != null) {
       return Stack(
+        clipBehavior: Clip.none,
         alignment: Alignment.center,
-        overflow: Overflow.visible,
         children: [
           button,
           Positioned(

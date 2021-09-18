@@ -1,7 +1,8 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
-import 'package:flutter/material.dart' hide Navigator;
+import 'package:flutter/material.dart' hide Navigator, Overlay;
 import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'overlay.dart';
 import 'analytics.dart';
 import 'api.dart';
 import 'disk.dart';
@@ -51,7 +52,7 @@ class Application {
   void init() {}
 
   @protected
-  void onMessage(Map<String, dynamic> message, MessageEventType event) {
+  void onMessage(RemoteMessage message, MessageEventType event) {
     setBadge(analytics.notifications.length);
   }
 
@@ -62,6 +63,8 @@ class Application {
   Api get api => _api;
 
   AuthProviders get auths => _auths;
+
+  Overlay get overlay => null;
 
   @protected
   set api(value) {

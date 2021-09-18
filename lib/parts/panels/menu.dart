@@ -47,7 +47,7 @@ class MenuPanel extends BoardPanel {
     }
   }
 
-  static Widget getButtons({List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, Future Function() collapse, double buttonRadius}) {
+  static Widget getButtons({List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, Future Function() collapse, double buttonRadius, BuildContext context}) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -225,7 +225,7 @@ class PanelMenuAction {
 
   PanelMenuAction({
     @required this.icon,
-    @required this.label,
+    this.label,
     this.isVisible,
     this.isDisabled,
     this.onPressed,

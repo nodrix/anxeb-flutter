@@ -22,7 +22,7 @@ class Overlay {
     style = SystemUiOverlayStyle.light;
   }
 
-  void apply() {
+  void apply({bool instant}) {
     var $statusBrightness = brightness ?? statusBrightness ?? Brightness.dark;
     var $navigationBrightness = brightness ?? navigationBrightness ?? Brightness.dark;
 
@@ -45,7 +45,7 @@ class Overlay {
     } else {
       AndroidMiddleware.windowManager.clearFlags(AndroidWindowManager.FLAG_LAYOUT_NO_LIMITS);
     }
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(Duration(milliseconds: instant == true ? 0 : 1000), () {
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarColor: fill ?? statusFill ?? Colors.transparent,
         statusBarBrightness: $statusBrightness,

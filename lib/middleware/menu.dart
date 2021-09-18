@@ -108,7 +108,7 @@ class MenuGroup extends MenuItem {
           roles: roles,
           home: home,
         ) {
-    _items = List<MenuItem>();
+    _items = <MenuItem>[];
   }
 
   MenuItem add(MenuItem item) {

@@ -26,12 +26,19 @@ class ActionButton with ActionItem {
     $color = $disabled ? $color.withOpacity(0.4) : $color;
 
     return Container(
-      child: FlatButton(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+      child: TextButton(
+        style: ButtonStyle(
+          backgroundColor: fill != null ? MaterialStateProperty.all<Color>(fill()) : null,
+          padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.symmetric(horizontal: 10)),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            ),
+          ),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        color: fill?.call(),
+        //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+        //padding: EdgeInsets.symmetric(horizontal: 10),
+        //color: fill?.call(),
         child: Row(
           children: <Widget>[
             icon != null

@@ -35,14 +35,14 @@ class Model<T> {
       bool mustPush = false;
       if (_diskKey != null) {
         await _checkShared();
-        var $data = await _shared?.get(_diskKey);
+        var $data = _shared?.get(_diskKey);
         if ($data != null) {
           _data = Data($data);
           mustPush = true;
         }
       }
       _data = _data ?? Data();
-      _fields = List<_ModelField>();
+      _fields = <_ModelField>[];
       init();
 
       _initializeFields();
@@ -277,7 +277,7 @@ class _ModelField {
       if (propertyValue == null) {
         data[fieldName] = null;
       } else if (propertyValue is List<Model> || propertyValue is Iterable) {
-        var items = List();
+        var items = [];
         for (var item in propertyValue) {
           items.add(item.toString().split('.')[1]);
         }
@@ -286,7 +286,7 @@ class _ModelField {
         data[fieldName] = propertyValue.toString().split('.')[1];
       }
     } else if (propertyValue is List<Model>) {
-      var items = List();
+      var items = [];
       for (var item in propertyValue) {
         if (usePrimaryKeys == true) {
           items.add(item.toValue());

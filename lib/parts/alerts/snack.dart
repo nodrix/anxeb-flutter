@@ -1,6 +1,6 @@
 import 'package:anxeb_flutter/middleware/alert.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:flushbar/flushbar.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart' hide Dialog;
 
 class SnackAlert extends ScopeAlert {
@@ -66,7 +66,7 @@ class SnackAlert extends ScopeAlert {
       ),
       isDismissible: true,
       margin: scope.window.overlay.extendBodyFullScreen ? EdgeInsets.only(left: 22, right: 22, bottom: 56) : EdgeInsets.all(8),
-      borderRadius: 8,
+      borderRadius: BorderRadius.all(Radius.circular(8)),
       boxShadows: [BoxShadow(offset: Offset(0, 2), blurRadius: 6, spreadRadius: 2, color: Color(0x55222222))],
       flushbarPosition: scope.window.overlay.extendBodyFullScreen ? FlushbarPosition.BOTTOM : FlushbarPosition.TOP,
       icon: Icon(

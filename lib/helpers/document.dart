@@ -139,13 +139,15 @@ class _DocumentState extends View<DocumentView, Application> {
             )),
             controller: _controller,
             initialScale: widget.initialScale ?? PhotoViewComputedScale.covered,
-            loadFailedChild: Center(
-              child: Icon(
-                Icons.broken_image,
-                size: 140,
-                color: application.settings.colors.primary.withOpacity(0.2),
-              ),
-            ),
+            errorBuilder: (context, error, stackTrace) {
+              return Center(
+                child: Icon(
+                  Icons.broken_image,
+                  size: 140,
+                  color: application.settings.colors.primary.withOpacity(0.2),
+                ),
+              );
+            },
             loadingBuilder: (context, event) {
               return _getLoading();
             },

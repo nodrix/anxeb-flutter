@@ -1,3 +1,4 @@
+import 'package:anxeb_flutter/middleware/api.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ class PhotoBlock extends StatefulWidget {
   final Anxeb.Scope scope;
   final String url;
   final int tick;
+  final Api api;
   final int width;
   final int quality;
   final ColorFilter filter;
@@ -25,6 +27,7 @@ class PhotoBlock extends StatefulWidget {
     @required this.scope,
     @required this.url,
     this.tick,
+    this.api,
     this.width,
     this.quality,
     this.filter,
@@ -151,6 +154,8 @@ class _PhotoBlockState extends State<PhotoBlock> {
   }
 
   void _setupImage() async {
+    var $api = widget.api ?? widget.scope.application.api;
+
     _tick = widget.tick;
     _setLoadedState(null);
 
@@ -158,9 +163,9 @@ class _PhotoBlockState extends State<PhotoBlock> {
     if (widget.url != null && widget.url.startsWith('http')) {
       $url = widget.url;
     } else {
-      $url = widget.scope.application.api.getUri(widget.url);
+      $url = $api.getUri(widget.url);
     }
-    $url = $url + ($url.contains('?') ? '&' : '?') + 'webp=${widget.quality ?? '60'}&width=${widget.width ?? '300'}&tick=${_tick ?? '0'}';
+    $url = $url + ($url.contains('?') ? '&' : '?') + 'webp=${widget.quality ?? '60'}&width=${widget.width ?? '300'}&tick=${_tick ?? '1'}';
 
     if (_stream != null && _listener != null) {
       _stream.removeListener(_listener);
@@ -169,6 +174,7 @@ class _PhotoBlockState extends State<PhotoBlock> {
     _netImage = Anxeb.SecuredImage(
       $url,
       scale: 1,
+      headers: $api.token != null ? {'Authorization': 'Bearer ${$api.token}'} : null,
     );
 
     _stream = _netImage.resolve(ImageConfiguration());

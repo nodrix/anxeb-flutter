@@ -24,7 +24,7 @@ class Referencer<V> {
   }
 
   List<ReferencerPage<V>> get pages {
-    var result = List<ReferencerPage<V>>();
+    var result = <ReferencerPage<V>>[];
     var $next = _root;
     while ($next != null) {
       result.add($next);
@@ -135,7 +135,7 @@ class ReferencerPage<V> {
   }
 
   List<V> _getValues() {
-    var result = List<V>();
+    var result = <V>[];
     var $parent = this;
     while ($parent != null) {
       if ($parent.selected != null) {

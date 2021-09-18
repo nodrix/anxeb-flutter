@@ -17,6 +17,7 @@ class EmptyBlock extends StatelessWidget {
     this.iconScale,
     this.fawIcon,
     this.tight,
+    this.margin,
   });
 
   final Scope scope;
@@ -28,10 +29,17 @@ class EmptyBlock extends StatelessWidget {
   final double iconScale;
   final bool fawIcon;
   final bool tight;
+  final EdgeInsets margin;
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    if (visible == false) {
+      return Container();
+    }
+
+    var size = MediaQuery
+        .of(context)
+        .size;
 
     var $message = Container();
     var $action = Container();
@@ -89,6 +97,7 @@ class EmptyBlock extends StatelessWidget {
 
     if (tight == true) {
       return Container(
+        margin: margin,
         width: size.width * 0.66,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -100,7 +109,7 @@ class EmptyBlock extends StatelessWidget {
     return Center(
       child: Container(
         width: size.width * 0.66,
-        margin: EdgeInsets.only(bottom: size.height * (0.07 + (scope?.view?.isFooter == false ? 0.03 : 0))),
+        margin: margin ?? EdgeInsets.only(bottom: size.height * (0.07 + (scope?.view?.isFooter == false ? 0.03 : 0))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [$icon, $message, $action],

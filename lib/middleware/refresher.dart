@@ -48,17 +48,17 @@ class ViewRefresher {
 
   void scrollToEnd() {
     // ignore: deprecated_member_use
-    if (_refreshController.scrollController != null) {
+    if (_refreshController.position != null) {
       // ignore: deprecated_member_use
-      _refreshController.scrollController.animateTo(_refreshController.scrollController.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+      _refreshController.position.animateTo(_refreshController.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
     }
   }
 
   void scrollToStart() {
     // ignore: deprecated_member_use
-    if (_refreshController.scrollController != null) {
+    if (_refreshController.position != null) {
       // ignore: deprecated_member_use
-      _refreshController.scrollController.animateTo(0, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+      _refreshController.position.animateTo(0, duration: Duration(milliseconds: 500), curve: Curves.decelerate);
     }
   }
 
