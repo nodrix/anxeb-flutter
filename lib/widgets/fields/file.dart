@@ -14,12 +14,13 @@ import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 
 class FileInputValue {
-  FileInputValue({this.url, this.path, this.title, this.extension});
+  FileInputValue({this.url, this.path, this.title, this.extension, this.useFullUrl=false});
 
   String url;
   String path;
   String title;
   String extension;
+  bool useFullUrl;
 
   bool get isImage => ['jpg', 'png', 'jpeg'].contains(extension);
 }

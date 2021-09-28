@@ -291,7 +291,7 @@ class _DocumentState extends View<DocumentView, Application> {
 
     var $name = widget.title;
     var $filePath = '${cacheDirectory.path}/${$name}';
-    var $url = '${widget.file.url}/open';
+    var $url = widget.file.useFullUrl ? '${widget.file.url}' : '${widget.file.url}/open';
 
     try {
       await scope.api.download(
