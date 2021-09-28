@@ -144,7 +144,7 @@ class FieldsForm {
   bool validate({bool showMessage, bool autoFocus}) {
     var result = true;
     for (var field in fields.values) {
-      if (field.context != null) {
+      if (field.mounted && field.context != null) {
         if (field.validate(showMessage: showMessage) != null) {
           if (autoFocus != false) {
             field.focus();
