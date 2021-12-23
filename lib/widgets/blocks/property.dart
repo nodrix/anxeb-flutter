@@ -25,6 +25,7 @@ class PropertyBlock extends StatefulWidget {
     this.isEmail,
     this.iconSize,
     this.onTap,
+    this.cache = true,
   });
 
   final EdgeInsets margin;
@@ -45,6 +46,7 @@ class PropertyBlock extends StatefulWidget {
   final bool isEmail;
   final double iconSize;
   final GestureTapCallback onTap;
+  final bool cache;
 
   @override
   _PropertyBlockState createState() => _PropertyBlockState();
@@ -59,7 +61,11 @@ class _PropertyBlockState extends State<PropertyBlock> {
       return Container();
     }
 
-    _valueWidget = _valueWidget ?? _getValueWidget();
+    if (widget.cache == true) {
+      _valueWidget = _valueWidget ?? _getValueWidget();
+    } else {
+      _valueWidget = _getValueWidget();
+    }
 
     final content = Container(
       padding: widget.padding,

@@ -6,12 +6,14 @@ class ViewTabs {
   final Scope scope;
   final List<TabItem> items;
   final int initial;
+  final rebuild;
   final Function(TabItem item) onChange;
   final Function(TabItem item) onTap;
   BuildContext _context;
   TabController _controller;
   int _currentIndex;
-  
+
+
   @protected
   ViewTabs tabs() => null;
 
@@ -21,6 +23,7 @@ class ViewTabs {
     this.initial,
     this.onChange,
     this.onTap,
+    this.rebuild = false
   });
 
   void select(int index) {
@@ -59,7 +62,7 @@ class ViewTabs {
     );
   }
 
-  
+
   Widget setup(Scaffold scaffold) {
     return DefaultTabController(
       length: items.length,
@@ -90,8 +93,6 @@ class ViewTabs {
   TabItem get current => currentIndex != null && items != null ? items[currentIndex] : null;
 
   int get currentIndex => _controller?.index;
-
-  bool get rebuild => false;
 }
 
 class TabItem {
@@ -120,12 +121,12 @@ class TabItem {
         children: <Widget>[
           icon != null
               ? Padding(
-                  padding: const EdgeInsets.only(right: 3.0),
-                  child: Icon(
-                    icon(),
-                    size: 16,
-                  ),
-                )
+            padding: const EdgeInsets.only(right: 3.0),
+            child: Icon(
+              icon(),
+              size: 16,
+            ),
+          )
               : Container(),
           Text(
             caption().toUpperCase(),

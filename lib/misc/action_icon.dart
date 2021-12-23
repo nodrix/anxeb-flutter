@@ -37,16 +37,19 @@ class ActionIcon with ActionItem {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          button,
+          Container(
+            padding: const EdgeInsets.only(right: 6),
+            child: button,
+          ),
           Positioned(
-            right: 6,
+            right: 8,
             top: 3,
             child: Container(
               padding: EdgeInsets.all(4),
               decoration: notificationDecoration ??
                   BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.red,
+                    color: Color(0xffd00000),
                     border: Border.all(width: 1.5, color: $color),
                   ),
               child: Text(

@@ -1,12 +1,12 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart' as FB;
 
 class FacebookAuth extends AuthProvider {
-  FacebookLogin _facebook;
+  FB.FacebookAuth _facebook;
 
   FacebookAuth(Application application) : super(application) {
-    _facebook = FacebookLogin();
+    _facebook = FB.FacebookAuth.instance;
   }
 
   @override
@@ -17,26 +17,26 @@ class FacebookAuth extends AuthProvider {
   @override
   Future<AuthResultModel> login({bool silent}) async {
     try {
-      FacebookAccessToken session;
+      FB.AccessToken session;
 
-      if (silent != false && await _facebook.isLoggedIn) {
+      if (silent != false && await _facebook.accessToken != null) {
         session = await _facebook.accessToken;
       } else {
-        var auth = await _facebook.logIn(permissions: [
-          FacebookPermission.email,
+        var auth = await _facebook.login(permissions: [
+          'email'
         ]);
         if (auth != null) {
-          if (auth.status == FacebookLoginStatus.error) {
-            throw Exception(auth.error.localizedTitle);
+          if (auth.status == FB.LoginStatus.failed) {
+            throw Exception(auth.message);
           }
-          if (auth.status == FacebookLoginStatus.success) {
+          if (auth.status == FB.LoginStatus.success) {
             session = auth.accessToken;
           }
         }
       }
 
       if (session != null) {
-        var api = Api('https://graph.facebook.com/v7.0/');
+        var api = Api('https://graph.facebook.com/v12.0/');
         var profileData = await api.get('me?fields=name,first_name,last_name,email&access_token=${session.token}');
 
         AuthResultModel result = AuthResultModel();
@@ -44,13 +44,13 @@ class FacebookAuth extends AuthProvider {
         result.firstNames = profileData['first_name'];
         result.lastNames = profileData['last_name'];
         result.email = profileData['email'];
-        result.photo = 'https://graph.facebook.com/v7.0/me/picture?height=320&access_token=${session.token}';
+        result.photo = 'https://graph.facebook.com/v12.0/me/picture?height=320&access_token=${session.token}';
         result.token = session.token;
         result.provider = 'facebook';
         result.meta = {
           'userId': session.userId,
           'expires': session.expires.toIso8601String(),
-          'permissions': session.permissions,
+          'permissions': session.grantedPermissions,
           'declinedPermissions': session.declinedPermissions,
         };
         return result;

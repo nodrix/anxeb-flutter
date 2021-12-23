@@ -15,8 +15,9 @@ class SelectorBlock extends StatelessWidget {
   final bool flat;
   final Icon failedIcon;
   final EdgeInsets margin;
+  final EdgeInsets padding;
 
-  SelectorBlock({this.scope, this.name, this.reference, this.selected, this.tail, this.logoUrl, this.width, this.height, this.onTap, this.flat, this.failedIcon, this.margin, Key key}) : super(key: key);
+  SelectorBlock({this.scope, this.name, this.reference, this.selected, this.tail, this.logoUrl, this.width, this.height, this.onTap, this.flat, this.failedIcon, this.margin, this.padding, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -117,33 +118,35 @@ class SelectorBlock extends StatelessWidget {
         horizontal: onlyImage == true ? false : true,
         expanded: true,
         margin: const EdgeInsets.only(top: 5, bottom: 5),
-        failedBody: Row(
-          children: <Widget>[
-            Container(
-              width: width ?? 65,
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-              child: failedIcon ?? const Icon(Anxeb.FlutterIcons.building_faw5s, size: 40),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
-                decoration: BoxDecoration(
-                  border: Border(
-                    left: BorderSide(
-                      width: 1.0,
-                      color: scope.application.settings.colors.separator,
+        failedBody: onlyImage == true
+            ? null
+            : Row(
+                children: <Widget>[
+                  Container(
+                    width: width ?? 65,
+                    padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                    child: failedIcon ?? const Icon(Anxeb.FlutterIcons.building_faw5s, size: 40),
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            width: 1.0,
+                            color: scope.application.settings.colors.separator,
+                          ),
+                        ),
+                      ),
+                      child: captionWidget,
                     ),
                   ),
-                ),
-                child: captionWidget,
+                ],
               ),
-            ),
-          ],
-        ),
         body: onlyImage == true
             ? Container()
             : Container(
-                padding: const EdgeInsets.only(top: 8, bottom: 8, left: 10, right: 10),
+                padding: padding ?? const EdgeInsets.only(top: 8, bottom: 8, left: 10, right: 10),
                 decoration: BoxDecoration(
                   border: Border(
                     left: BorderSide(

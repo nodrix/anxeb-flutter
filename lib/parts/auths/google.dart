@@ -45,7 +45,7 @@ class GoogleAuth extends AuthProvider {
         result.token = authData.idToken;
         result.provider = 'google';
         result.meta = {
-          'serverAuthCode': authData.serverAuthCode,
+          'serverAuthCode': profileData.serverAuthCode,
           'accessToken': authData.accessToken,
         };
         return result;

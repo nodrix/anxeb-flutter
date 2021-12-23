@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:device_info/device_info.dart';
 
@@ -15,7 +16,7 @@ class Device {
     }
   }
 
-  Future<String> beginBarcodeScan({bool autoflash}) async {
+  Future<String> beginBarcodeScan({Scope scope, bool autoflash, String title}) async {
     String value;
     try {
       var scanResult = await BarcodeScanner.scan(

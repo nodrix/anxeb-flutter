@@ -18,7 +18,13 @@ class Entry extends StatelessWidget {
         theme: this.theme ??
             ThemeData(
               primaryColor: this.home.application.settings.colors.primary,
-              accentColor: this.home.application.settings.colors.accent,
+              colorScheme: ColorScheme.light(
+                primary: this.home.application.settings.colors.primary,
+                secondary: this.home.application.settings.colors.secudary,
+                secondaryVariant: this.home.application.settings.colors.navigation,
+                onSecondary: Colors.white,
+                brightness: Brightness.light,
+              ),
               fontFamily: 'Montserrat',
             ),
         localizationsDelegates: [

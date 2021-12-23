@@ -40,7 +40,6 @@ class ViewHeader {
       elevation: elevation?.call(),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
-      brightness: scope.window.overlay.brightness,
       backgroundColor: fill?.call() ?? scope.application.settings.colors.primary,
       bottom: scope?.view?.parts?.tabs?.header?.call(bottomBody: bottom?.call(), height: height) ?? bottom?.call(),
       actions: isVisible?.call() != false ? content() : [],

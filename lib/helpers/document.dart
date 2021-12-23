@@ -21,6 +21,7 @@ class DocumentView extends ViewWidget {
   final FileInputValue file;
   final String launchUrl;
   final bool readonly;
+  final Future Function(FileInputValue) updated;
   final String tag;
   final PhotoViewComputedScale initialScale;
 
@@ -28,6 +29,7 @@ class DocumentView extends ViewWidget {
     @required this.file,
     this.launchUrl,
     this.readonly = true,
+    this.updated,
     this.tag,
     this.initialScale,
   })  : assert(file != null),
@@ -69,6 +71,9 @@ class _DocumentState extends View<DocumentView, Application> {
   ActionsHeader header() {
     return ActionsHeader(
       scope: scope,
+      title: () {
+        return widget.file?.title ?? 'Vista Archivo';
+      },
       actions: <ActionMenu>[
         ActionMenu(
           actions: [
@@ -81,7 +86,7 @@ class _DocumentState extends View<DocumentView, Application> {
               caption: () => 'Cambiar Título',
               icon: () => Icons.text_fields,
               onPressed: () => _changeTitle(),
-              isVisible: () => widget.readonly != true,
+              isVisible: () => widget.readonly != true && widget.file?.id != null,
             ),
             ActionMenuItem(
               caption: () => 'Abrir en Navegador',
@@ -100,6 +105,14 @@ class _DocumentState extends View<DocumentView, Application> {
               icon: () => Icons.file_download,
               isVisible: () => widget.launchUrl != null && widget.file?.url != null,
               onPressed: () => _download(),
+            ),
+            ActionMenuItem(
+              caption: () => 'Eliminar Archivo',
+              icon: () => Icons.close,
+              divided: () => true,
+              color: () => scope.application.settings.colors.danger,
+              onPressed: () => _removeFile(),
+              isVisible: () => widget.readonly != true && widget.file?.url != null,
             ),
           ],
         ),
@@ -383,6 +396,22 @@ class _DocumentState extends View<DocumentView, Application> {
     });
   }
 
+  Future _removeFile() async {
+    var result = await scope.dialogs.confirm('¿Estás seguro que quieres eliminar este archivo?').show();
+    if (result) {
+      try {
+        await scope.busy();
+        await scope.api.delete(widget.file.url);
+        await widget.updated?.call(null);
+        pop(null, force: true);
+      } catch (err) {
+        scope.alerts.error(err).show();
+      } finally {
+        await scope.idle();
+      }
+    }
+  }
+
   Future _changeTitle() async {
     var title = await scope.dialogs
         .prompt(
@@ -398,6 +427,20 @@ class _DocumentState extends View<DocumentView, Application> {
       rasterize(() {
         widget.file.title = title;
       });
+      try {
+        await scope.busy();
+        await scope.api.post(widget.file.url, {
+          'file': {
+            'id': widget.file.id,
+            'title': widget.file.title,
+          }
+        });
+        await widget.updated?.call(widget.file);
+      } catch (err) {
+        scope.alerts.error(err).show();
+      } finally {
+        await scope.idle();
+      }
     }
   }
 

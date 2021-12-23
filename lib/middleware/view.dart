@@ -343,15 +343,14 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
     _action = _action?.rebuild == true ? action() : _action;
     _footer = _footer?.rebuild == true ? footer() : _footer;
 
-    _parts = _parts ??
-        _ViewParts(
-          header: _header,
-          refresher: _refresher,
-          panel: _panel,
-          action: _action,
-          footer: _footer,
-          tabs: _tabs,
-        );
+    _parts = _ViewParts(
+      header: _header,
+      refresher: _refresher,
+      panel: _panel,
+      action: _action,
+      footer: _footer,
+      tabs: _tabs,
+    );
   }
 
   Widget _initializeContent() {

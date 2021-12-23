@@ -96,6 +96,7 @@ class CameraHelper extends ViewWidget {
           result = File(picker.files.single.path);
         }
       } catch (err) {
+        await Future.delayed(Duration(milliseconds: 350));
         await scope.idle();
         scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
       }
@@ -144,6 +145,8 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   @override
   void dispose() {
     _camera?.dispose();
+    window.overlay.extendBodyFullScreen = false;
+    window.overlay.apply();
     super.dispose();
   }
 
@@ -247,9 +250,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
 
       File $finalFile = cropped ?? reduced ?? original;
 
-
-        $finalFile = await $finalFile.copy(path);
-
+      $finalFile = await $finalFile.copy(path);
 
       if (preview == true) {
         var previewImage = Image.file($finalFile).image;

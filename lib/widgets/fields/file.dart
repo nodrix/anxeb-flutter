@@ -14,12 +14,13 @@ import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 
 class FileInputValue {
-  FileInputValue({this.url, this.path, this.title, this.extension, this.useFullUrl=false});
+  FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl=false});
 
   String url;
   String path;
   String title;
   String extension;
+  String id;
   bool useFullUrl;
 
   bool get isImage => ['jpg', 'png', 'jpeg'].contains(extension);
@@ -163,6 +164,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         title: basename(result.path),
         extension: (extension(result.path ?? '') ?? '').replaceFirst('.', ''),
         url: null,
+        id: null,
       ));
     }
   }
