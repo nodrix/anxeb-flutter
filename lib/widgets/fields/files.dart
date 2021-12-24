@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'file.dart';
 import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
@@ -13,33 +14,12 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 
-class FileInputValue {
-  FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl=false});
-
-  String url;
-  String path;
-  String title;
-  String extension;
-  String id;
-  bool useFullUrl;
-
-  bool get isImage => ['jpg', 'png', 'jpeg'].contains(extension);
-
-  String get previewText => title ?? basename(path);
-
-  Map<String, dynamic> toJSON(){
-    return {
-      'title': title,
-      'extension': extension
-    };
-  }
-}
-
-class FileInputField extends FieldWidget<FileInputValue> {
+class FilesInputField extends FieldWidget<List<FileInputValue>> {
+  final bool allowMultiples;
   final List<String> allowedExtensions;
   final String launchUrlPrefix;
 
-  FileInputField({
+  FilesInputField({
     @required Scope scope,
     Key key,
     @required String name,
@@ -50,17 +30,18 @@ class FileInputField extends FieldWidget<FileInputValue> {
     EdgeInsets padding,
     bool readonly,
     bool visible,
-    ValueChanged<FileInputValue> onSubmitted,
-    ValueChanged<FileInputValue> onValidSubmit,
+    ValueChanged<List<FileInputValue>> onSubmitted,
+    ValueChanged<List<FileInputValue>> onValidSubmit,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    ValueChanged<FileInputValue> onChanged,
+    ValueChanged<List<FileInputValue>> onChanged,
     FormFieldValidator<String> validator,
-    FileInputValue Function(FileInputValue value) parser,
+    List<FileInputValue> Function(dynamic value) parser,
     bool focusNext,
     double fontSize,
     double labelSize,
+    this.allowMultiples = false,
     this.allowedExtensions,
     this.launchUrlPrefix,
   })  : assert(name != null),
@@ -89,11 +70,10 @@ class FileInputField extends FieldWidget<FileInputValue> {
         );
 
   @override
-  _FileInputFieldState createState() => _FileInputFieldState();
+  _FilesInputFieldState createState() => _FilesInputFieldState();
 }
 
-class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
-  String _previewText;
+class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField> {
   final GlobalIcons icons = GlobalIcons();
 
   @override
@@ -101,82 +81,6 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
 
   @override
   void setup() {}
-
-  void _pickFile() async {
-    var option;
-    await widget.scope.dialogs.panel(
-      items: [
-        PanelMenuItem(
-          actions: [
-            PanelMenuAction(
-              label: () => 'Buscar\nDocumento',
-              textScale: 0.9,
-              icon: () => FlutterIcons.file_mco,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'document';
-              },
-            ),
-            PanelMenuAction(
-              label: () => 'Tomar\nFoto',
-              textScale: 0.9,
-              icon: () => FlutterIcons.md_camera_ion,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'photo';
-              },
-            ),
-          ],
-          height: () => 120,
-        ),
-      ],
-    ).show();
-
-    File result;
-
-    if (option == 'photo') {
-      result = await widget.scope.view.push(CameraHelper(
-        title: widget.label,
-        fullImage: true,
-        initFaceCamera: false,
-        allowMainCamera: true,
-        fileName: widget.label.toLowerCase().replaceAll(' ', '_'),
-        flash: true,
-        resolution: ResolutionPreset.high,
-      ));
-    } else if (option == 'document') {
-      try {
-        final picker = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowMultiple: false,
-          allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
-          onFileLoading: (state) async {
-            await widget.scope.busy();
-          },
-        );
-
-        await Future.delayed(Duration(milliseconds: 350));
-        await widget.scope.idle();
-
-        if (picker != null && picker.files.first != null) {
-          result = File(picker.files.first.path);
-        }
-      } catch (err) {
-        await widget.scope.idle();
-        widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
-      }
-    }
-
-    if (result != null) {
-      super.submit(FileInputValue(
-        path: result.path,
-        title: basename(result.path),
-        extension: (extension(result.path ?? '') ?? '').replaceFirst('.', ''),
-        url: null,
-        id: null,
-      ));
-    }
-  }
 
   @override
   void prebuild() {}
@@ -197,27 +101,13 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
   }
 
   @override
-  void present() {
-    setState(() {
-      if (value?.title != null) {
-        _previewText = value.title;
-      } else if (value?.path != null) {
-        var file = File(value.path);
-        _previewText = basename(file.path);
-      } else {
-        _previewText = null;
-      }
-    });
-  }
-
-  @override
   Widget field() {
     var previewContent;
 
-    if (_previewText != null) {
-      previewContent = GestureDetector(
+    if (value != null && value.isNotEmpty) {
+      previewContent = Column(children: value.map((file) => GestureDetector(
         onTap: () async {
-          _preview();
+          _preview(file);
         },
         child: Container(
           padding: EdgeInsets.only(top: 2),
@@ -225,13 +115,13 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 4, bottom: 2),
-                child: _getMimeIcon(),
+                child: _getMimeIcon(file),
               ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 1),
                   child: Text(
-                    _previewText,
+                    file.previewText,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       height: 1,
@@ -244,7 +134,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
             ],
           ),
         ),
-      );
+      )).toList());
     } else {
       previewContent = Container(
         padding: EdgeInsets.only(top: 2),
@@ -268,7 +158,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
           _pickFile();
         }
       },
-      child: new FormField(
+      child:  FormField(
         builder: (FormFieldState state) {
           return InputDecorator(
             isFocused: focused,
@@ -280,7 +170,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
                 size: widget.iconSize,
                 color: widget.scope.application.settings.colors.primary,
               ),
-              labelText: (value?.path != null || value?.url != null) ? widget.label : null,
+              labelText: (value != null && value.isNotEmpty) ? widget.label : null,
               labelStyle: widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null,
               fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
@@ -311,7 +201,84 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
     );
   }
 
-  Future _preview() async {
+  void _pickFile() async {
+    var option;
+    List<File> result = [];
+
+    await widget.scope.dialogs.panel(
+      items: [
+        PanelMenuItem(
+          actions: [
+            PanelMenuAction(
+              label: () => 'Buscar\nDocumento',
+              textScale: 0.9,
+              icon: () => FlutterIcons.file_mco,
+              fillColor: () => widget.scope.application.settings.colors.secudary,
+              onPressed: () {
+                option = 'document';
+              },
+            ),
+            PanelMenuAction(
+              label: () => 'Tomar\nFoto',
+              textScale: 0.9,
+              icon: () => FlutterIcons.md_camera_ion,
+              fillColor: () => widget.scope.application.settings.colors.secudary,
+              onPressed: () {
+                option = 'photo';
+              },
+            ),
+          ],
+          height: () => 120,
+        ),
+      ],
+    ).show();
+
+    if (option == 'photo') {
+      final picture = await widget.scope.view.push(CameraHelper(
+        title: widget.label,
+        fullImage: true,
+        initFaceCamera: false,
+        allowMainCamera: true,
+        fileName: widget.label.toLowerCase().replaceAll(' ', '_'),
+        flash: true,
+        resolution: ResolutionPreset.high,
+      ));
+      result.add(picture);
+    } else if (option == 'document') {
+      try {
+        final picker = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowMultiple: widget.allowMultiples,
+          allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
+          onFileLoading: (state) async {
+            await widget.scope.busy();
+          },
+        );
+
+        await Future.delayed(Duration(milliseconds: 350));
+        await widget.scope.idle();
+
+        if (picker != null && picker.files.first != null) {
+          result = picker.files.map((file) => File(file.path)).toList();
+        }
+      } catch (err) {
+        await widget.scope.idle();
+        widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+      }
+    }
+
+    if (result != null && result.isNotEmpty) {
+      super.submit(result.map((file) => FileInputValue(
+        path: file.path,
+        title: basename(file.path),
+        extension: (extension(file.path ?? '') ?? '').replaceFirst('.', ''),
+        url: null,
+        id: null,
+      )).toList());
+    }
+  }
+
+  Future _preview(FileInputValue value) async {
     if (value != null) {
       var result = await widget.scope.view.push(DocumentView(
         launchUrl: widget.launchUrlPrefix,
@@ -326,7 +293,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
     }
   }
 
-  Icon _getMimeIcon() {
+  Icon _getMimeIcon(FileInputValue value) {
     var ext = value?.extension ?? (value?.path != null ? extension(value.path).replaceFirst('.', '') : null) ?? 'txt';
     var meta = icons.getFileMeta(ext);
 

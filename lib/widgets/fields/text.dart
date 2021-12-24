@@ -152,6 +152,10 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   TextInputType get _keyboardType {
     if (widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.password) {
+      if(widget.maxLines != null && widget.maxLines > 1) {
+        return TextInputType.multiline;
+      }
+
       return TextInputType.text;
     } else if (widget.type == TextInputFieldType.decimals) {
       return TextInputType.numberWithOptions(signed: true, decimal: true);
