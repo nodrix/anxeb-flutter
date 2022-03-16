@@ -9,6 +9,7 @@ import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/blocks/selector.dart';
 import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
+import 'package:anxeb_flutter/widgets/fields/barcode.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -128,12 +129,13 @@ class ScopeDialogs {
     return MessageDialog(_scope, title: title, message: message, icon: icon ?? Icons.check_circle, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.primary, iconColor: _scope.application.settings.colors.success, buttons: buttons, body: body);
   }
 
-  MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon}) {
+  MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon, bool dismissible}) {
     return MessageDialog(
       _scope,
       title: title,
       message: message,
       icon: icon ?? Icons.error,
+      dismissible: dismissible,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.danger,
       iconColor: _scope.application.settings.colors.danger,
@@ -271,6 +273,76 @@ class ScopeDialogs {
     );
   }
 
+  MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, String group}) {
+    var cancel = (BuildContext context) {
+      Future.delayed(Duration(milliseconds: 0)).then((value) {
+        _scope.unfocus();
+      });
+      Navigator.of(context).pop(null);
+    };
+
+    TextEditingController _controller = TextEditingController();
+
+    var $formName = group ?? '_prompt_form';
+    FieldsForm form = _scope.forms[$formName];
+    form.clear();
+
+    var accept = () {
+      form.set('prompt_scan', _controller.text);
+      var field = form.fields['prompt_scan'];
+      if (field.validate(showMessage: true) == null) {
+        Future.delayed(Duration(milliseconds: 0)).then((value) {
+          _scope.unfocus();
+        });
+        return field.data();
+      } else {
+        return null;
+      }
+    };
+
+    return MessageDialog(
+      _scope,
+      title: title,
+      icon: icon ?? Icons.edit,
+      iconSize: 48,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: _scope.application.settings.colors.info,
+      body: (context) => BarcodeInputField(
+        scope: _scope,
+        controller: _controller,
+        name: 'prompt_scan',
+        group: $formName,
+        margin: const EdgeInsets.only(top: 20),
+        label: label,
+        value: value,
+        icon: null,
+        validator: validator ?? Utils.validators.required,
+        action: TextInputAction.done,
+        type: type ?? TextInputFieldType.text,
+        hint: hint,
+        autofocus: true,
+        selected: true,
+        focusNext: false,
+        onValidSubmit: (value) {
+          var data = accept();
+          if (data != null) {
+            Navigator.of(context).pop(data);
+          }
+        },
+      ),
+      iconColor: _scope.application.settings.colors.info,
+      buttons: swap == true
+          ? [
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+            ]
+          : [
+              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+            ],
+    );
+  }
+
   MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, int lines, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -279,11 +351,14 @@ class ScopeDialogs {
       Navigator.of(context).pop(null);
     };
 
+    TextEditingController _controller = TextEditingController();
+
     var $formName = group ?? '_prompt_form';
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
     var accept = () {
+      form.set('prompt', _controller.text);
       var field = form.fields['prompt'];
       if (field.validate(showMessage: true) == null) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -304,13 +379,14 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.info,
       body: (context) => TextInputField<T>(
         scope: _scope,
+        controller: _controller,
         name: 'prompt',
         group: $formName,
         margin: const EdgeInsets.only(top: 20),
         label: label,
         value: value,
         validator: validator ?? Utils.validators.required,
-        action: TextInputAction.next,
+        action: TextInputAction.done,
         maxLines: lines,
         type: type ?? TextInputFieldType.text,
         hint: hint,
