@@ -73,6 +73,8 @@ class _Slide extends StatefulWidget {
 }
 
 class _SlideState extends State<_Slide> with TickerProviderStateMixin {
+  final Slide definition;
+
   AnimationController _opacityController;
   Animation<double> _opacityAnimation;
   AnimationController _scaleController;
@@ -81,7 +83,10 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
   Animation<Offset> _positionAnimation;
   bool _isVisible = false;
 
-  _SlideState(Slide definition) {
+
+  _SlideState(this.definition);
+
+  initState() {
     _opacityController = AnimationController(
       duration: definition.options.fadeinDuration ?? Duration(milliseconds: 400),
       vsync: this,
@@ -128,19 +133,23 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
     _positionAnimation = Tween<Offset>(begin: definition.pushFrom ?? Offset(0, 0), end: definition.pushTo ?? Offset(0, 0)).animate(_positionController);
 
     _opacityController.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
 
     _positionAnimation.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
 
     _scaleAnimation.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
-  }
 
-  initState() {
     super.initState();
   }
 
