@@ -46,6 +46,7 @@ class Api {
         //TODO: Validate PEM Certificate
         return true;
       };
+      return client;
     };
   }
 
