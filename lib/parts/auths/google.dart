@@ -1,6 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class GoogleAuth extends AuthProvider {
   GoogleSignIn _google;

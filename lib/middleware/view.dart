@@ -3,7 +3,6 @@ import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/middleware/window.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:anxeb_flutter/parts/headers/search.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
 import 'action.dart';

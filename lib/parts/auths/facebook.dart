@@ -1,5 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart' as FB;
 
 class FacebookAuth extends AuthProvider {

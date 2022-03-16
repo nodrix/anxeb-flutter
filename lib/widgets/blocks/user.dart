@@ -1,6 +1,5 @@
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:anxeb_flutter/widgets/buttons/image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UserBlock extends StatelessWidget {

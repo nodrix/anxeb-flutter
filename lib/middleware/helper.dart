@@ -1,5 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'scope.dart';
 
 class ModelHelper {
   Scope _scope;

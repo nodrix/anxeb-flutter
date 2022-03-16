@@ -1,6 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/utils.dart';
-import 'package:credit_card_validate/credit_card_validate.dart';
 
 class Validators {
   String firstNames(String value) {

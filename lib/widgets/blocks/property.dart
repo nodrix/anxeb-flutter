@@ -1,9 +1,5 @@
-import 'dart:ui';
 import 'package:url_launcher/url_launcher.dart' as Launcher;
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 
 class PropertyBlock extends StatefulWidget {
   PropertyBlock({

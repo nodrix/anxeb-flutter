@@ -1,5 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ListTitleBlock extends StatelessWidget {

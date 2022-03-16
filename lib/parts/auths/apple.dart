@@ -1,6 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/auth.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AppleAuth extends AuthProvider {
   String _fetchCallbackRoute;

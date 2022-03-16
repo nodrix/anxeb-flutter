@@ -1,5 +1,4 @@
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ContextMenuBlock extends StatelessWidget {

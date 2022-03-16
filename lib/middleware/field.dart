@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
 import 'form.dart';

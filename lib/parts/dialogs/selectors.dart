@@ -1,6 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/dialog.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
 
 class SelectorsDialog<V> extends ScopeDialog {

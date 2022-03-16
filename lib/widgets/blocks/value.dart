@@ -2,9 +2,6 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 
 class ValueBlock extends StatefulWidget {
   final Scope scope;

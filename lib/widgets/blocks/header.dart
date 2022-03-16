@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 const Color _DEFAULT_HEADER_COLOR = Color(0xff195279);
 const Color _DEFAULT_SUBTITLE_COLOR = Color(0xff444444);

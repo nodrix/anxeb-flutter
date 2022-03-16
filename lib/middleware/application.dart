@@ -1,12 +1,7 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart' hide Navigator, Overlay;
 import 'package:flutter_app_badger/flutter_app_badger.dart';
-import 'overlay.dart';
-import 'analytics.dart';
-import 'api.dart';
 import 'disk.dart';
-import 'navigator.dart';
 
 class Application {
   Settings _settings;

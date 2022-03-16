@@ -1,8 +1,4 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/footer.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/misc/action_button.dart';
-import 'package:anxeb_flutter/misc/action_icon.dart';
 import 'package:flutter/material.dart';
 
 class ActionsFooter extends ViewFooter {
