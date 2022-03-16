@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
 
 class SelectorBlock extends StatelessWidget {
   final Anxeb.Scope scope;
   final String name;
+  final double nameFontSize;
   final String reference;
   final bool selected;
   final String tail;
@@ -17,7 +17,7 @@ class SelectorBlock extends StatelessWidget {
   final EdgeInsets margin;
   final EdgeInsets padding;
 
-  SelectorBlock({this.scope, this.name, this.reference, this.selected, this.tail, this.logoUrl, this.width, this.height, this.onTap, this.flat, this.failedIcon, this.margin, this.padding, Key key}) : super(key: key);
+  SelectorBlock({this.scope, this.name, this.nameFontSize, this.reference, this.selected, this.tail, this.logoUrl, this.width, this.height, this.onTap, this.flat, this.failedIcon, this.margin, this.padding, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class SelectorBlock extends StatelessWidget {
                         style: TextStyle(
                           color: selected == true ? scope.application.settings.colors.success : scope.application.settings.colors.primary,
                           height: 0.9,
-                          fontSize: 19,
+                          fontSize: nameFontSize ?? 19,
                           fontWeight: selected == true ? FontWeight.w500 : FontWeight.w300,
                         ),
                       ),
