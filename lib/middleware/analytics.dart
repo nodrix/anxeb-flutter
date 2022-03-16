@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'scope.dart';
@@ -18,14 +17,14 @@ class Analytics {
 
   Analytics() {
     notifications = [];
-    _analytics = FirebaseAnalytics();
-    _observer = FirebaseAnalyticsObserver(analytics: _analytics);
   }
 
   Future init({Function(RemoteMessage message, MessageEventType event) onMessage}) async {
     _onMessageGlobal = onMessage;
     try {
       await Firebase.initializeApp();
+      _analytics = FirebaseAnalytics.instance;
+      _observer = FirebaseAnalyticsObserver(analytics: _analytics);
       _messaging = FirebaseMessaging.instance;
       reset();
       _token = await _messaging.getToken();
@@ -70,7 +69,7 @@ class Analytics {
   }
 
   Future<void> setUserId(String id) {
-    return firebase.setUserId(id);
+    return firebase.setUserId(id: id);
   }
 
   Future<void> login() {

@@ -21,7 +21,7 @@ class Entry extends StatelessWidget {
               colorScheme: ColorScheme.light(
                 primary: this.home.application.settings.colors.primary,
                 secondary: this.home.application.settings.colors.secudary,
-                secondaryVariant: this.home.application.settings.colors.navigation,
+                secondaryContainer: this.home.application.settings.colors.navigation,
                 onSecondary: Colors.white,
                 brightness: Brightness.light,
               ),
