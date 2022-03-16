@@ -3,8 +3,6 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 enum BarcodeInputFieldType { numeric, alphanumeric }
 
@@ -19,6 +17,7 @@ class BarcodeInputField extends FieldWidget<String> {
   final String prefix;
   final String suffix;
   final bool autoflash;
+  final ValueChanged<String> onScan;
 
   BarcodeInputField({
     @required Scope scope,
@@ -52,6 +51,7 @@ class BarcodeInputField extends FieldWidget<String> {
     this.prefix,
     this.suffix,
     this.autoflash,
+    this.onScan,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -163,6 +163,8 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
       super.value = $value;
       _controller.selection = TextSelection(baseOffset: _controller.text.length, extentOffset: _controller.text.length);
       validate();
+      widget?.onScan?.call(value);
+      widget?.onSubmitted?.call(value);
     }
   }
 
@@ -210,11 +212,11 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
       textAlign: TextAlign.left,
       decoration: InputDecoration(
         filled: true,
-        contentPadding: EdgeInsets.only(left: 0, top: 7, bottom: 0, right: 0),
-        prefixIcon: Icon(
-          widget.icon ?? FontAwesome5.dot_circle,
+        contentPadding: EdgeInsets.only(left: widget.icon != null ? 0: 7, top: 7, bottom: 0, right: 0),
+        prefixIcon: widget.icon != null ? Icon(
+          widget.icon,
           color: widget.scope.application.settings.colors.primary,
-        ),
+        ) : null,
         labelText: widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label,
         labelStyle: widget.fixedLabel == true
             ? TextStyle(
