@@ -1,4 +1,5 @@
 import 'package:anxeb_flutter/widgets/fields/file.dart';
+import 'package:anxeb_flutter/widgets/fields/files.dart';
 import 'package:anxeb_flutter/widgets/fields/image.dart';
 import 'package:flutter/material.dart';
 import 'data.dart';
@@ -173,7 +174,7 @@ class FieldsForm {
 
       for (var field in fields.values) {
         var isImage = field.widget is ImageInputField;
-        var isFile = field.widget is FileInputField;
+        var isFile = field.widget is FileInputField || field.widget is FilesInputField;
 
         if (field.widget.visible != false) {
           if (((images == null) || (images == true && isImage) || (images == false && !isImage)) && ((files == null) || (files == true && isFile) || (files == false && !isFile))) {

@@ -146,7 +146,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   @override
   void present() {
     setState(() {
-      if (value != null) {
+      if (value != null && mounted) {
         if (widget.returnPath == true) {
           var file = File(value);
           if (file.existsSync()) {
