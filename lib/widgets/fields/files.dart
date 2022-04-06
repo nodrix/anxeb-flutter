@@ -75,6 +75,7 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
 
 class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField> {
   final GlobalIcons icons = GlobalIcons();
+  List<FileInputValue> files = [];
 
   @override
   void init() {}
@@ -105,36 +106,51 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
     var previewContent;
 
     if (value != null && value.isNotEmpty) {
-      previewContent = Column(children: value.map((file) => GestureDetector(
-        onTap: () async {
-          _preview(file);
-        },
-        child: Container(
-          padding: EdgeInsets.only(top: 2),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 4, bottom: 2),
-                child: _getMimeIcon(file),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: Text(
-                    file.previewText,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      height: 1,
-                      fontSize: 16,
-                      color: widget.scope.application.settings.colors.primary,
+      previewContent = Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Column(children: value.map((file) => GestureDetector(
+          onTap: () async {
+            _preview(file);
+          },
+          child: Container(
+            padding: EdgeInsets.only(top: 2, bottom: 4),
+            child: Row(
+              children: [
+                if(widget.readonly != true)
+                  GestureDetector(
+                    onTap: () => _removeItemFile(file),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4, top: 1),
+                      child: Icon(
+                          Icons.clear,
+                          color: widget.scope.application.settings.colors.primary,
+                          size: 16
+                      ),
+                    )
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 4, bottom: 2),
+                  child: _getMimeIcon(file),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Text(
+                      file.previewText,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        height: 1,
+                        fontSize: 16,
+                        color: widget.scope.application.settings.colors.primary,
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
-        ),
-      )).toList());
+        )).toList()),
+      );
     } else {
       previewContent = Container(
         padding: EdgeInsets.only(top: 2),
@@ -182,11 +198,8 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
                   if (widget.readonly == true) {
                     return;
                   }
-                  if (value != null) {
-                    clear();
-                  } else {
-                    _pickFile();
-                  }
+
+                  _pickFile();
                 },
                 child: _getIcon(),
               ),
@@ -234,16 +247,20 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
     ).show();
 
     if (option == 'photo') {
+      final title = widget.label + '_' + new DateTime.now().toIso8601String();
       final picture = await widget.scope.view.push(CameraHelper(
-        title: widget.label,
+        title: title,
         fullImage: true,
         initFaceCamera: false,
         allowMainCamera: true,
-        fileName: widget.label.toLowerCase().replaceAll(' ', '_'),
+        fileName: title.toLowerCase().replaceAll(' ', '_'),
         flash: true,
         resolution: ResolutionPreset.high,
       ));
-      result.add(picture);
+
+      if (picture != null) {
+        result.add(picture);
+      }
     } else if (option == 'document') {
       try {
         final picker = await FilePicker.platform.pickFiles(
@@ -268,13 +285,14 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
     }
 
     if (result != null && result.isNotEmpty) {
-      super.submit(result.map((file) => FileInputValue(
+      files.addAll(result.map((file) => FileInputValue(
         path: file.path,
         title: basename(file.path),
         extension: (extension(file.path ?? '') ?? '').replaceFirst('.', ''),
         url: null,
         id: null,
       )).toList());
+      super.submit(files);
     }
   }
 
@@ -309,10 +327,15 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
       return Icon(Icons.lock_outline);
     }
 
-    if (value != null) {
-      return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
+    return Icon(Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+  }
+
+  void _removeItemFile(FileInputValue file) {
+    files = value.where((element) => element != file).toList();
+    if (files.isNotEmpty) {
+      super.submit(files);
     } else {
-      return Icon(Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+      clear();
     }
   }
 }
