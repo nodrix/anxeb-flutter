@@ -9,6 +9,7 @@ import 'package:anxeb_flutter/widgets/blocks/empty.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -45,7 +46,8 @@ class CameraHelper extends ViewWidget {
           PanelMenuItem(
             actions: [
               PanelMenuAction(
-                label: () => 'Buscar\nImagen',
+                label: () => translate('anxeb.helpers.camera.dialog.find_image'),
+                //TR 'Buscar\nImagen',
                 textScale: 0.9,
                 icon: () => FlutterIcons.file_image_mco,
                 fillColor: () => scope.application.settings.colors.secudary,
@@ -54,7 +56,8 @@ class CameraHelper extends ViewWidget {
                 },
               ),
               PanelMenuAction(
-                label: () => 'Tomar\nFoto',
+                label: () => translate('anxeb.helpers.camera.dialog.take_photo'),
+                //TR 'Tomar\nFoto',
                 textScale: 0.9,
                 icon: () => FlutterIcons.md_camera_ion,
                 fillColor: () => scope.application.settings.colors.secudary,
@@ -98,7 +101,7 @@ class CameraHelper extends ViewWidget {
       } catch (err) {
         await Future.delayed(Duration(milliseconds: 350));
         await scope.idle();
-        scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+        scope.alerts.asterisk(translate('anxeb.helpers.camera.picker.allow_access')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
       }
     }
 
@@ -316,7 +319,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
     if (_initializeControllerFuture == null) {
       return EmptyBlock(
         scope: scope,
-        message: 'Sin Cámara',
+        message: translate('anxeb.helpers.camera.empty_block.no_camera'), //TR 'Sin Cámara',
         icon: Icons.error_outline,
       );
     }
@@ -327,7 +330,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
           if (!_camera.value.isInitialized) {
             return EmptyBlock(
               scope: scope,
-              message: 'Sin Cámara',
+              message: translate('anxeb.helpers.camera.empty_block.no_camera'), //TR 'Sin Cámara',
               icon: Icons.error_outline,
             );
           }

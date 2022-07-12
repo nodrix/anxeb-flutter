@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class DialogProgress extends StatefulWidget {
@@ -52,7 +53,11 @@ class _DialogProgressState extends State<DialogProgress> {
             Container(
               margin: EdgeInsets.only(top: 1),
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(widget.controller.failedMessage ?? widget.failedMessage ?? 'Error completando ${(widget.isDownload == true ? 'descarga' : 'carga')} de archivo', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.danger)),
+              child: Text(
+                widget.controller.failedMessage ?? widget.failedMessage ?? (widget.isDownload == true ? translate('anxeb.widgets.components.dialog_progress.download_failed') : translate('anxeb.widgets.components.dialog_progress.upload_failed')),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.danger),
+              ),
             )
           ],
         ),
@@ -71,7 +76,7 @@ class _DialogProgressState extends State<DialogProgress> {
             Container(
               margin: EdgeInsets.only(top: 1),
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(widget.successMessage ?? '${(widget.isDownload == true ? 'Descarga' : 'Carga')} completada exitosamente', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.success)),
+              child: Text(widget.successMessage ?? (widget.isDownload == true ? translate('anxeb.widgets.components.dialog_progress.download_success') : translate('anxeb.widgets.components.dialog_progress.upload_success')), textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.success)),
             )
           ],
         ),
@@ -94,7 +99,7 @@ class _DialogProgressState extends State<DialogProgress> {
             ),
             Container(
               margin: EdgeInsets.only(top: 12),
-              child: Text(_percent == 0 ? '   Iniciando...' : (widget.busyMessage ?? '  Completando...'), style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.primary)),
+              child: Text(_percent == 0 ? translate('anxeb.widgets.components.dialog_progress.init_label') : (widget.busyMessage ?? translate('anxeb.widgets.components.dialog_progress.processing_label')), style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.primary)),
             )
           ],
         ),

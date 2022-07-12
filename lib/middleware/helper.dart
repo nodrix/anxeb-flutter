@@ -12,7 +12,7 @@ class ModelHelper {
   }
 
   Future<bool> delete() async {
-    var result = await _scope.dialogs.confirm('¿Estás seguro que quieres eliminar este registro?').show();
+    var result = await _scope.dialogs.confirm(translate('anxeb.middleware.helper.delete_confirm')).show(); //TR ¿Estás seguro que quieres eliminar este registro?
     if (result) {
       try {
         await _scope.busy();

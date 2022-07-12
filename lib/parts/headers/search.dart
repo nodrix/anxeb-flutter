@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/action_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'actions.dart';
 
 class SearchHeader extends ActionsHeader {
@@ -175,7 +176,7 @@ class SearchHeader extends ActionsHeader {
         autofocus: true,
         cursorColor: Colors.white,
         decoration: InputDecoration.collapsed(
-          hintText: hint ?? 'Búsqueda',
+          hintText: hint ?? translate('anxeb.parts.headers.search.hint_text'), //TR Búsqueda
           border: InputBorder.none,
           hintStyle: const TextStyle(color: Colors.white60, fontSize: 20.0, decoration: TextDecoration.none, fontWeight: FontWeight.w500),
         ),

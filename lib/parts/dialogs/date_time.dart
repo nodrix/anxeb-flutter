@@ -6,15 +6,16 @@ import 'package:flutter/material.dart' hide Dialog;
 class DateTimeDialog extends ScopeDialog {
   final DateTime value;
   final bool pickTime;
+  final Locale locale;
 
-  DateTimeDialog(Scope scope, {this.value, this.pickTime}) : super(scope);
+  DateTimeDialog(Scope scope, {this.value, this.pickTime, this.locale}) : super(scope);
 
   @override
   Future show() async {
     var initialDate = value;
     var finalDate = await showDatePicker(
       context: scope.context,
-      locale: Locale('es', 'DO'),
+      locale: locale ?? scope.application?.localization?.currentLocale ?? Locale('es', 'DO'),
       initialDate: initialDate ?? DateTime.now(),
       firstDate: new DateTime(1900),
       lastDate: new DateTime(2101),

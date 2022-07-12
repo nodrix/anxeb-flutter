@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
@@ -58,6 +59,17 @@ class Converters {
     for (var i = 0; i < value.length; i++) {
       var char = value[i];
       if (_digits.contains(char)) {
+        result += char;
+      }
+    }
+    return result;
+  }
+
+  String fromStringToPhoneDigits(String value) {
+    String result = '';
+    for (var i = 0; i < value.length; i++) {
+      var char = value[i];
+      if (_digits.contains(char) || char == '+' || char == '*' || char == '#' || char == ' ') {
         result += char;
       }
     }
@@ -314,7 +326,9 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date
+        .toUtc()
+        .millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {
@@ -390,29 +404,29 @@ class Converters {
   fromIndexToMonth(int month) {
     switch (month) {
       case 1:
-        return 'Enero';
+        return translate('anxeb.common.months.jan');
       case 2:
-        return 'Febrero';
+        return translate('anxeb.common.months.feb');
       case 3:
-        return 'Marzo';
+        return translate('anxeb.common.months.mar');
       case 4:
-        return 'Abril';
+        return translate('anxeb.common.months.apr');
       case 5:
-        return 'Mayo';
+        return translate('anxeb.common.months.may');
       case 6:
-        return 'Junio';
+        return translate('anxeb.common.months.jun');
       case 7:
-        return 'Julio';
+        return translate('anxeb.common.months.jul');
       case 8:
-        return 'Agosto';
+        return translate('anxeb.common.months.aug');
       case 9:
-        return 'Septiembre';
+        return translate('anxeb.common.months.sep');
       case 10:
-        return 'Octubre';
+        return translate('anxeb.common.months.oct');
       case 11:
-        return 'Noviembre';
+        return translate('anxeb.common.months.nov');
       case 12:
-        return 'Diciembre';
+        return translate('anxeb.common.months.dec');
     }
     return null;
   }

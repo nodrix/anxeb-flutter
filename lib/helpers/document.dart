@@ -11,6 +11,7 @@ import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as Path;
 import 'package:photo_view/photo_view.dart';
@@ -33,7 +34,7 @@ class DocumentView extends ViewWidget {
     this.tag,
     this.initialScale,
   })  : assert(file != null),
-        super('anxeb_document_helper', title: file?.title ?? 'Vista Archivo');
+        super('anxeb_document_helper', title: file?.title ?? translate('anxeb.helpers.document.title')); //TR Vista Archivo
 
   @override
   _DocumentState createState() => new _DocumentState();
@@ -72,42 +73,43 @@ class _DocumentState extends View<DocumentView, Application> {
     return ActionsHeader(
       scope: scope,
       title: () {
-        return widget.file?.title ?? 'Vista Archivo';
+        return widget.file?.title ?? translate('anxeb.helpers.document.title'); //TR Vista Archivo
       },
       actions: <ActionMenu>[
         ActionMenu(
           actions: [
             ActionMenuItem(
-              caption: () => 'Recargar Archivo',
+              caption: () => translate('anxeb.helpers.document.menu.reload_file'), //TR 'Recargar Archivo',
               icon: () => Icons.refresh,
               onPressed: () => _refresh(),
             ),
             ActionMenuItem(
-              caption: () => 'Cambiar Título',
+              caption: () => translate('anxeb.helpers.document.menu.change_title'), //TR 'Cambiar Título',
               icon: () => Icons.text_fields,
               onPressed: () => _changeTitle(),
               isVisible: () => widget.readonly != true && widget.file?.id != null,
             ),
             ActionMenuItem(
-              caption: () => 'Abrir en Navegador',
+              caption: () => translate('anxeb.helpers.document.menu.open_browser'), //TR 'Abrir en Navegador',
               icon: () => Icons.launch,
               isVisible: () => widget.launchUrl != null && widget.file?.url != null,
               onPressed: () => _launch(),
             ),
             ActionMenuItem(
-              caption: () => 'Compartir o Enviar',
+              caption: () => translate('anxeb.helpers.document.menu.share'), //TR 'Compartir o Enviar',
               icon: () => Icons.share,
               isVisible: () => widget.file?.url != null,
               onPressed: () => _share(),
             ),
             ActionMenuItem(
-              caption: () => 'Descargar en Navegador',
+              caption: () => translate('anxeb.helpers.document.menu.download_browser'), //TR 'Descargar en Navegador',
               icon: () => Icons.file_download,
               isVisible: () => widget.launchUrl != null && widget.file?.url != null,
               onPressed: () => _download(),
             ),
             ActionMenuItem(
-              caption: () => 'Eliminar Archivo',
+              caption: () => translate('anxeb.helpers.document.menu.delete_file'),
+              //TR Eliminar Archivo
               icon: () => Icons.close,
               divided: () => true,
               color: () => scope.application.settings.colors.danger,
@@ -127,9 +129,11 @@ class _DocumentState extends View<DocumentView, Application> {
     } else if (_refreshing != true && _data == null) {
       return EmptyBlock(
         scope: scope,
-        message: 'Error cargando archivo',
+        message: translate('anxeb.helpers.document.content.error_loading_file'),
+        //TR 'Error cargando archivo',
         icon: Icons.cloud_off,
-        actionText: 'Refrescar',
+        actionText: translate('anxeb.helpers.document.content.refresh'),
+        //TR 'Refrescar',
         actionCallback: () async => _refresh(),
       );
     }
@@ -195,9 +199,11 @@ class _DocumentState extends View<DocumentView, Application> {
     } else {
       return EmptyBlock(
         scope: scope,
-        message: 'Archivo no puede ser visualizado',
+        message: translate('anxeb.helpers.document.content.error_previewing_file'),
+        //TR 'Archivo no puede ser visualizado',
         icon: Icons.insert_drive_file_sharp,
-        actionText: 'Refrescar',
+        actionText: translate('anxeb.helpers.document.content.refresh'),
+        //TR 'Refrescar'
         actionCallback: () async => _refresh(),
       );
     }
@@ -242,7 +248,7 @@ class _DocumentState extends View<DocumentView, Application> {
 
   void _share() {
     var $title = widget.file.title;
-    var $msg = 'Archivo Compartido\n\n${$title}';
+    var $msg = '${translate('anxeb.helpers.document.dialog.shared_file')}\n\n${$title}'; //TR Archivo Compartido
     var $mime = _isPdf ? 'application/pdf' : 'image/${widget.file.extension}';
     var $extension = _isPdf ? '.pdf' : '.${widget.file.extension}';
     var haveExt = Path.extension(_data.path)?.isNotEmpty == true;
@@ -263,15 +269,10 @@ class _DocumentState extends View<DocumentView, Application> {
     var option = download == true ? 'download' : 'open';
     var url = '${widget.launchUrl}${widget.file.url}/$option';
 
-    if (await Launcher.canLaunch(url)) {
-      await Launcher.launch(
-        url,
-        enableDomStorage: false,
-        forceSafariVC: false,
-        forceWebView: false,
-      );
+    if (await Launcher.canLaunchUrl(Uri.parse(url))) {
+      await Launcher.launchUrl(Uri.parse(url));
     } else {
-      scope.alerts.error('Error abriendo archivo').show();
+      scope.alerts.error(translate('anxeb.helpers.document.dialog.error_launching_file')).show(); //TR Error abriendo archivo
     }
   }
 
@@ -294,7 +295,7 @@ class _DocumentState extends View<DocumentView, Application> {
 
   Future<File> _fetch({bool silent}) async {
     var controller = DialogProcessController();
-    scope.dialogs.progress('Descargando Archivo', icon: Icons.file_download, controller: controller, isDownload: true).show();
+    scope.dialogs.progress(translate('anxeb.helpers.document.dialog.downloading_file'), icon: Icons.file_download, controller: controller, isDownload: true).show(); //TR 'Descargando Archivo'
     var cacheDirectory = await getTemporaryDirectory();
 
     var cancelToken = CancelToken();
@@ -397,7 +398,7 @@ class _DocumentState extends View<DocumentView, Application> {
   }
 
   Future _removeFile() async {
-    var result = await scope.dialogs.confirm('¿Estás seguro que quieres eliminar este archivo?').show();
+    var result = await scope.dialogs.confirm(translate('anxeb.helpers.document.dialog.delete_confirmation')).show(); //TR ¿Estás seguro que quieres eliminar este archivo?
     if (result) {
       try {
         await scope.busy();
@@ -415,8 +416,8 @@ class _DocumentState extends View<DocumentView, Application> {
   Future _changeTitle() async {
     var title = await scope.dialogs
         .prompt(
-          'Título Nuevo',
-          hint: 'Título',
+          translate('anxeb.helpers.document.dialog.new_title'), //TR 'Título Nuevo'
+          hint: translate('anxeb.helpers.document.dialog.title'), //TR 'Título'
           type: TextInputFieldType.text,
           value: widget.file.title,
           icon: Icons.text_fields,

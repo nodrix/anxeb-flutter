@@ -11,9 +11,7 @@ class SecuredImage extends ImageProvider<SecuredImage> {
         assert(scale != null);
 
   final String url;
-
   final double scale;
-
   final Map<String, String> headers;
 
   @override
@@ -33,8 +31,7 @@ class SecuredImage extends ImageProvider<SecuredImage> {
   }
 
   //TODO: Validate PEM Certificate
-  static final HttpClient _httpClient = new HttpClient()
-    ..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
+  static final HttpClient _httpClient = new HttpClient()..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
 
   Future<ui.Codec> _loadAsync(SecuredImage key, DecoderCallback decode) async {
     assert(key == this);

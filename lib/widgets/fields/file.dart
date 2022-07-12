@@ -10,11 +10,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 
 class FileInputValue {
-  FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl=false});
+  FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl = false});
 
   String url;
   String path;
@@ -27,11 +28,8 @@ class FileInputValue {
 
   String get previewText => title ?? basename(path);
 
-  Map<String, dynamic> toJSON(){
-    return {
-      'title': title,
-      'extension': extension
-    };
+  Map<String, dynamic> toJSON() {
+    return {'title': title, 'extension': extension};
   }
 }
 
@@ -109,7 +107,8 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         PanelMenuItem(
           actions: [
             PanelMenuAction(
-              label: () => 'Buscar\nDocumento',
+              label: () => translate('anxeb.widgets.fields.file.browse_document'),
+              //TR 'Buscar\nDocumento',
               textScale: 0.9,
               icon: () => FlutterIcons.file_mco,
               fillColor: () => widget.scope.application.settings.colors.secudary,
@@ -118,7 +117,8 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
               },
             ),
             PanelMenuAction(
-              label: () => 'Tomar\nFoto',
+              label: () => translate('anxeb.widgets.fields.file.take_picture'),
+              //TR 'Tomar\nFoto',
               textScale: 0.9,
               icon: () => FlutterIcons.md_camera_ion,
               fillColor: () => widget.scope.application.settings.colors.secudary,
@@ -163,7 +163,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         }
       } catch (err) {
         await widget.scope.idle();
-        widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+        widget.scope.alerts.asterisk(translate('anxeb.widgets.fields.file.access_request')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
       }
     }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path/path.dart' as Path;
 import 'data.dart';
 import 'model.dart';
@@ -181,23 +182,23 @@ class ApiException implements Exception {
   factory ApiException.fromErr(err) {
     if (err is DioError) {
       if (err.type == DioErrorType.connectTimeout) {
-        return ApiException('Error de comunicación, favor revisar su conexión a la red', 0, err);
+        return ApiException(translate('anxeb.middleware.api.exception.connect_timeout'), 0, err); //TR Error de comunicación, favor revisar su conexión a la red
       } else if (err.type == DioErrorType.receiveTimeout) {
-        return ApiException('Tiempo de respuesta prolongado', 408, err);
+        return ApiException(translate('anxeb.middleware.api.exception.receive_timeout'), 408, err); //TR Tiempo de respuesta prolongado
       } else if (err.type == DioErrorType.sendTimeout) {
-        return ApiException('Tiempo de petición prolongado', 408, err);
+        return ApiException(translate('anxeb.middleware.api.exception.send_timeout'), 408, err); //TR Tiempo de petición prolongado
       } else if (err.type == DioErrorType.cancel) {
-        return ApiException('Conexión desestimada por usuario o administrador', 408, err);
+        return ApiException(translate('anxeb.middleware.api.exception.user_cancelled'), 408, err); //TR Conexión desestimada por usuario o administrador
       } else if (err.error is SocketException) {
-        return ApiException('Error de comunicación, favor revisar su conexión al Internet', 0, err);
+        return ApiException(translate('anxeb.middleware.api.exception.socket_exception'), 0, err); //TR Error de comunicación, favor revisar su conexión al Internet
       } else {
         try {
           if (err != null && err.response != null && err.response.data != null && err.response.data['data'] != null && err.response.data['data']['status'] != null) {
             var status = err.response.data['data']['status'];
-            return ApiException._getStatusException(err, status: status) ?? ApiException(err.response.data['message'] ?? 'Error interno', status, err);
+            return ApiException._getStatusException(err, status: status) ?? ApiException(err.response.data['message'] ?? translate('anxeb.middleware.api.exception.internal_error'), status, err); //TR Error interno
           } else if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
             var code = err.response.data['code'];
-            return ApiException._getStatusException(err, status: code) ?? ApiException(err.response.data['message'] ?? 'Error interno', code, err);
+            return ApiException._getStatusException(err, status: code) ?? ApiException(err.response.data['message'] ?? translate('anxeb.middleware.api.exception.internal_error'), code, err); //TR Error interno
           } else {
             return null;
           }
@@ -229,21 +230,21 @@ class ApiException implements Exception {
     }
     switch (statusStr) {
       case '400':
-        return ApiException('Instrucción o llamada inválida', 400, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_400'), 400, err); //TR Instrucción o llamada inválida
       case '401':
-        return ApiException('Acceso al recurso denegado', 401, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_401'), 401, err); //TR Acceso al recurso denegado
       case '402':
-        return ApiException('Pago requerido', 402, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_402'), 402, err); //TR Pago requerido
       case '403':
-        return ApiException('Acceso al recurso denegado', 403, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_403'), 403, err); //TR Acceso al recurso denegado
       case '404':
-        return ApiException('Recurso no encontrado', 404, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_404'), 404, err); //TR Recurso no encontrado
       case '405':
-        return ApiException('Instrucción o llamada inválida', 405, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_405'), 405, err); //TR Instrucción o llamada inválida
       case '408':
-        return ApiException('Tiempo de respuesta prolongado', 408, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_408'), 408, err); //TR Tiempo de respuesta prolongado
       case '500':
-        return ApiException('Error interno, recurso no encontrado en servidor', 500, err);
+        return ApiException(translate('anxeb.middleware.api.exception.status_500'), 500, err); //TR Error interno, recurso no encontrado en servidor
     }
     return null;
   }

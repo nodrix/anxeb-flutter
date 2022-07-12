@@ -13,6 +13,7 @@ import 'package:anxeb_flutter/widgets/fields/barcode.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'field.dart';
 import 'form.dart';
@@ -158,7 +159,8 @@ class ScopeDialogs {
   MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget Function(BuildContext context) body, bool swap}) {
     return MessageDialog(
       _scope,
-      title: title ?? 'Confirmar Acción',
+      title: title ?? translate('anxeb.middleware.dialog.confirm.title'),
+      //TR 'Confirmar Acción'
       message: message,
       icon: Icons.help,
       iconSize: 48,
@@ -168,12 +170,12 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              DialogButton(noLabel ?? 'No', false),
-              DialogButton(yesLabel ?? 'Sí', true),
+              DialogButton(noLabel ?? translate('anxeb.common.no'), false),
+              DialogButton(yesLabel ?? translate('anxeb.common.yes'), true),
             ]
           : [
-              DialogButton(yesLabel ?? 'Sí', true),
-              DialogButton(noLabel ?? 'No', false),
+              DialogButton(yesLabel ?? translate('anxeb.common.yes'), true),
+              DialogButton(noLabel ?? translate('anxeb.common.no'), false),
             ],
     );
   }
@@ -222,7 +224,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, String yesLabel, String noLabel, bool swap, String group}) {
+  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -263,17 +265,17 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
             ]
           : [
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
             ],
     );
   }
 
-  MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, String group}) {
+  MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -333,17 +335,17 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
             ]
           : [
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
             ],
     );
   }
 
-  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String yesLabel, String noLabel, bool swap, int lines, String group}) {
+  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, int lines, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -403,17 +405,17 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
             ]
           : [
-              DialogButton(yesLabel ?? 'Aceptar', null, onTap: (context) => accept()),
-              DialogButton(noLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
             ],
     );
   }
 
-  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessasge, String busyMessage}) {
+  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessage, String busyMessage}) {
     var cancel = (BuildContext context) {
       controller.cancel();
       Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -435,11 +437,11 @@ class ScopeDialogs {
         scope: _scope,
         isDownload: isDownload,
         successMessage: successMessage,
-        failedMessage: failedMessasge,
+        failedMessage: failedMessage,
         busyMessage: busyMessage,
       );
     }, iconColor: _scope.application.settings.colors.info, buttons: [
-      DialogButton(cancelLabel ?? 'Cancelar', null, onTap: (context) => cancel(context)),
+      DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
     ]);
   }
 

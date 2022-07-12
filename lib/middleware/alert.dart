@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/parts/alerts/snack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'scope.dart';
 
 class ScopeAlert {
@@ -142,7 +143,8 @@ class ScopeAlerts {
 
     return _initialize(SnackAlert(
       _scope,
-      title: title ?? 'Error',
+      title: title ?? translate('anxeb.common.error'),
+      //TR 'Error',
       message: message,
       icon: Icons.warning,
       fillColor: _scope.application.settings.colors.danger,

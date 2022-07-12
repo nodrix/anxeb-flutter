@@ -36,9 +36,6 @@ class ActionButton with ActionItem {
             ),
           ),
         ),
-        //shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
-        //padding: EdgeInsets.symmetric(horizontal: 10),
-        //color: fill?.call(),
         child: Row(
           children: <Widget>[
             icon != null

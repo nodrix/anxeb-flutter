@@ -12,6 +12,10 @@ class Entry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLocalized = this.home.application.localization != null;
+
+    var localizationDelegate = this.home.application.localization;
+
     var app = MaterialApp(
         home: this.home,
         navigatorObservers: this.home.application.settings.analytics.available == true ? [this.home.application.analytics.observer] : [],
@@ -27,16 +31,26 @@ class Entry extends StatelessWidget {
               ),
               fontFamily: 'Montserrat',
             ),
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: [
-          const Locale('en'),
-          const Locale('es'),
-          const Locale.fromSubtags(languageCode: 'es'),
-        ],
+        localizationsDelegates: isLocalized
+            ? [
+                localizationDelegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ]
+            : [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+        supportedLocales: isLocalized
+            ? localizationDelegate.supportedLocales
+            : [
+                const Locale('en'),
+                const Locale('es'),
+                const Locale.fromSubtags(languageCode: 'es'),
+              ],
+        locale: localizationDelegate?.currentLocale,
         routes: <String, WidgetBuilder>{
           '/${this.home.name}': (BuildContext context) => this.home,
         },

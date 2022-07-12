@@ -175,15 +175,15 @@ class _PropertyBlockState extends State<PropertyBlock> {
 
   void _launchValueLink(String value) {
     if (widget.isPhone == true) {
-      Launcher.canLaunch("tel://$value").then((canLaunch) {
+      Launcher.canLaunchUrl(Uri(scheme: 'tel', path: value)).then((canLaunch) {
         if (canLaunch == true) {
-          Launcher.launch("tel://$value");
+          Launcher.launchUrl(Uri(scheme: 'tel', path: value));
         }
       });
     } else if (widget.isEmail == true) {
-      Launcher.canLaunch("mailto:$value").then((canLaunch) {
+      Launcher.canLaunchUrl(Uri(scheme: 'mailto', path: value)).then((canLaunch) {
         if (canLaunch == true) {
-          Launcher.launch("mailto:$value");
+          Launcher.launchUrl(Uri(scheme: 'mailto', path: value));
         }
       });
     } else if (widget.onTap != null) {

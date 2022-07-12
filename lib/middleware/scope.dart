@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'api.dart';
 import 'application.dart';
 import 'auth.dart';
@@ -50,7 +51,7 @@ class Scope {
   Future _checkBusyCountDown() async {
     if (_busyCountDown == 1) {
       await idle();
-      alerts.exception('Tiempo de espera excedido', title: 'Error de Proceso').show();
+      alerts.exception(translate('anxeb.middleware.scope.busy_timeout'), title: translate('anxeb.middleware.scope.process_error')).show();
     } else if (_busyCountDown > 1) {
       Future.delayed(Duration(milliseconds: 1000), () {
         _busyCountDown--;
@@ -137,7 +138,7 @@ class Scope {
                               ),
                               Container(
                                 padding: EdgeInsets.only(top: 18),
-                                child: Text(text ?? 'Cargando',
+                                child: Text(text ?? translate('anxeb.common.loading'), //TR 'Cargando'
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 18,

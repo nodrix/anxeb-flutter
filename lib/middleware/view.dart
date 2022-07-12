@@ -5,6 +5,7 @@ import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:anxeb_flutter/parts/headers/search.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import 'package:after_init/after_init.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'action.dart';
 import 'application.dart';
 import 'footer.dart';
@@ -29,13 +30,13 @@ class ViewWidget extends StatefulWidget {
   final bool root;
   final Key key;
 
-  ViewWidget(this.name, {
+  ViewWidget(
+    this.name, {
     this.title,
     this.application,
     this.root,
     this.key,
-  })
-      : assert(name != null),
+  })  : assert(name != null),
         super(key: key);
 
   @override
@@ -73,7 +74,6 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   View() {
     _scaffold = GlobalKey<ScaffoldState>();
-    //_locator = ViewActionLocator();
   }
 
   void rasterize([VoidCallback fn]) {
@@ -260,9 +260,9 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
     var settings = RouteSettings(
         arguments: _PushedViewArguments<A>(
-          application: application,
-          scope: _scope,
-        ));
+      application: application,
+      scope: _scope,
+    ));
 
     var $route;
     if (transition != null) {
@@ -394,7 +394,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
   }
 
   Future process(Future Function() func, {String busyLabel}) async {
-    await scope.busy(text: busyLabel ?? 'Cargando');
+    await scope.busy(text: busyLabel ?? translate('anxeb.common.loading'));
     try {
       await func();
     } catch (err) {
@@ -428,11 +428,7 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   bool get isHeader => _header != null;
 
-  _PushedViewArguments get arguments =>
-      ModalRoute
-          .of(context)
-          .settings
-          ?.arguments;
+  _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
   _ViewParts get parts => _parts;
 }

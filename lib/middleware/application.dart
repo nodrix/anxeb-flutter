@@ -12,6 +12,7 @@ class Application {
   AuthProviders _auths;
   Analytics _analytics;
   bool _badgesSupport;
+  LocalizationDelegate _localization;
 
   Application() {
     WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,11 @@ class Application {
     }
   }
 
-  Future setup() async {
+  Future setup({List<String> locales}) async {
+    if (locales != null) {
+      _localization = await LocalizationDelegate.create(fallbackLocale: locales[0], supportedLocales: locales);
+    }
+
     _badgesSupport = _settings.general.badges == true && await FlutterAppBadger.isAppBadgeSupported();
     if (_settings.analytics.available == true) {
       await _analytics.init(onMessage: onMessage);
@@ -83,4 +88,6 @@ class Application {
   }
 
   Disk get disk => _disk;
+
+  LocalizationDelegate get localization => _localization;
 }

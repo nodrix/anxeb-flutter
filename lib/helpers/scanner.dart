@@ -5,6 +5,7 @@ import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_barcode/ai_barcode.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 
 class ScannerHelper extends ViewWidget {
   final String title;
@@ -93,7 +94,7 @@ class _ScannerHelperState extends View<ScannerHelper, Application> {
   @override
   ActionsHeader header() {
     return ActionsHeader(
-      title: () => widget.title ?? 'Enfoque el Código',
+      title: () => widget.title ?? translate('anxeb.helpers.scanner.default_title'), //TR Enfoque el Código
       scope: scope,
     );
   }

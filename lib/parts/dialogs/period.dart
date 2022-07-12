@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
+import 'package:flutter_translate/flutter_translate.dart';
 
 class PeriodDialog extends ScopeDialog {
   final String title;
@@ -84,21 +85,25 @@ class _PeriodSelectorState extends State<PeriodSelector> {
   int _selectedYear;
   int _selectedMonth;
 
-  _PeriodSelectorState() {
+  @override
+  void setState(fn) {
     for (var i = currentYear - 3; i <= currentYear; i++) {
       _years.add(i);
     }
-  }
+    if (_selectedMonth == null) {
+      _selectedMonth = widget?.selected?.month ?? currentMonth;
+    }
 
-  @override
-  void setState(fn) {
+    if (_selectedYear == null) {
+      _selectedYear = widget.selected?.year ?? currentYear;
+    }
     super.setState(fn);
   }
 
   @override
   Widget build(BuildContext context) {
     _selectedYear = _selectedYear ?? widget?.selected?.year ?? currentYear;
-    _selectedMonth = _selectedMonth ?? widget?.selected?.month; // ?? currentMonth;
+    _selectedMonth = _selectedMonth ?? widget?.selected?.month;
     var activeMonth = (widget?.selected?.year ?? currentYear) == _selectedYear;
 
     return Column(
@@ -143,7 +148,8 @@ class _PeriodSelectorState extends State<PeriodSelector> {
                     child: Container(
                       margin: EdgeInsets.only(top: 12),
                       child: TextButton(
-                        caption: 'Todos los Meses',
+                        caption: translate('anxeb.parts.dialogs.period.all_month'),
+                        //TR 'Todos los Meses',
                         radius: settings.dialogs.buttonRadius,
                         textColor: activeMonth && _selectedMonth == null ? settings.colors.active : null,
                         color: activeMonth && _selectedMonth == null ? settings.colors.primary : settings.colors.secudary,
@@ -226,9 +232,9 @@ class PeriodValue {
   String toString({bool light}) {
     if (_year != null) {
       if (_month != null) {
-        return (light != true ? 'Período' : '') + ' ${Utils.convert.fromIndexToMonth(_month)} $_year';
+        return (light != true ? '${translate('anxeb.parts.dialogs.period.to_string_prefix')} ' : '') + '${Utils.convert.fromIndexToMonth(_month)} $_year'; //TR Período
       }
-      return 'Año $_year';
+      return '${translate('anxeb.parts.dialogs.period.year_prefix')} $_year';
     }
     return null;
   }

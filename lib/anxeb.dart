@@ -98,3 +98,4 @@ export 'helpers/document.dart';
 export 'widgets/blocks/menu.dart';
 export 'widgets/blocks/selector.dart';
 export 'middleware/overlay.dart';
+export 'package:flutter_translate/flutter_translate.dart';

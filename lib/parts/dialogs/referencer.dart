@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/utils/referencer.dart';
 import 'package:anxeb_flutter/widgets/blocks/referencer.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
+import 'package:flutter_translate/flutter_translate.dart';
 
 class ReferencerDialog<V> extends ScopeDialog<List<V>> {
   final String title;
@@ -85,10 +86,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 children: TextButton.createList(
                   context,
                   [
-                    DialogButton('Inicio', null, onTap: (context) {
+                    DialogButton(translate('anxeb.parts.dialogs.referencer.start_button'), null, onTap: (context) {
                       referencer.start();
                     }),
-                    DialogButton('Cancelar', null, onTap: (context) {
+                    DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) {
                       Navigator.of(context).pop();
                     })
                   ],

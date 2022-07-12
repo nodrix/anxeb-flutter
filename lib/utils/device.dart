@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:device_info/device_info.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 
 class Device {
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -23,8 +24,8 @@ class Device {
         options: ScanOptions(
           strings: {
             'cancel': 'X',
-            'flash_on': 'Encender Luz',
-            'flash_off': 'Apagar Luz',
+            'flash_on': translate('anxeb.utils.device.flash_on_label'), //TR Encender Luz
+            'flash_off': translate('anxeb.utils.device.flash_off_label'), //TR Apagar Luz
           },
           autoEnableFlash: autoflash != null ? autoflash : true,
           android: AndroidOptions(

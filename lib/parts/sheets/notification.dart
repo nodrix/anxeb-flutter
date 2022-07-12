@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:anxeb_flutter/widgets/blocks/image.dart';
 import 'package:flutter/material.dart' hide Dialog;
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
+import 'package:flutter_translate/flutter_translate.dart';
 
 class NotificationSheet extends ScopeSheet {
   final String title;
@@ -145,7 +146,8 @@ class NotificationSheet extends ScopeSheet {
                             children: [
                               Expanded(
                                 child: Anxeb.TextButton(
-                                  caption: 'Eliminar',
+                                  caption: translate('anxeb.common.delete'),
+                                  //TR 'Eliminar',
                                   margin: EdgeInsets.only(right: 6),
                                   color: scope.application.settings.colors.danger,
                                   radius: scope.application.settings.dialogs.buttonRadius,
@@ -159,7 +161,8 @@ class NotificationSheet extends ScopeSheet {
                               ),
                               Expanded(
                                 child: Anxeb.TextButton(
-                                  caption: 'Cerrar',
+                                  caption: translate('anxeb.common.close'),
+                                  //TR 'Cerrar',
                                   margin: EdgeInsets.only(left: 6),
                                   color: scope.application.settings.colors.secudary,
                                   radius: scope.application.settings.dialogs.buttonRadius,

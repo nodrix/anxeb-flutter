@@ -4,12 +4,14 @@ import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 
-enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password }
+enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password, maskedDigits }
 
 class TextInputField<V> extends FieldWidget<V> {
   final TextEditingController controller;
   final TextInputFieldType type;
+  final TextInputFormatter formatter;
   final bool autofocus;
   final TextInputAction action;
   final ValueChanged<V> onActionSubmit;
@@ -69,6 +71,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.maxLength,
     this.suffixActions,
     this.errorMaxLines,
+    this.formatter,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -141,7 +144,9 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   void prebuild() {}
 
   List<TextInputFormatter> get _formatters {
-    if (widget.type == TextInputFieldType.digits) {
+    if (widget.formatter != null) {
+      return <TextInputFormatter>[widget.formatter];
+    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
@@ -152,7 +157,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   TextInputType get _keyboardType {
     if (widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.password) {
-      if(widget.maxLines != null && widget.maxLines > 1) {
+      if (widget.maxLines != null && widget.maxLines > 1) {
         return TextInputType.multiline;
       }
 
@@ -163,7 +168,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return TextInputType.numberWithOptions(signed: false, decimal: true);
     } else if (widget.type == TextInputFieldType.natural) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
-    } else if (widget.type == TextInputFieldType.digits) {
+    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
     } else if (widget.type == TextInputFieldType.integers) {
       return TextInputType.numberWithOptions(signed: true, decimal: false);
@@ -368,7 +373,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
     } else {
       dynamic result;
       if (text?.isNotEmpty == true) {
-        if (widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.email || widget.type == TextInputFieldType.url || widget.type == TextInputFieldType.password) {
+        if (widget.type == TextInputFieldType.maskedDigits || widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.email || widget.type == TextInputFieldType.url || widget.type == TextInputFieldType.password) {
           result = Utils.convert.fromStringToTrimedString(text);
         } else if (widget.type == TextInputFieldType.digits) {
           result = Utils.convert.fromStringToDigits(text);
@@ -379,7 +384,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         } else if (widget.type == TextInputFieldType.integers) {
           result = Utils.convert.fromStringToInteger(text);
         } else if (widget.type == TextInputFieldType.phone) {
-          result = Utils.convert.fromStringToDigits(text);
+          result = Utils.convert.fromStringToPhoneDigits(text);
         } else if (widget.type == TextInputFieldType.positive) {
           result = Utils.convert.fromStringToDouble(text);
         } else if (widget.type == TextInputFieldType.natural) {
@@ -406,7 +411,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         return Icon(Icons.keyboard_arrow_left, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
       } else {
         if (focused) {
-          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off, semanticLabel: _obscureText ? 'mostrar' : 'ocultar', color: widget.scope.application.settings.colors.primary);
+          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off, semanticLabel: _obscureText ? translate('anxeb.widgets.fields.text.show_label') : translate('anxeb.widgets.fields.text.hide_label'), color: widget.scope.application.settings.colors.primary);
         } else {
           return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
         }

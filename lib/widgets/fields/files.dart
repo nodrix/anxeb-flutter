@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter_translate/flutter_translate.dart';
+
 import 'file.dart';
 import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
@@ -108,48 +110,46 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
     if (value != null && value.isNotEmpty) {
       previewContent = Padding(
         padding: const EdgeInsets.only(bottom: 8.0),
-        child: Column(children: value.map((file) => GestureDetector(
-          onTap: () async {
-            _preview(file);
-          },
-          child: Container(
-            padding: EdgeInsets.only(top: 2, bottom: 4),
-            child: Row(
-              children: [
-                if(widget.readonly != true)
-                  GestureDetector(
-                    onTap: () => _removeItemFile(file),
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4, top: 1),
-                      child: Icon(
-                          Icons.clear,
-                          color: widget.scope.application.settings.colors.primary,
-                          size: 16
+        child: Column(
+            children: value
+                .map((file) => GestureDetector(
+                      onTap: () async {
+                        _preview(file);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.only(top: 2, bottom: 4),
+                        child: Row(
+                          children: [
+                            if (widget.readonly != true)
+                              GestureDetector(
+                                  onTap: () => _removeItemFile(file),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 4, top: 1),
+                                    child: Icon(Icons.clear, color: widget.scope.application.settings.colors.primary, size: 16),
+                                  )),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4, bottom: 2),
+                              child: _getMimeIcon(file),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 1),
+                                child: Text(
+                                  file.previewText,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    height: 1,
+                                    fontSize: 16,
+                                    color: widget.scope.application.settings.colors.primary,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    )
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 4, bottom: 2),
-                  child: _getMimeIcon(file),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 1),
-                    child: Text(
-                      file.previewText,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        height: 1,
-                        fontSize: 16,
-                        color: widget.scope.application.settings.colors.primary,
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        )).toList()),
+                    ))
+                .toList()),
       );
     } else {
       previewContent = Container(
@@ -174,7 +174,7 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
           _pickFile();
         }
       },
-      child:  FormField(
+      child: FormField(
         builder: (FormFieldState state) {
           return InputDecorator(
             isFocused: focused,
@@ -223,7 +223,8 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         PanelMenuItem(
           actions: [
             PanelMenuAction(
-              label: () => 'Buscar\nDocumento',
+              label: () => translate('anxeb.widgets.fields.files.browse_document'),
+              //TR 'Buscar\nDocumento',
               textScale: 0.9,
               icon: () => FlutterIcons.file_mco,
               fillColor: () => widget.scope.application.settings.colors.secudary,
@@ -232,7 +233,8 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
               },
             ),
             PanelMenuAction(
-              label: () => 'Tomar\nFoto',
+              label: () => translate('anxeb.widgets.fields.files.take_picture'),
+              //TR 'Tomar\nFoto',
               textScale: 0.9,
               icon: () => FlutterIcons.md_camera_ion,
               fillColor: () => widget.scope.application.settings.colors.secudary,
@@ -280,18 +282,20 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         }
       } catch (err) {
         await widget.scope.idle();
-        widget.scope.alerts.asterisk('Debe permitir el acceso al sistema de archivos').show();
+        widget.scope.alerts.asterisk(translate('anxeb.widgets.fields.files.access_request')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
       }
     }
 
     if (result != null && result.isNotEmpty) {
-      files.addAll(result.map((file) => FileInputValue(
-        path: file.path,
-        title: basename(file.path),
-        extension: (extension(file.path ?? '') ?? '').replaceFirst('.', ''),
-        url: null,
-        id: null,
-      )).toList());
+      files.addAll(result
+          .map((file) => FileInputValue(
+                path: file.path,
+                title: basename(file.path),
+                extension: (extension(file.path ?? '') ?? '').replaceFirst('.', ''),
+                url: null,
+                id: null,
+              ))
+          .toList());
       super.submit(files);
     }
   }

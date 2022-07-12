@@ -1,3 +1,4 @@
+import 'package:flutter_translate/flutter_translate.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:anxeb_flutter/helpers/camera.dart';
@@ -151,14 +152,14 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
           var file = File(value);
           if (file.existsSync()) {
             _takenPicture = Image.file(file).image;
-            _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(file.lengthSync());
+            _previewText = translate('anxeb.widgets.fields.image.file_length_prefix') + Utils.convert.fromAnyToDataSize(file.lengthSync()); //TR Archivo de
           } else {
             _takenPicture = null;
             _previewText = null;
           }
         } else {
           _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
-          _previewText = 'Archivo de ' + Utils.convert.fromAnyToDataSize(value.length);
+          _previewText = translate('anxeb.widgets.fields.image.file_length_prefix') + Utils.convert.fromAnyToDataSize(value.length); //TR Archivo de
         }
       } else {
         _takenPicture = null;

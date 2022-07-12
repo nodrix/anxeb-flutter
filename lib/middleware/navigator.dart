@@ -1,6 +1,5 @@
 import 'package:anxeb_flutter/middleware/menu.dart';
 import 'package:flutter/material.dart';
-
 import 'application.dart';
 import 'scope.dart';
 import 'view.dart';
