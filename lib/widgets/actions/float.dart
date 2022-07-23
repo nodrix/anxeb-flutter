@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:anxeb_flutter/middleware/scope.dart';
 
 class FloatAction extends StatefulWidget {
+  final Scope scope;
   final VoidCallback onPressed;
   final IconData icon;
   final Color color;
@@ -12,6 +14,7 @@ class FloatAction extends StatefulWidget {
   final bool mini;
 
   FloatAction({
+    @required this.scope,
     this.color,
     this.icon,
     this.onPressed,
@@ -35,7 +38,7 @@ class _FloatActionState extends State<FloatAction> {
 
   @override
   Widget build(BuildContext context) {
-    var $separation = widget.separation ?? 60;
+    var $separation = widget.separation ?? 50;
     var $bottom = widget.bottomOffset ?? 0;
     var $offset = (widget.topOffset ?? 15) + $bottom;
 
@@ -67,7 +70,8 @@ class _FloatActionState extends State<FloatAction> {
       }
     }
 
-    double $padding = widget.alternates != null ? (widget.alternates.length * (widget.separation ?? 60.0)) + ($offset - 5) : 0.0;
+    double $padding = widget.alternates != null ? (widget.alternates.length * $separation) + ($offset - 5) : 0.0;
+    widget.scope?.view?.locator?.setAltOffset($padding);
 
     $actions.insert(
       0,
@@ -86,10 +90,13 @@ class _FloatActionState extends State<FloatAction> {
       ),
     );
 
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: $actions,
+    return Container(
+      padding: EdgeInsets.only(bottom: $padding),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: $actions,
+      ),
     );
   }
 }

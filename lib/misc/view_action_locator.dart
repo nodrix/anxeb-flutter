@@ -24,6 +24,7 @@ double _endOffset(ScaffoldPrelayoutGeometry scaffoldGeometry, {Alignment alignme
 class ViewActionLocator extends FloatingActionButtonLocation {
   final Offset offset;
   final Alignment alignment;
+  double _altOffset;
 
   ViewActionLocator({
     this.offset,
@@ -33,7 +34,7 @@ class ViewActionLocator extends FloatingActionButtonLocation {
   @protected
   double getDockedY(ScaffoldPrelayoutGeometry scaffoldGeometry) {
     final double bottomSheetHeight = scaffoldGeometry.bottomSheetSize.height;
-    final double fabHeight = scaffoldGeometry.floatingActionButtonSize.height;
+    final double fabHeight = scaffoldGeometry.floatingActionButtonSize.height - (_altOffset ?? 0);
     final double contentBottom = scaffoldGeometry.scaffoldSize.height - (fabHeight / 2) - 19;
     final double snackBarHeight = scaffoldGeometry.snackBarSize.height;
 
@@ -55,5 +56,9 @@ class ViewActionLocator extends FloatingActionButtonLocation {
       offset: offset != null ? offset.dx : 0,
     );
     return Offset(fabX, getDockedY(scaffoldGeometry));
+  }
+
+  void setAltOffset(double value) {
+    _altOffset = value;
   }
 }

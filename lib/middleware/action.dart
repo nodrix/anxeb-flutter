@@ -60,6 +60,7 @@ class ViewAction {
       return null;
     }
     return FloatAction(
+      scope: scope,
       onPressed: onPressed,
       color: color?.call() ?? scope.application.settings.colors.success,
       icon: icon?.call() ?? Icons.check,

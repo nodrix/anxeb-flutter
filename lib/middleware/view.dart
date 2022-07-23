@@ -428,6 +428,8 @@ class View<T extends ViewWidget, A extends Application> extends ViewState<T> wit
 
   bool get isHeader => _header != null;
 
+  ViewActionLocator get locator => _locator;
+
   _PushedViewArguments get arguments => ModalRoute.of(context).settings?.arguments;
 
   _ViewParts get parts => _parts;
