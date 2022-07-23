@@ -15,7 +15,7 @@ class DateInputField extends FieldWidget<DateTime> {
   final dynamic Function(DateTime value) dataValue;
   final String locale;
   final bool pickTime;
-  
+
   DateInputField({
     @required Scope scope,
     Key key,
@@ -36,6 +36,7 @@ class DateInputField extends FieldWidget<DateTime> {
     FormFieldValidator<String> validator,
     DateTime Function(dynamic value) parser,
     bool focusNext,
+    BorderRadius borderRadius,
     this.autofocus,
     this.fixedLabel,
     this.hint,
@@ -66,6 +67,7 @@ class DateInputField extends FieldWidget<DateTime> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          borderRadius: borderRadius,
         );
 
   @override
@@ -105,7 +107,7 @@ class _DateInputFieldState extends Field<DateTime, DateInputField> {
   dynamic data() {
     return widget.dataValue != null ? widget.dataValue(value) : value;
   }
-  
+
   @override
   void reset() {
     super.reset();

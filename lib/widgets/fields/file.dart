@@ -59,6 +59,7 @@ class FileInputField extends FieldWidget<FileInputValue> {
     bool focusNext,
     double fontSize,
     double labelSize,
+    BorderRadius borderRadius,
     this.allowedExtensions,
     this.launchUrlPrefix,
   })  : assert(name != null),
@@ -84,6 +85,7 @@ class FileInputField extends FieldWidget<FileInputValue> {
           focusNext: focusNext,
           fontSize: fontSize,
           labelSize: labelSize,
+          borderRadius: borderRadius,
         );
 
   @override

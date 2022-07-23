@@ -41,6 +41,7 @@ class BarcodeInputField extends FieldWidget<String> {
     bool focusNext,
     String value,
     bool selected,
+    BorderRadius borderRadius,
     this.controller,
     this.type,
     this.autofocus,
@@ -75,6 +76,7 @@ class BarcodeInputField extends FieldWidget<String> {
           focusNext: focusNext,
           initialValue: value,
           initialSelected: selected,
+          borderRadius: borderRadius,
         );
 
   @override
@@ -212,11 +214,13 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
       textAlign: TextAlign.left,
       decoration: InputDecoration(
         filled: true,
-        contentPadding: EdgeInsets.only(left: widget.icon != null ? 0: 7, top: 7, bottom: 0, right: 0),
-        prefixIcon: widget.icon != null ? Icon(
-          widget.icon,
-          color: widget.scope.application.settings.colors.primary,
-        ) : null,
+        contentPadding: EdgeInsets.only(left: widget.icon != null ? 0 : 7, top: 7, bottom: 0, right: 0),
+        prefixIcon: widget.icon != null
+            ? Icon(
+                widget.icon,
+                color: widget.scope.application.settings.colors.primary,
+              )
+            : null,
         labelText: widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label,
         labelStyle: widget.fixedLabel == true
             ? TextStyle(

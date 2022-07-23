@@ -19,6 +19,7 @@ class CheckBoxField extends FieldWidget<bool> {
     FormFieldValidator<String> validator,
     bool focusNext,
     bool readonly,
+    BorderRadius borderRadius,
     this.title,
     this.controlAffinity,
   })  : assert(name != null),
@@ -34,6 +35,7 @@ class CheckBoxField extends FieldWidget<bool> {
           onFocus: onFocus,
           validator: validator,
           focusNext: focusNext,
+          borderRadius: borderRadius,
         );
 
   @override
@@ -57,13 +59,14 @@ class _CheckBoxFieldState extends Field<bool, CheckBoxField> {
                 )
               : null,
           value: value ?? false,
-          onChanged: widget.readonly? null : (newValue) {
-            value = newValue;
-            validate();
-            if (widget.onChanged != null) widget.onChanged(newValue);
-          },
-          controlAffinity:
-              widget.controlAffinity ?? ListTileControlAffinity.leading,
+          onChanged: widget.readonly == true
+              ? null
+              : (newValue) {
+                  value = newValue;
+                  validate();
+                  if (widget.onChanged != null) widget.onChanged(newValue);
+                },
+          controlAffinity: widget.controlAffinity ?? ListTileControlAffinity.leading,
         );
       },
     );

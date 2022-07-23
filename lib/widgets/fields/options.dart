@@ -39,6 +39,7 @@ class OptionsInputField<V> extends FieldWidget<V> {
     FormFieldValidator<String> validator,
     V Function(dynamic value) parser,
     bool focusNext,
+    BorderRadius borderRadius,
     @required this.options,
     this.type,
     this.autofocus,
@@ -70,6 +71,7 @@ class OptionsInputField<V> extends FieldWidget<V> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
+          borderRadius: borderRadius,
         );
 
   @override

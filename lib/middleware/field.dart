@@ -29,6 +29,7 @@ class FieldWidget<V> extends StatefulWidget {
   final bool focusOnlyEmpty;
   final V initialValue;
   final bool initialSelected;
+  final BorderRadius borderRadius;
 
   FieldWidget({
     @required this.scope,
@@ -56,7 +57,9 @@ class FieldWidget<V> extends StatefulWidget {
     this.focusOnlyEmpty,
     this.initialValue,
     this.initialSelected,
-  })  : assert(scope != null && name != null),
+    this.borderRadius,
+  })
+      : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
 
   @override
@@ -318,6 +321,8 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.view.name];
 
   bool get isEmpty {
-    return value?.toString()?.isNotEmpty != true;
+    return value
+        ?.toString()
+        ?.isNotEmpty != true;
   }
 }

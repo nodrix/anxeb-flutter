@@ -48,6 +48,7 @@ class ImageInputField extends FieldWidget<String> {
     bool focusNext,
     double fontSize,
     double labelSize,
+    BorderRadius borderRadius,
     this.type,
     this.fullImage,
     this.initFaceCamera,
@@ -81,6 +82,7 @@ class ImageInputField extends FieldWidget<String> {
           focusNext: focusNext,
           fontSize: fontSize,
           labelSize: labelSize,
+          borderRadius: borderRadius,
         );
 
   @override

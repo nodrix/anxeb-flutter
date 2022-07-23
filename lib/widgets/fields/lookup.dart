@@ -35,6 +35,7 @@ class LookupInputField<V> extends FieldWidget<V> {
     V Function(dynamic value) parser,
     bool focusNext,
     V value,
+    BorderRadius borderRadius,
     this.autofocus,
     this.fixedLabel,
     this.hint,
@@ -65,6 +66,7 @@ class LookupInputField<V> extends FieldWidget<V> {
           parser: parser,
           focusNext: focusNext,
           initialValue: value,
+          borderRadius: borderRadius,
         );
 
   @override

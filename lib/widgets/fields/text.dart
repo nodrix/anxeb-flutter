@@ -54,6 +54,7 @@ class TextInputField<V> extends FieldWidget<V> {
     double fontSize,
     double labelSize,
     bool selected,
+    BorderRadius borderRadius,
     this.controller,
     this.type,
     this.autofocus,
@@ -99,6 +100,7 @@ class TextInputField<V> extends FieldWidget<V> {
           iconSize: iconSize,
           labelSize: labelSize,
           fontSize: fontSize,
+          borderRadius: borderRadius,
         );
 
   @override
