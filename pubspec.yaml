@@ -14,40 +14,41 @@ dependencies:
     sdk: flutter
   android_middleware:
     path: plugins/android_middleware
-  cupertino_icons: ^1.0.4
-  flutter_keyboard_visibility: ^5.2.0
+  cupertino_icons: ^1.0.5
+  flutter_keyboard_visibility: ^5.3.0
   after_init: ^0.1.2
   flutter_icons: ^1.1.0
-  camera: ^0.9.4+24
+  camera: ^0.10.0
   image_crop: ^0.4.0
-  path: ^1.8.0
-  path_provider: ^2.0.9
-  ai_barcode: ^3.0.1
-  barcode_scan: ^3.0.1
+  path: ^1.8.1
+  path_provider: ^2.0.11
+  ai_barcode: ^3.2.4
+  barcode_scan2: ^4.2.1
   dio: ^4.0.6
   shared_preferences: ^2.0.15
   sliding_up_panel: ^2.0.0+1
   pull_to_refresh: ^2.0.0
-  google_sign_in: ^5.3.1
+  google_sign_in: ^5.4.0
   oauth1: ^2.0.0
-  flutter_facebook_auth: ^4.3.4
+  flutter_facebook_auth: ^4.4.0+1
   device_info: ^2.0.3
-  percent_indicator: ^4.2.0
-  another_flushbar: ^1.10.28
+  percent_indicator: ^4.2.2
+  another_flushbar: ^1.10.29
   mime: ^1.0.2
   qr_flutter: ^4.0.0
-  photo_view: ^0.13.0
+  photo_view: ^0.14.0
   credit_card_validate: ^0.0.3
-  file_picker: ^4.5.1
-  sign_in_with_apple: ^3.3.0
-  firebase_core: ^1.16.0
-  firebase_messaging: ^11.3.0
-  firebase_analytics: ^9.1.7
+  file_picker: ^4.6.1
+  sign_in_with_apple: ^4.1.0
+  firebase_core: ^1.19.2
+  firebase_messaging: ^12.0.0
+  firebase_analytics: ^9.2.0
   flutter_app_badger: ^1.4.0
-  url_launcher: ^6.1.2
+  url_launcher: ^6.1.5
   flutter_pdfview: ^1.2.2
   share: ^2.0.4
-  flutter_translate: ^4.0.2
+  flutter_translate: ^4.0.3
+  google_ml_kit: ^0.11.0
 
 flutter:
   uses-material-design: true
