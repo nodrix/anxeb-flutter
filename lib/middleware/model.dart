@@ -81,7 +81,7 @@ class Model<T> {
       try {
         field.pushToData(usePrimaryKeys: usePrimaryKeys);
       } catch (err) {
-        throw Exception('Error pusing field \'${field.fieldName}\' to data. ${err.message}');
+        throw Exception('Error pusing field \'${field.fieldName}\' to data. ${err.toString()}');
       }
     }
   }
@@ -90,6 +90,8 @@ class Model<T> {
     if (data is String || data is int) {
       _pk = data;
       _data = Data();
+    } else if (data is Model) {
+      _data = data.data;
     } else {
       _data = data != null ? (data is Data ? data : Data(data)) : Data();
     }
