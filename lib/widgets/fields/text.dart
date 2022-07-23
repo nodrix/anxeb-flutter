@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 
-enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password, maskedDigits }
+enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password, maskedDigits, pin }
 
 class TextInputField<V> extends FieldWidget<V> {
   final TextEditingController controller;
@@ -148,7 +148,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   List<TextInputFormatter> get _formatters {
     if (widget.formatter != null) {
       return <TextInputFormatter>[widget.formatter];
-    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits) {
+    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.pin || widget.type == TextInputFieldType.maskedDigits) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
@@ -170,7 +170,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return TextInputType.numberWithOptions(signed: false, decimal: true);
     } else if (widget.type == TextInputFieldType.natural) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
-    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits) {
+    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits || widget.type == TextInputFieldType.pin) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
     } else if (widget.type == TextInputFieldType.integers) {
       return TextInputType.numberWithOptions(signed: true, decimal: false);
@@ -248,7 +248,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
     var result = TextField(
       autofocus: widget.autofocus ?? false,
-      obscureText: _obscureText == true && widget.type == TextInputFieldType.password,
+      obscureText: _obscureText == true && (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin),
       focusNode: focusNode,
       textInputAction: widget.action,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
@@ -324,7 +324,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
-        border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
+        border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius ?? BorderRadius.all(Radius.circular(8))),
         suffixIcon: widget.suffixActions == false
             ? null
             : GestureDetector(
@@ -336,7 +336,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
                   }
                   _tabbed = true;
 
-                  if (widget.type == TextInputFieldType.password) {
+                  if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
                     if (_controller.text.length == 0) {
                       focus();
                     } else {
@@ -377,7 +377,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       if (text?.isNotEmpty == true) {
         if (widget.type == TextInputFieldType.maskedDigits || widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.email || widget.type == TextInputFieldType.url || widget.type == TextInputFieldType.password) {
           result = Utils.convert.fromStringToTrimedString(text);
-        } else if (widget.type == TextInputFieldType.digits) {
+        } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.pin) {
           result = Utils.convert.fromStringToDigits(text);
         } else if (widget.type == TextInputFieldType.date) {
           result = Utils.convert.fromStringToDate(text);
@@ -408,7 +408,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return Icon(Icons.lock_outline);
     }
 
-    if (widget.type == TextInputFieldType.password) {
+    if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
       if (_controller.text.length == 0) {
         return Icon(Icons.keyboard_arrow_left, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
       } else {
