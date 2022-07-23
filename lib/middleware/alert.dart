@@ -104,7 +104,7 @@ class ScopeAlerts {
 
   SnackAlert exception(String message, {String title, int delay}) => _initialize(SnackAlert(
         _scope,
-        title: title ?? 'Error',
+        title: title ?? translate('anxeb.common.error'),
         message: message,
         icon: Icons.warning,
         fillColor: _scope.application.settings.colors.danger,

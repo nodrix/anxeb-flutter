@@ -203,7 +203,7 @@ class ApiException implements Exception {
             return null;
           }
         } catch (errc) {
-          return ApiException._getStatusException(err, body: err.error.toString()) ?? ApiException(err.message ?? 'Error interno', 0, err);
+          return ApiException._getStatusException(err, body: err.error.toString()) ?? ApiException(err.message ?? translate('anxeb.middleware.api.exception.internal_error'), 0, err);
         }
       }
     } else {
