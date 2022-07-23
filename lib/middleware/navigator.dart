@@ -1,4 +1,5 @@
 import 'package:anxeb_flutter/middleware/menu.dart';
+import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
 import 'application.dart';
 import 'scope.dart';
@@ -72,7 +73,7 @@ class Navigator {
     return null;
   }
 
-  MenuGroup add(MenuGroup group, {List<MenuItem> items}) {
+  MenuGroup add(MenuGroup group, {List<Anxeb.MenuItem> items}) {
     if (items != null) {
       group.setup(items);
     }
@@ -112,7 +113,7 @@ class Navigator {
     }
   }
 
-  Widget _buildItem(MenuItem $item, [MenuItem parent]) {
+  Widget _buildItem(Anxeb.MenuItem $item, [Anxeb.MenuItem parent]) {
     var $role = role?.call();
     var $roles = roles?.call();
 
@@ -279,7 +280,7 @@ class Navigator {
     }
   }
 
-  bool _isItemActive(MenuItem $item) {
+  bool _isItemActive(Anxeb.MenuItem $item) {
     var result = $item.active != null ? $item.active : ($item.isActive != null ? $item.isActive() : null);
     if (result == null) {
       if (_currentView != null && _currentView.name == $item.name) {
