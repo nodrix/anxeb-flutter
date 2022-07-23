@@ -165,6 +165,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         }
       } catch (err) {
         await widget.scope.idle();
+        await Future.delayed(Duration(milliseconds: 500));
         widget.scope.alerts.asterisk(translate('anxeb.widgets.fields.file.access_request')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
       }
     }
