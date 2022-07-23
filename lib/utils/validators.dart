@@ -51,6 +51,13 @@ class Validators {
     return translate('anxeb.utils.validators.credit_card.ccv_nnnn_error'); // TR 'Ingrese un código válido';
   }
 
+  String fourDigitsPin(String value) {
+    if (value != null && value.length == 4) {
+      return null;
+    }
+    return translate('anxeb.utils.validators.pin.default_error'); // TR 'Debe ingresar 4 dígitos';
+  }
+
   String creditCardCCV3Fix(String value) {
     if (value != null && value.length == 3) {
       var ccv = int.tryParse(value);
@@ -74,8 +81,8 @@ class Validators {
           var date = DateTime.now();
           var exp = DateTime(year, month);
 
-          if (exp.isBefore(date)) {
-            return 'Fecha de tarjeta expirada';
+          if (!exp.isAfter(date)) {
+            return translate('anxeb.utils.validators.credit_card.expired_date_error'); //Fecha de tarjeta expirada
           }
 
           return null;
@@ -98,8 +105,8 @@ class Validators {
           var date = DateTime.now();
           var exp = DateTime(year, month);
 
-          if (exp.isBefore(date)) {
-            return 'Fecha de tarjeta expirada';
+          if (!exp.isAfter(date)) {
+            return translate('anxeb.utils.validators.credit_card.expired_date_error'); //Fecha de tarjeta expirada
           }
 
           return null;
@@ -115,10 +122,17 @@ class Validators {
       var yy = value.substring(2, 4);
 
       var month = int.tryParse(mm);
-      var year = int.tryParse(yy);
+      var year = int.tryParse('20$yy');
 
       if (month != null && month >= 1 && month <= 12) {
-        if (year != null && year >= 1 && year <= 99) {
+        if (year != null && year >= 1 && year <= 2999) {
+          var date = DateTime.now();
+          var exp = DateTime(year, month);
+
+          if (!exp.isAfter(date)) {
+            return translate('anxeb.utils.validators.credit_card.expired_date_error'); //Fecha de tarjeta expirada
+          }
+
           return null;
         }
       }

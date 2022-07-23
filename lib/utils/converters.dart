@@ -188,7 +188,7 @@ class Converters {
       sufix = 'km';
     }
 
-    return fromAnyToNumber(value, comma: true, decimals: 0) + sufix;
+    return '${fromAnyToNumber(value, comma: true, decimals: 0)} $sufix';
   }
 
   String fromAnyToNumber(value, {int decimals, bool comma, String prefix}) {
