@@ -345,7 +345,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog prompt<T>(String title, {T value, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, int lines, String group}) {
+  MessageDialog prompt<T>(String title, {T value, String message, int maxLength, Color cancelFillColor, Color acceptFillColor, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, int lines, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -368,6 +368,7 @@ class ScopeDialogs {
         });
         return field.data();
       } else {
+        field.select();
         return null;
       }
     };
@@ -377,6 +378,7 @@ class ScopeDialogs {
       title: title,
       icon: icon ?? Icons.edit,
       iconSize: 48,
+      message: message,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.info,
       body: (context) => TextInputField<T>(
@@ -390,6 +392,7 @@ class ScopeDialogs {
         validator: validator ?? Utils.validators.required,
         action: TextInputAction.done,
         maxLines: lines,
+        maxLength: maxLength,
         type: type ?? TextInputFieldType.text,
         hint: hint,
         autofocus: true,
@@ -405,12 +408,12 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.info,
       buttons: swap == true
           ? [
-              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
-              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context), fillColor: cancelFillColor),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept(), fillColor: acceptFillColor),
             ]
           : [
-              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
-              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept(), fillColor: acceptFillColor),
+              DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context), fillColor: cancelFillColor),
             ],
     );
   }
