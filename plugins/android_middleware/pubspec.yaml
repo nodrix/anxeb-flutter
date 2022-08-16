@@ -1,7 +1,6 @@
 name: android_middleware
 description: Android Middleware
 version: 0.0.1
-author:
 homepage:
 
 environment:
