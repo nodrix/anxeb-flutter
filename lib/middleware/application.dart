@@ -48,6 +48,7 @@ class Application {
     if (_settings.analytics.available == true) {
       await _analytics.init(onMessage: onMessage);
     }
+    await Device.info.init();
   }
 
   @protected

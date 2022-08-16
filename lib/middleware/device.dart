@@ -13,6 +13,7 @@ import 'package:file_picker/file_picker.dart' as Picker;
 import '../helpers/camera.dart';
 import 'dialog.dart';
 import 'utils.dart';
+import 'package:package_info/package_info.dart';
 
 class Device {
   static final Device _singleton = Device._internal();
@@ -23,7 +24,7 @@ class Device {
 
   Device._internal();
 
-  static _DeviceInfo info = _DeviceInfo();
+  static DeviceInfo info = DeviceInfo();
 
   static Future<File> photo({Scope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
     File result;
@@ -193,22 +194,31 @@ class Device {
   }
 }
 
-class _DeviceInfo {
+class DeviceInfo {
   IosDeviceInfo _ios;
   AndroidDeviceInfo _android;
+  PackageInfo _package;
 
-  _DeviceInfo() {
+  DeviceInfo() {
     init();
   }
 
-  Future init() async {
+  Future<DeviceInfo> init() async {
     final info = DeviceInfoPlugin();
     if (Platform.isAndroid) {
       _android = await info.androidInfo;
     } else {
       _ios = await info.iosInfo;
     }
+    _package = await PackageInfo.fromPlatform();
+    return this;
   }
+
+  bool get isAndroid => Platform.isAndroid;
+
+  bool get isIOS => Platform.isIOS;
+
+  PackageInfo get package => _package;
 
   String get id => _ios.identifierForVendor ?? _android?.androidId;
 
