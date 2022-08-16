@@ -176,8 +176,13 @@ class ApiException implements Exception {
   final String message;
   final dynamic code;
   final dynamic raw;
+  final ApiException inner;
 
-  ApiException(this.message, this.code, this.raw);
+  ApiException(this.message, this.code, this.raw, [this.inner]);
+
+  factory ApiException.fromData(data) {
+    return ApiException(data['message'], data['code'], data);
+  }
 
   factory ApiException.fromErr(err) {
     if (err is DioError) {
@@ -198,7 +203,8 @@ class ApiException implements Exception {
             return ApiException._getStatusException(err, status: status) ?? ApiException(err.response.data['message'] ?? translate('anxeb.middleware.api.exception.internal_error'), status, err); //TR Error interno
           } else if (err != null && err.response != null && err.response.data != null && err.response.data['message'] != null && err.response.data['code'] != null) {
             var code = err.response.data['code'];
-            return ApiException._getStatusException(err, status: code) ?? ApiException(err.response.data['message'] ?? translate('anxeb.middleware.api.exception.internal_error'), code, err); //TR Error interno
+            final inner = err.response.data['inner'] != null ? ApiException.fromData(err.response.data['inner']) : null;
+            return ApiException._getStatusException(err, status: code, inner: inner) ?? ApiException(err.response.data['message'] ?? translate('anxeb.middleware.api.exception.internal_error'), code, err, inner); //TR Error interno
           } else {
             return null;
           }
@@ -211,7 +217,7 @@ class ApiException implements Exception {
     }
   }
 
-  static ApiException _getStatusException(err, {dynamic status, String body}) {
+  static ApiException _getStatusException(err, {dynamic status, String body, ApiException inner}) {
     var bodyStatus;
 
     if (body != null) {
@@ -230,21 +236,21 @@ class ApiException implements Exception {
     }
     switch (statusStr) {
       case '400':
-        return ApiException(translate('anxeb.middleware.api.exception.status_400'), 400, err); //TR Instrucción o llamada inválida
+        return ApiException(translate('anxeb.middleware.api.exception.status_400'), 400, err, inner); //TR Instrucción o llamada inválida
       case '401':
-        return ApiException(translate('anxeb.middleware.api.exception.status_401'), 401, err); //TR Acceso al recurso denegado
+        return ApiException(translate('anxeb.middleware.api.exception.status_401'), 401, err, inner); //TR Acceso al recurso denegado
       case '402':
-        return ApiException(translate('anxeb.middleware.api.exception.status_402'), 402, err); //TR Pago requerido
+        return ApiException(translate('anxeb.middleware.api.exception.status_402'), 402, err, inner); //TR Pago requerido
       case '403':
-        return ApiException(translate('anxeb.middleware.api.exception.status_403'), 403, err); //TR Acceso al recurso denegado
+        return ApiException(translate('anxeb.middleware.api.exception.status_403'), 403, err, inner); //TR Acceso al recurso denegado
       case '404':
-        return ApiException(translate('anxeb.middleware.api.exception.status_404'), 404, err); //TR Recurso no encontrado
+        return ApiException(translate('anxeb.middleware.api.exception.status_404'), 404, err, inner); //TR Recurso no encontrado
       case '405':
-        return ApiException(translate('anxeb.middleware.api.exception.status_405'), 405, err); //TR Instrucción o llamada inválida
+        return ApiException(translate('anxeb.middleware.api.exception.status_405'), 405, err, inner); //TR Instrucción o llamada inválida
       case '408':
-        return ApiException(translate('anxeb.middleware.api.exception.status_408'), 408, err); //TR Tiempo de respuesta prolongado
+        return ApiException(translate('anxeb.middleware.api.exception.status_408'), 408, err, inner); //TR Tiempo de respuesta prolongado
       case '500':
-        return ApiException(translate('anxeb.middleware.api.exception.status_500'), 500, err); //TR Error interno, recurso no encontrado en servidor
+        return ApiException(translate('anxeb.middleware.api.exception.status_500'), 500, err, inner); //TR Error interno, recurso no encontrado en servidor
     }
     return null;
   }
