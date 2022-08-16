@@ -159,6 +159,10 @@ class Model<T> {
     return _data.toJson();
   }
 
+  Data toData() {
+    return Data(_data);
+  }
+
   dynamic get $pk => _primaryField != null ? toValue() : null;
 
   @protected
@@ -299,6 +303,8 @@ class _ModelField {
       data[fieldName] = items;
     } else if (propertyValue is DateTime) {
       data[fieldName] = Utils.convert.fromDateToTick(propertyValue);
+    } else if (propertyValue is Color) {
+      data[fieldName] = Utils.convert.fromColorToHex(propertyValue);
     } else {
       data[fieldName] = propertyValue;
     }
