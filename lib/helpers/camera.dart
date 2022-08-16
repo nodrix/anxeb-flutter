@@ -1,20 +1,16 @@
 import 'dart:io';
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/view.dart';
-import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:anxeb_flutter/widgets/blocks/empty.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'preview.dart';
-import 'package:file_picker/file_picker.dart' as Picker;
 
 class CameraHelper extends ViewWidget {
   final String title;
@@ -25,88 +21,6 @@ class CameraHelper extends ViewWidget {
   final bool flash;
   final ResolutionPreset resolution;
   final String fileName;
-
-  static Future<File> takePicture({
-    Scope scope,
-    bool askPickMethod,
-    String title,
-    bool initFaceCamera,
-    bool allowMainCamera,
-    bool fullImage,
-    bool flash,
-    ResolutionPreset resolution,
-    String fileName,
-  }) async {
-    File result;
-
-    var option;
-    if (askPickMethod == true) {
-      await scope.dialogs.panel(
-        items: [
-          PanelMenuItem(
-            actions: [
-              PanelMenuAction(
-                label: () => translate('anxeb.helpers.camera.dialog.find_image'),
-                //TR 'Buscar\nImagen',
-                textScale: 0.9,
-                icon: () => FlutterIcons.file_image_mco,
-                fillColor: () => scope.application.settings.colors.secudary,
-                onPressed: () {
-                  option = 'image';
-                },
-              ),
-              PanelMenuAction(
-                label: () => translate('anxeb.helpers.camera.dialog.take_photo'),
-                //TR 'Tomar\nFoto',
-                textScale: 0.9,
-                icon: () => FlutterIcons.md_camera_ion,
-                fillColor: () => scope.application.settings.colors.secudary,
-                onPressed: () {
-                  option = 'photo';
-                },
-              ),
-            ],
-            height: () => 120,
-          ),
-        ],
-      ).show();
-    } else {
-      option = 'photo';
-    }
-
-    if (option == 'photo') {
-      result = await scope.view.push(CameraHelper(
-        title: title,
-        fullImage: fullImage,
-        initFaceCamera: initFaceCamera,
-        allowMainCamera: allowMainCamera,
-        flash: flash,
-        resolution: resolution,
-        fileName: fileName,
-      ));
-    } else if (option == 'image') {
-      try {
-        var picker = await Picker.FilePicker.platform.pickFiles(
-          type: Picker.FileType.image,
-          allowMultiple: false,
-          onFileLoading: (state) async {
-            await scope.busy();
-          },
-        );
-        await Future.delayed(Duration(milliseconds: 350));
-        await scope.idle();
-        if (picker != null) {
-          result = File(picker.files.single.path);
-        }
-      } catch (err) {
-        await Future.delayed(Duration(milliseconds: 350));
-        await scope.idle();
-        scope.alerts.asterisk(translate('anxeb.helpers.camera.picker.allow_access')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
-      }
-    }
-
-    return result;
-  }
 
   CameraHelper({
     this.title,

@@ -1,7 +1,6 @@
 import 'package:flutter_translate/flutter_translate.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/preview.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
@@ -11,6 +10,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import '../../middleware/device.dart';
 
 enum ImageInputFieldType { front, rear, local, web }
 
@@ -22,7 +22,7 @@ class ImageInputField extends FieldWidget<String> {
   final double height;
   final bool returnPath;
   final ResolutionPreset resolution;
-  final bool askPickMethod;
+  final FileSourceOption fileSourceOption;
   final bool showTextPreview;
   final String url;
 
@@ -56,7 +56,7 @@ class ImageInputField extends FieldWidget<String> {
     this.height,
     this.returnPath,
     this.resolution,
-    this.askPickMethod,
+    this.fileSourceOption,
     this.showTextPreview,
     this.url,
   })  : assert(name != null),
@@ -100,7 +100,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   void setup() {}
 
   void _takePicture() async {
-    File result = await CameraHelper.takePicture(
+    File result = await Device.photo(
       scope: widget.scope,
       title: widget.label,
       fullImage: widget.fullImage,
@@ -108,7 +108,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       allowMainCamera: widget.type == ImageInputFieldType.rear,
       flash: widget.flash,
       resolution: widget.resolution,
-      askPickMethod: widget.askPickMethod,
+      option: widget.fileSourceOption,
     );
 
     if (result != null) {
@@ -339,7 +339,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
     if (value != null && _takenPicture != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
-      return Icon(widget.askPickMethod == true ? Icons.search : Ionicons.md_camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+      return Icon(widget.fileSourceOption == FileSourceOption.browse ? Icons.search : Ionicons.md_camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
 }

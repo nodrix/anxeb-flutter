@@ -1,13 +1,10 @@
 import 'dart:io';
-import 'package:flutter_translate/flutter_translate.dart';
-
+import '../../middleware/utils.dart';
 import 'file.dart';
-import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/icons.dart';
-import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
@@ -15,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
+import '../../middleware/device.dart';
 
 class FilesInputField extends FieldWidget<List<FileInputValue>> {
   final bool allowMultiples;
@@ -217,42 +215,12 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
   }
 
   void _pickFile() async {
-    var option;
+    final shouldUseCamera = await Utils.dialogs.shouldUseCamera(widget.scope, useDocumentLabel: true);
     List<File> result = [];
 
-    await widget.scope.dialogs.panel(
-      items: [
-        PanelMenuItem(
-          actions: [
-            PanelMenuAction(
-              label: () => translate('anxeb.widgets.fields.files.browse_document'),
-              //TR 'Buscar\nDocumento',
-              textScale: 0.9,
-              icon: () => FlutterIcons.file_mco,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'document';
-              },
-            ),
-            PanelMenuAction(
-              label: () => translate('anxeb.widgets.fields.files.take_picture'),
-              //TR 'Tomar\nFoto',
-              textScale: 0.9,
-              icon: () => FlutterIcons.md_camera_ion,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'photo';
-              },
-            ),
-          ],
-          height: () => 120,
-        ),
-      ],
-    ).show();
-
-    if (option == 'photo') {
+    if (shouldUseCamera == true) {
       final title = widget.label + '_' + new DateTime.now().toIso8601String();
-      final picture = await widget.scope.view.push(CameraHelper(
+      final picture = await Device.photo(
         title: title,
         fullImage: true,
         initFaceCamera: false,
@@ -260,32 +228,21 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         fileName: title.toLowerCase().replaceAll(' ', '_'),
         flash: true,
         resolution: ResolutionPreset.high,
-      ));
+      );
 
       if (picture != null) {
         result.add(picture);
       }
-    } else if (option == 'document') {
-      try {
-        final picker = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowMultiple: widget.allowMultiples,
-          allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
-          onFileLoading: (state) async {
-            await widget.scope.busy();
-          },
-        );
-
-        await Future.delayed(Duration(milliseconds: 350));
-        await widget.scope.idle();
-
-        if (picker != null && picker.files.first != null) {
-          result = picker.files.map((file) => File(file.path)).toList();
-        }
-      } catch (err) {
-        await widget.scope.idle();
-        widget.scope.alerts.asterisk(translate('anxeb.widgets.fields.files.access_request')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
-      }
+    } else if (shouldUseCamera == false) {
+      result = await Device.browse<List<File>>(
+        scope: widget.scope,
+        type: FileType.custom,
+        allowMultiple: widget.allowMultiples,
+        allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
+        callback: (files) async {
+          return files.map((file) => File(file.path)).toList();
+        },
+      );
     }
 
     if (result != null && result.isNotEmpty) {

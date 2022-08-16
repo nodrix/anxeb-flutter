@@ -1,18 +1,18 @@
 import 'dart:io';
-import 'package:anxeb_flutter/helpers/camera.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/icons.dart';
-import 'package:anxeb_flutter/parts/panels/menu.dart';
 import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
+import '../../middleware/device.dart';
+import '../../middleware/utils.dart';
+
 
 class FileInputValue {
   FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl = false});
@@ -103,41 +103,11 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
   void setup() {}
 
   void _pickFile() async {
-    var option;
-    await widget.scope.dialogs.panel(
-      items: [
-        PanelMenuItem(
-          actions: [
-            PanelMenuAction(
-              label: () => translate('anxeb.widgets.fields.file.browse_document'),
-              //TR 'Buscar\nDocumento',
-              textScale: 0.9,
-              icon: () => FlutterIcons.file_mco,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'document';
-              },
-            ),
-            PanelMenuAction(
-              label: () => translate('anxeb.widgets.fields.file.take_picture'),
-              //TR 'Tomar\nFoto',
-              textScale: 0.9,
-              icon: () => FlutterIcons.md_camera_ion,
-              fillColor: () => widget.scope.application.settings.colors.secudary,
-              onPressed: () {
-                option = 'photo';
-              },
-            ),
-          ],
-          height: () => 120,
-        ),
-      ],
-    ).show();
-
+    final shouldUseCamera = await Utils.dialogs.shouldUseCamera(widget.scope, useDocumentLabel: true);
     File result;
 
-    if (option == 'photo') {
-      result = await widget.scope.view.push(CameraHelper(
+    if (shouldUseCamera == true) {
+      result = await Device.photo(
         title: widget.label,
         fullImage: true,
         initFaceCamera: false,
@@ -145,29 +115,17 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
         fileName: widget.label.toLowerCase().replaceAll(' ', '_'),
         flash: true,
         resolution: ResolutionPreset.high,
-      ));
-    } else if (option == 'document') {
-      try {
-        final picker = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowMultiple: false,
-          allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
-          onFileLoading: (state) async {
-            await widget.scope.busy();
-          },
-        );
-
-        await Future.delayed(Duration(milliseconds: 350));
-        await widget.scope.idle();
-
-        if (picker != null && picker.files.first != null) {
-          result = File(picker.files.first.path);
-        }
-      } catch (err) {
-        await widget.scope.idle();
-        await Future.delayed(Duration(milliseconds: 500));
-        widget.scope.alerts.asterisk(translate('anxeb.widgets.fields.file.access_request')).show(); //TR 'Debe permitir el acceso al sistema de archivos'
-      }
+      );
+    } else if (shouldUseCamera == false) {
+      result = await Device.browse<File>(
+        scope: widget.scope,
+        type: FileType.custom,
+        allowMultiple: false,
+        allowedExtensions: widget.allowedExtensions ?? ['jpeg', 'jpg', 'png', 'pdf'],
+        callback: (files) async {
+          return File(files.single.path);
+        },
+      );
     }
 
     if (result != null) {

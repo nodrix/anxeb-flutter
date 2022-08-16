@@ -1,8 +1,8 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../middleware/device.dart';
 
 enum BarcodeInputFieldType { numeric, alphanumeric }
 
@@ -160,7 +160,7 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
 
   void _scan() async {
     await Future.delayed(Duration(milliseconds: 200));
-    var $value = await Utils.device.beginBarcodeScan(autoflash: widget.autoflash);
+    var $value = await Device.scan(autoflash: widget.autoflash);
     if ($value != null) {
       super.value = $value;
       _controller.selection = TextSelection(baseOffset: _controller.text.length, extentOffset: _controller.text.length);

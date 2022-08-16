@@ -2,6 +2,7 @@ import 'package:anxeb_flutter/anxeb.dart';
 import 'package:flutter/material.dart' hide Navigator, Overlay;
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'disk.dart';
+import 'printer.dart';
 
 class Application {
   Settings _settings;
@@ -13,6 +14,7 @@ class Application {
   Analytics _analytics;
   bool _badgesSupport;
   LocalizationDelegate _localization;
+  Printer _printer;
 
   Application() {
     WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +22,7 @@ class Application {
     _title = 'Anxeb';
     _disk = Disk();
     _navigator = Navigator(this);
+    _printer = Printer(this);
     init();
     _auths = AuthProviders(this);
     if (_settings.analytics.available == true) {
@@ -41,7 +44,6 @@ class Application {
     if (locales != null) {
       _localization = await LocalizationDelegate.create(fallbackLocale: locales[0], supportedLocales: locales);
     }
-
     _badgesSupport = _settings.general.badges == true && await FlutterAppBadger.isAppBadgeSupported();
     if (_settings.analytics.available == true) {
       await _analytics.init(onMessage: onMessage);
@@ -90,4 +92,6 @@ class Application {
   Disk get disk => _disk;
 
   LocalizationDelegate get localization => _localization;
+
+  Printer get printer => _printer;
 }

@@ -345,7 +345,27 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog prompt<T>(String title, {T value, String message, int maxLength, Color cancelFillColor, Color acceptFillColor, TextInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, int lines, String group}) {
+  MessageDialog prompt<T>(
+    String title, {
+    T value,
+    String message,
+    int maxLength,
+    Color cancelFillColor,
+    Color acceptFillColor,
+    TextInputFieldType type,
+    String label,
+    FormFieldValidator<String> validator,
+    String hint,
+    IconData icon,
+    String acceptLabel,
+    String cancelLabel,
+    bool swap,
+    int lines,
+    String group,
+    double inputIconSize,
+    double inputFontSize,
+  }) {
+    T _value = value;
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -353,15 +373,14 @@ class ScopeDialogs {
       Navigator.of(context).pop(null);
     };
 
-    TextEditingController _controller = TextEditingController();
-
     var $formName = group ?? '_prompt_form';
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
     var accept = () {
-      form.set('prompt', _controller.text);
+      form.set('prompt', _value);
       var field = form.fields['prompt'];
+
       if (field.validate(showMessage: true) == null) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
           _scope.unfocus();
@@ -383,12 +402,13 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.info,
       body: (context) => TextInputField<T>(
         scope: _scope,
-        controller: _controller,
         name: 'prompt',
         group: $formName,
         margin: const EdgeInsets.only(top: 20),
         label: label,
         value: value,
+        fontSize: inputFontSize,
+        iconSize: inputIconSize,
         validator: validator ?? Utils.validators.required,
         action: TextInputAction.done,
         maxLines: lines,
@@ -398,6 +418,9 @@ class ScopeDialogs {
         autofocus: true,
         selected: true,
         focusNext: false,
+        onChanged: (newValue) {
+          _value = newValue;
+        },
         onActionSubmit: (value) {
           var data = accept();
           if (data != null) {
