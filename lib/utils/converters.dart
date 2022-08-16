@@ -142,6 +142,13 @@ class Converters {
       return null;
     }
     Duration duration = DateTime.now().difference(date);
+    return fromDurationToHumanCaption(duration);
+  }
+
+  String fromDurationToHumanCaption(Duration duration) {
+    if (duration == null) {
+      return null;
+    }
     int value;
     String sufix;
     bool isFuture = duration.inSeconds < 0;
