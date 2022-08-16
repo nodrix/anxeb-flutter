@@ -107,7 +107,7 @@ class Scope {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                          padding: EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 15),
                           margin: EdgeInsets.only(bottom: 20),
                           decoration: BoxDecoration(
                             color: application.settings.colors.busybox ?? Color(0xd9666666),
@@ -133,16 +133,16 @@ class Scope {
                                   strokeWidth: 3,
                                   valueColor: AlwaysStoppedAnimation<Color>(application.settings.colors.foreground ?? Color(0xffefefef)),
                                 ),
-                                height: 38,
-                                width: 38,
+                                height: 32,
+                                width: 32,
                               ),
                               Container(
-                                padding: EdgeInsets.only(top: 18),
+                                padding: EdgeInsets.only(top: 16),
                                 child: Text(text ?? translate('anxeb.common.loading'), //TR 'Cargando'
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w300,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w200,
                                       color: application.settings.colors.foreground ?? Colors.white,
                                       decoration: TextDecoration.none,
                                     )),
