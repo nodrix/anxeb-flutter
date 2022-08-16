@@ -148,6 +148,16 @@ class Validators {
     }
   }
 
+  String somePercentRequired(String value) {
+    var numb = Utils.convert.fromStringToDouble(value);
+
+    if (numb == null || numb <= 0 || numb > 100.0) {
+      return translate('anxeb.utils.validators.required.some_percent_error'); // TR 'Valor porcentual requerido';
+    } else {
+      return null;
+    }
+  }
+
   String greaterZero(String value) {
     var numb = Utils.convert.fromStringToDouble(value);
 

@@ -39,6 +39,13 @@ class Converters {
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
+  String fromColorToHex(Color color) {
+    if (color == null) {
+      return null;
+    }
+    return '0x${color.value.toRadixString(16).padLeft(8, '0')}';
+  }
+
   IconData fromHexToIconData(String hexString) {
     if (hexString == null) {
       return null;
@@ -191,7 +198,7 @@ class Converters {
     return '${fromAnyToNumber(value, comma: true, decimals: 0)} $sufix';
   }
 
-  String fromAnyToNumber(value, {int decimals, bool comma, String prefix}) {
+  String fromAnyToNumber(value, {int decimals, bool comma, String prefix, String sufix}) {
     if (value == null) {
       return null;
     }
@@ -202,7 +209,7 @@ class Converters {
     } else {
       result = $value;
     }
-    return (prefix ?? '') + result;
+    return (prefix ?? '') + result + (sufix ?? '');
   }
 
   String fromDateToFullDateString(DateTime date, {bool seconds, bool time}) {
@@ -229,6 +236,23 @@ class Converters {
     var fraction = double.parse('0.' + parts[1]);
     var inches = (fraction * 12.0).toInt();
     return '$feets\' $inches\'\'';
+  }
+
+  String fromDateToLocalizedDate(DateTime date, {bool withTime}) {
+    if (date == null) return null;
+
+    if (withTime == true) {
+      return DateFormat.yMd(translate('formats.date_locale')).format(date.toLocal()) + ' ' + DateFormat.jms(translate('formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
+    } else {
+      return DateFormat.yMMMMd(translate('formats.date_locale')).format(date.toLocal());
+    }
+  }
+
+  String fromDateToLocalizedTime(DateTime date, {bool duration}) {
+    if (date == null) return null;
+    final prefix = DateFormat.jms(translate('formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
+
+    return duration == false ? prefix.toUpperCase() : translate('formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date)}).toUpperCase();
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {
@@ -326,9 +350,7 @@ class Converters {
   }
 
   int fromDateToTick(DateTime date) {
-    return date != null ? (date
-        .toUtc()
-        .millisecondsSinceEpoch ~/ 1000) : null;
+    return date != null ? (date.toUtc().millisecondsSinceEpoch ~/ 1000) : null;
   }
 
   double fromAnyToMoney(value) {
