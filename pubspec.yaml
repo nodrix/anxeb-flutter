@@ -55,6 +55,8 @@ dependencies:
   in_app_review: ^2.0.4
   easy_mask: ^2.0.1
   bluetooth_print: ^3.0.1
+  smooth_page_indicator: ^1.0.0+2
+  open_store: ^0.2.4
 
 flutter:
   uses-material-design: true

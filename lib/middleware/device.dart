@@ -10,10 +10,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:google_ml_kit/google_ml_kit.dart' as ML;
 import 'package:file_picker/file_picker.dart' as Picker;
+import 'package:url_launcher/url_launcher.dart' as UL;
 import '../helpers/camera.dart';
 import 'dialog.dart';
 import 'utils.dart';
 import 'package:package_info/package_info.dart';
+import 'package:open_store/open_store.dart';
 
 class Device {
   static final Device _singleton = Device._internal();
@@ -25,6 +27,23 @@ class Device {
   Device._internal();
 
   static DeviceInfo info = DeviceInfo();
+
+  static Future launchStore({String appStoreId, String androidAppBundleId}) async {
+    OpenStore.instance.open(
+      appStoreId: appStoreId,
+      androidAppBundleId: androidAppBundleId,
+    );
+  }
+
+  static Future launchUrl(Scope scope, String url) async {
+    if (await UL.canLaunchUrl(Uri.parse(url))) {
+      await scope.busy();
+      await UL.launchUrl(Uri.parse(url));
+      await scope.idle();
+    } else {
+      scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
+    }
+  }
 
   static Future<File> photo({Scope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
     File result;
