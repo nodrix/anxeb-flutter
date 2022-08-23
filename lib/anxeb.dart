@@ -81,6 +81,7 @@ export 'widgets/blocks/spinner.dart';
 export 'package:file_picker/file_picker.dart';
 export 'package:sign_in_with_apple/sign_in_with_apple.dart';
 export 'parts/dialogs/period.dart';
+export 'parts/dialogs/slider.dart';
 export 'misc/view_action_locator.dart';
 export 'widgets/blocks/list_stats.dart';
 export 'package:percent_indicator/linear_percent_indicator.dart';

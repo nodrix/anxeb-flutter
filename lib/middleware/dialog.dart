@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../parts/dialogs/slider.dart';
 import 'field.dart';
 import 'form.dart';
 import 'scope.dart';
@@ -507,6 +508,13 @@ class ScopeDialogs {
 
   DateTimeDialog dateTime({DateTime value, bool pickTime}) {
     return DateTimeDialog(_scope, value: value, pickTime: pickTime);
+  }
+
+  SliderDialog slider({List<SliderItem> slides}) {
+    return SliderDialog(
+      _scope,
+      slides: slides,
+    );
   }
 }
 
