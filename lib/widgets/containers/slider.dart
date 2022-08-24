@@ -88,12 +88,12 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
 
   initState() {
     _opacityController = AnimationController(
-      duration: definition.options.fadeinDuration ?? Duration(milliseconds: 400),
+      duration: definition?.options?.fadeinDuration ?? Duration(milliseconds: 400),
       vsync: this,
       value: 0,
       lowerBound: 0,
       upperBound: 1,
-      reverseDuration: definition.options.fadeoutDuration ?? Duration(milliseconds: 600),
+      reverseDuration: definition?.options?.fadeoutDuration ?? Duration(milliseconds: 600),
     );
 
     _opacityController.addStatusListener((AnimationStatus status) {
@@ -109,10 +109,10 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
     );
 
     _scaleController = AnimationController(
-      duration: definition.options.transformDuration ?? Duration(milliseconds: 4000),
+      duration: definition?.options?.transformDuration ?? Duration(milliseconds: 4000),
       vsync: this,
-      value: definition.zoomFrom ?? 0.8,
-      lowerBound: definition.zoomFrom ?? 0.8,
+      value: definition?.zoomFrom ?? 0.8,
+      lowerBound: definition?.zoomFrom ?? 0.8,
       upperBound: 1,
       reverseDuration: Duration.zero,
     );
@@ -122,7 +122,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
     );
 
     _positionController = AnimationController(
-      duration: definition.options.transformDuration ?? Duration(milliseconds: 4000),
+      duration: definition?.options?.transformDuration ?? Duration(milliseconds: 4000),
       vsync: this,
       value: 0,
       lowerBound: 0,
@@ -130,7 +130,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
       reverseDuration: Duration.zero,
     );
 
-    _positionAnimation = Tween<Offset>(begin: definition.pushFrom ?? Offset(0, 0), end: definition.pushTo ?? Offset(0, 0)).animate(_positionController);
+    _positionAnimation = Tween<Offset>(begin: definition?.pushFrom ?? Offset(0, 0), end: definition?.pushTo ?? Offset(0, 0)).animate(_positionController);
 
     _opacityController.addListener(() {
       if (mounted) {
@@ -162,7 +162,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
   }
 
   double get _scale {
-    return widget.definition.scale ?? widget.definition.options.scale ?? 1;
+    return widget.definition?.scale ?? widget.definition?.options?.scale ?? 1;
   }
 
   double get _scaleSubstract {
@@ -197,7 +197,7 @@ class _SlideState extends State<_Slide> with TickerProviderStateMixin {
           child: FadeTransition(
             opacity: _opacityAnimation,
             child: Image(
-              image: this.widget.definition.image,
+              image: this.widget.definition?.image,
             ),
           ),
         ),
