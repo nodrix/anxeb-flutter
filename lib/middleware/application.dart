@@ -59,6 +59,8 @@ class Application {
     setBadge(analytics.notifications.length);
   }
 
+  void onEvent(ApplicationEventType type, {String reference, String description, dynamic data}) {}
+
   Settings get settings => _settings;
 
   String get version => 'v0.0.0';
@@ -96,3 +98,5 @@ class Application {
 
   Printer get printer => _printer;
 }
+
+enum ApplicationEventType { error, exception, asterisk, success, information, notification, action, debug, prompt, view }

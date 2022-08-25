@@ -68,6 +68,7 @@ class Scope {
     if (application.settings.analytics.available == true) {
       application.analytics.setup(scope: this);
     }
+    application?.onEvent?.call(ApplicationEventType.view, reference: view.name);
   }
 
   void dispose() {

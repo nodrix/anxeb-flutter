@@ -16,6 +16,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/slider.dart';
+import 'application.dart';
 import 'field.dart';
 import 'form.dart';
 import 'scope.dart';
@@ -104,6 +105,8 @@ class ScopeDialogs {
   }
 
   MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
+    _scope.application?.onEvent?.call(ApplicationEventType.information, reference: title, description: message);
+
     return MessageDialog(
       _scope,
       title: title,
@@ -128,10 +131,22 @@ class ScopeDialogs {
   }
 
   MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
-    return MessageDialog(_scope, title: title, message: message, icon: icon ?? Icons.check_circle, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.primary, iconColor: _scope.application.settings.colors.success, buttons: buttons, body: body);
+    _scope.application?.onEvent?.call(ApplicationEventType.success, reference: title, description: message);
+    return MessageDialog(
+      _scope,
+      title: title,
+      message: message,
+      icon: icon ?? Icons.check_circle,
+      messageColor: _scope.application.settings.colors.text,
+      titleColor: _scope.application.settings.colors.primary,
+      iconColor: _scope.application.settings.colors.success,
+      buttons: buttons,
+      body: body,
+    );
   }
 
   MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon, bool dismissible}) {
+    _scope.application?.onEvent?.call(ApplicationEventType.exception, reference: title, description: message);
     return MessageDialog(
       _scope,
       title: title,
@@ -145,10 +160,13 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog error(error, {List<DialogButton> buttons, IconData icon}) {
+  MessageDialog error(err, {List<DialogButton> buttons, IconData icon}) {
+    final $title = err is FormatException ? err.message : err.toString();
+    _scope.application?.onEvent?.call(ApplicationEventType.error, reference: $title, data: err);
+
     return MessageDialog(
       _scope,
-      title: error is FormatException ? error.message : error.toString(),
+      title: $title,
       icon: icon ?? Icons.error,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.danger,
@@ -158,6 +176,7 @@ class ScopeDialogs {
   }
 
   MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget Function(BuildContext context) body, bool swap}) {
+    _scope.application?.onEvent?.call(ApplicationEventType.prompt, reference: title ?? message, description: title == null ? null : message);
     return MessageDialog(
       _scope,
       title: title ?? translate('anxeb.middleware.dialog.confirm.title'),
