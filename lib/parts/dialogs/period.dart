@@ -228,6 +228,13 @@ class PeriodValue {
     _month = allMonths == true ? null : DateTime.now().month;
   }
 
+  dynamic toObject() {
+    return {
+      'year': _year,
+      'month': _month,
+    };
+  }
+
   @override
   String toString({bool light}) {
     if (_year != null) {
