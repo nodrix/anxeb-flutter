@@ -151,11 +151,23 @@ class ScopeAlerts {
       print('\n');
     } else if (err is String) {
       message = err.toString();
+    } else if (err is NetworkImageLoadException) {
+      message = err.toString();
     } else {
-      if (err.message != null) {
-        message = err.message;
-      } else if (err.data != null && err.data.message != null) {
-        message = err.data.message;
+      try {
+        if (err.message != null) {
+          message = err.message;
+        }
+      } catch (ig) {
+        try {
+          if (err.data != null && err.data.message != null) {
+            message = err.data.message;
+          }
+        } catch (ig) {
+          if (err != null) {
+            message = err.toString();
+          }
+        }
       }
     }
 
