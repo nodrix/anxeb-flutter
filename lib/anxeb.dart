@@ -28,7 +28,6 @@ export 'widgets/fields/checkbox.dart';
 export 'misc/key_value.dart';
 export 'middleware/api.dart';
 export 'middleware/model.dart';
-export 'middleware/helper.dart';
 export 'middleware/footer.dart';
 export 'middleware/menu.dart';
 export 'middleware/navigator.dart';

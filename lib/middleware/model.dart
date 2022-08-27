@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'package:anxeb_flutter/middleware/utils.dart';
-import 'package:anxeb_flutter/misc/common.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'data.dart';
-import 'helper.dart';
-import 'scope.dart';
+import '../anxeb.dart';
 
 class Model<T> {
   Data _data;
@@ -171,26 +167,67 @@ class Model<T> {
   }
 }
 
-class HelpedModel<T, H extends ModelHelper> extends Model<T> {
-  ModelHelper _helper;
+class HelpedModel<T, H extends ModelHelper<T>> extends Model<T> {
+  H _helper;
 
   HelpedModel([data]) : super(data);
 
   HelpedModel.fromDisk(String diskKey, ModelLoadedCallback<T> callback) : super.fromDisk(diskKey, callback);
 
   @protected
-  H helper(Scope scope) {
-    return ModelHelper(scope: scope, model: this) as H;
+  H helper() {
+    return ModelHelper<T>() as H;
   }
 
-  H using(Scope scope, {bool reset}) {
-    if (reset == true) {
-      _helper = helper(scope);
-    } else {
-      _helper = _helper ?? helper(scope);
+  H using(Scope scope, {String api, bool reset}) {
+    if (reset == true || _helper == null) {
+      _helper = helper();
     }
+    _helper._set(scope: scope, model: this, api: api);
     return _helper;
   }
+}
+
+class ModelHelper<T> {
+  Scope _scope;
+  Model<T> _model;
+  String _api;
+
+  Future<bool> delete() async {
+    var result = await _scope.dialogs.confirm(translate('anxeb.middleware.helper.delete_confirm')).show(); //TR ¿Estás seguro que quieres eliminar este registro?
+    if (result) {
+      try {
+        await _scope.busy();
+        await _application.api.delete('/$_api/${_model.$pk}');
+        return true;
+      } catch (err) {
+        _scope.alerts.error(err).show();
+      } finally {
+        await _scope.idle();
+      }
+    }
+    return false;
+  }
+
+  void _set({Scope scope, Model<T> model, String api}) {
+    if (scope != null) {
+      _scope = scope;
+    }
+    if (model != null) {
+      _model = model;
+    }
+    if (api != null) {
+      _api = api;
+    }
+  }
+
+  @protected
+  Scope get scope => _scope;
+
+  @protected
+  T get model => _model as T;
+
+  Application get _application => _scope.application;
 }
 
 class _ModelField {
