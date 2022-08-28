@@ -16,6 +16,7 @@ import 'dialog.dart';
 import 'utils.dart';
 import 'package:package_info/package_info.dart';
 import 'package:open_store/open_store.dart';
+import 'package:app_settings/app_settings.dart';
 
 class Device {
   static final Device _singleton = Device._internal();
@@ -27,6 +28,14 @@ class Device {
   Device._internal();
 
   static DeviceInfo info = DeviceInfo();
+
+  static DeviceSettings settings = DeviceSettings();
+
+  static DevicePermissions permission = DevicePermissions();
+
+  static bool isAndroid = Platform.isAndroid == true;
+
+  static bool isIOS = Platform.isIOS == true;
 
   static Future launchStore({String appStoreId, String androidAppBundleId}) async {
     OpenStore.instance.open(
@@ -183,7 +192,7 @@ class Device {
         ).show();
 
         if (result == 'settings') {
-          openAppSettings();
+          settings.storage();
         }
       } else if (err.code == 'already_active') {
         //THIS IS A LIBRARY ISSUE
@@ -211,6 +220,112 @@ class Device {
     }
     return result;
   }
+}
+
+class DevicePermissions {
+  Permission get calendar => Permission.calendar;
+
+  Permission get camera => Permission.camera;
+
+  Permission get contacts => Permission.contacts;
+
+  Permission get location => Permission.location;
+
+  Permission get locationAlways => Permission.locationAlways;
+
+  Permission get locationWhenInUse => Permission.locationWhenInUse;
+
+  Permission get mediaLibrary => Permission.mediaLibrary;
+
+  Permission get microphone => Permission.microphone;
+
+  Permission get phone => Permission.phone;
+
+  Permission get photos => Permission.photos;
+
+  Permission get photosAddOnly => Permission.photosAddOnly;
+
+  Permission get reminders => Permission.reminders;
+
+  Permission get sensors => Permission.sensors;
+
+  Permission get sms => Permission.sms;
+
+  Permission get speech => Permission.speech;
+
+  Permission get storage => Permission.storage;
+
+  Permission get ignoreBatteryOptimizations => Permission.ignoreBatteryOptimizations;
+
+  Permission get notification => Permission.notification;
+
+  Permission get accessMediaLocation => Permission.accessMediaLocation;
+
+  Permission get activityRecognition => Permission.activityRecognition;
+
+  Permission get unknown => Permission.unknown;
+
+  Permission get bluetooth => Permission.bluetooth;
+
+  Permission get manageExternalStorage => Permission.manageExternalStorage;
+
+  Permission get systemAlertWindow => Permission.systemAlertWindow;
+
+  Permission get requestInstallPackages => Permission.requestInstallPackages;
+
+  Permission get appTrackingTransparency => Permission.appTrackingTransparency;
+
+  Permission get criticalAlerts => Permission.criticalAlerts;
+
+  Permission get accessNotificationPolicy => Permission.accessNotificationPolicy;
+
+  Permission get bluetoothScan => Permission.bluetoothScan;
+
+  Permission get bluetoothAdvertise => Permission.bluetoothAdvertise;
+
+  Permission get bluetoothConnect => Permission.bluetoothConnect;
+}
+
+class DeviceSettings {
+  Future wifi() => AppSettings.openWIFISettings();
+
+  Future wireless() => AppSettings.openWirelessSettings();
+
+  Future location() => AppSettings.openLocationSettings();
+
+  Future security() => AppSettings.openSecuritySettings();
+
+  Future lock() => AppSettings.openLockAndPasswordSettings();
+
+  Future bluetooth() => AppSettings.openBluetoothSettings();
+
+  Future roaming() => AppSettings.openDataRoamingSettings();
+
+  Future date() => AppSettings.openDateSettings();
+
+  Future display() => AppSettings.openDisplaySettings();
+
+  Future notification() => AppSettings.openNotificationSettings();
+
+  Future sound() => AppSettings.openSoundSettings();
+
+  Future storage() => AppSettings.openInternalStorageSettings();
+
+  Future battery() => AppSettings.openBatteryOptimizationSettings();
+
+  Future app() => AppSettings.openAppSettings();
+
+  Future nfc() => AppSettings.openNFCSettings();
+
+  Future device() => AppSettings.openDeviceSettings();
+
+  Future vpn() => AppSettings.openVPNSettings();
+
+  Future accessibility() => AppSettings.openAccessibilitySettings();
+
+  Future development() => AppSettings.openDevelopmentSettings();
+
+  Future hotspot() => AppSettings.openHotspotSettings();
 }
 
 class DeviceInfo {
