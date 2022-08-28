@@ -6,11 +6,12 @@ import 'dart:core' as Core;
 import 'dart:core';
 import 'package:bluetooth_print/bluetooth_print.dart';
 import 'package:bluetooth_print/bluetooth_print_model.dart';
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../widgets/buttons/text.dart';
 import 'application.dart';
+import 'device.dart';
 import 'dialog.dart';
 import 'scope.dart';
 import 'utils.dart';
@@ -19,17 +20,18 @@ class Printer {
   final Application application;
   BluetoothPrint _manager;
   bool _connected = false;
-  Future Function(String) _persist;
-  String Function() _fetch;
+  Future Function(dynamic) _persist;
+  dynamic Function() _fetch;
   int _lastFoundLength;
+  BluetoothDevice _device;
 
   Printer(this.application) {
     _manager = BluetoothPrint.instance;
   }
 
-  Future init({Future Function(String) persistAddress, String Function() fetchAddress}) async {
-    _persist = persistAddress;
-    _fetch = fetchAddress;
+  Future init({Future Function(dynamic) persistDevice, dynamic Function() fetchDevice}) async {
+    _persist = persistDevice;
+    _fetch = fetchDevice;
     _manager.state.listen((state) {
       switch (state) {
         case BluetoothPrint.CONNECTED:
@@ -44,8 +46,17 @@ class Printer {
     });
   }
 
+  Future<bool> _needPermission() async {
+    final isEnabled = await _manager.isOn == true;
+    final isAvailable = await _manager.isAvailable == true;
+    final isGranted = isAvailable == true ? true : await Device.permission.bluetoothScan.isDenied != true;
+    final isAllowed = await Device.permission.bluetooth.isPermanentlyDenied != true;
+
+    return !isEnabled || !isAvailable || !isGranted || !isAllowed;
+  }
+
   Future send({@required Scope scope, dynamic data, String layout}) async {
-    if (await _manager.isOn == false) {
+    if (await _needPermission() == true) {
       var result = await scope.dialogs.exception(
         translate('anxeb.middleware.printer.bt_disabled_title'), //Bluetooth Desactivado
         dismissible: true,
@@ -58,8 +69,8 @@ class Printer {
       ).show();
 
       if (result == 'settings') {
-        AppSettings.openBluetoothSettings().then((value) async {
-          if (await _manager.isOn == true) {
+        Device.settings.bluetooth().then((value) async {
+          if (await _needPermission() == false) {
             send(scope: scope, data: data, layout: layout);
           }
         });
@@ -67,33 +78,63 @@ class Printer {
       return;
     }
 
-    _connected = await _manager.isConnected;
-
     if (_connected == false) {
-      var deviceAddress = _fetch?.call();
-      BluetoothDevice device;
-      if (deviceAddress != null) {
-        await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
-        device = await _lookupDevice(scope, deviceAddress);
+      await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+
+      if (_device != null) {
+        await _tryConnect();
       }
-      if (device == null) {
+
+      var fetchedDevice = _fetch?.call();
+      if (fetchedDevice != null) {
+        try {
+          _device = BluetoothDevice();
+          _device.type = fetchedDevice['type'];
+          _device.address = fetchedDevice['address'];
+          _device.name = fetchedDevice['name'];
+          final result = await _tryConnect();
+
+          if (result == false) {
+            await scope.idle();
+            var result = await scope.dialogs.exception(
+              translate('anxeb.middleware.printer.bt_reset_dialog.title'), //Dispositivo No Responde
+              dismissible: true,
+              message: translate('anxeb.middleware.printer.bt_reset_dialog.message'),
+              icon: Icons.print_disabled,
+              buttons: [
+                DialogButton(translate('anxeb.common.retry'), 'retry'),
+                DialogButton(translate('anxeb.common.scan'), 'scan'),
+              ],
+            ).show();
+
+            if (result == 'retry') {
+              send(scope: scope, data: data, layout: layout);
+              return;
+            } else if (result == null) {
+              return;
+            }
+            await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+          }
+        } catch (err) {
+          _device = null;
+        }
+      }
+
+      if (_device == null) {
         await scope.idle();
-        device = await _chooseDevice(scope);
-        if (device != null) {
+        _device = await _chooseDevice(scope);
+        if (_device != null) {
           await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+          await _persistDevice();
+          await _tryConnect();
         } else {
           return null;
         }
       }
 
-      await _manager.connect(device);
-
       if (await isConnected() == true) {
-        await _persist(device.address);
         await Future.delayed(Duration(milliseconds: 3000));
         await scope.idle();
-        send(scope: scope, data: data, layout: layout);
-        return;
       }
     }
 
@@ -185,14 +226,40 @@ class Printer {
 
         await _manager.printReceipt(config, list);
         await scope.idle();
+        _connected = false;
       } catch (err) {
         scope.alerts.error(err).show();
       } finally {
         await scope.idle();
       }
     } else {
+      _connected = false;
       scope.alerts.error(Anxeb.translate('anxeb.middleware.printer.error_connecting')).show();
     }
+  }
+
+  Future _persistDevice() async {
+    if (_device != null) {
+      await _persist({
+        'address': _device.address,
+        'type': _device.type,
+        'name': _device.name,
+      });
+    }
+  }
+
+  Future<bool> _tryConnect() async {
+    if (_device != null) {
+      if (await _manager.isConnected == false || _connected == false) {
+        await _manager.connect(_device);
+        if (await isConnected() != true) {
+          _device = null;
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   _formatValue(value, String format) {
@@ -272,10 +339,7 @@ class Printer {
       line = '${line.substring(0, leftIndex - 4)}${line.substring(rightIndex + 1)}';
     }
 
-    var items = line.split(' ').where((item) =>
-    item
-        .trim()
-        .length > 0);
+    var items = line.split(' ').where((item) => item.trim().length > 0);
     for (var item in items) {
       var parts = item.trim().split(':');
       params[parts[0]] = parts[1];
@@ -347,29 +411,6 @@ class Printer {
     return completer.future;
   }
 
-  Future<BluetoothDevice> _lookupDevice(Scope scope, String address) async {
-    var completer = Completer<BluetoothDevice>();
-    _manager.startScan(timeout: Duration(seconds: 3));
-
-    Future.delayed(Duration(seconds: 4)).then((value) {
-      if (!completer.isCompleted) {
-        completer.complete(null);
-      }
-    });
-
-    _manager.scanResults.listen((event) async {
-      _lastFoundLength = event.length;
-      final foundDevice = event.firstWhere((element) => element.address == address, orElse: () => null);
-      if (foundDevice != null) {
-        if (!completer.isCompleted) {
-          _manager.stopScan();
-          completer.complete(foundDevice);
-        }
-      }
-    });
-    return completer.future;
-  }
-
   Future<BluetoothDevice> _chooseDevice(Scope scope) async {
     _manager.startScan(timeout: Duration(seconds: 4));
 
@@ -380,63 +421,62 @@ class Printer {
             StreamBuilder<bool>(
               stream: _manager.isScanning,
               initialData: true,
-              builder: (c, snapshot) =>
-                  Container(
-                    child: snapshot.data == false
-                        ? Row(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(right: 7),
-                          margin: EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+              builder: (c, snapshot) => Container(
+                child: snapshot.data == false
+                    ? Row(
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(right: 7),
+                            margin: EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+                              ),
+                            ),
+                            child: Icon(
+                              _lastFoundLength != null && _lastFoundLength > 0 ? Icons.print : Icons.print_disabled,
+                              size: 48,
+                              color: _lastFoundLength != null && _lastFoundLength > 0 ? scope.application.settings.colors.primary : scope.application.settings.colors.danger,
                             ),
                           ),
-                          child: Icon(
-                            _lastFoundLength != null && _lastFoundLength > 0 ? Icons.print : Icons.print_disabled,
-                            size: 48,
-                            color: _lastFoundLength != null && _lastFoundLength > 0 ? scope.application.settings.colors.primary : scope.application.settings.colors.danger,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            _lastFoundLength != null && _lastFoundLength > 0 ? translate('anxeb.middleware.printer.select_dialog_title') : translate('anxeb.middleware.printer.not_found'), //SELECCIONA UNA IMPRESORA\nDE LA LISTA
-                            textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 16.2, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
-                          ),
-                        ),
-                      ],
-                    )
-                        : Row(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(right: 7),
-                          margin: EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+                          Expanded(
+                            child: Text(
+                              _lastFoundLength != null && _lastFoundLength > 0 ? translate('anxeb.middleware.printer.select_dialog_title') : translate('anxeb.middleware.printer.not_found'), //SELECCIONA UNA IMPRESORA\nDE LA LISTA
+                              textAlign: TextAlign.left,
+                              style: TextStyle(fontSize: 16.2, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
                             ),
                           ),
-                          child: SizedBox(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 5,
-                              valueColor: AlwaysStoppedAnimation<Color>(scope.application.settings.colors.primary),
+                        ],
+                      )
+                    : Row(
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(right: 7),
+                            margin: EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+                              ),
                             ),
-                            height: 48,
-                            width: 48,
+                            child: SizedBox(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 5,
+                                valueColor: AlwaysStoppedAnimation<Color>(scope.application.settings.colors.primary),
+                              ),
+                              height: 48,
+                              width: 48,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            translate('anxeb.middleware.printer.scan_dialog_title'),
-                            textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 16.2, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
+                          Expanded(
+                            child: Text(
+                              translate('anxeb.middleware.printer.scan_dialog_title'),
+                              textAlign: TextAlign.left,
+                              style: TextStyle(fontSize: 16.2, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        ],
+                      ),
+              ),
             ),
             StreamBuilder<List<BluetoothDevice>>(
               stream: _manager.scanResults,
@@ -445,19 +485,18 @@ class Printer {
                 _lastFoundLength = snapshot.data.length;
                 return Column(
                   children: snapshot.data
-                      .map((device) =>
-                      ListTile(
-                        title: Text(device.name),
-                        subtitle: Text(device.address),
-                        dense: true,
-                        onTap: () async {
-                          Navigator.of(context).pop(device);
-                        },
-                        trailing: Icon(
-                          Icons.bluetooth,
-                          color: device.connected == true ? scope.application.settings.colors.success : scope.application.settings.colors.primary,
-                        ),
-                      ))
+                      .map((device) => ListTile(
+                            title: Text(device.name),
+                            subtitle: Text(device.address),
+                            dense: true,
+                            onTap: () async {
+                              Navigator.of(context).pop(device);
+                            },
+                            trailing: Icon(
+                              Icons.bluetooth,
+                              color: device.connected == true ? scope.application.settings.colors.success : scope.application.settings.colors.primary,
+                            ),
+                          ))
                       .toList(),
                 );
               },
@@ -465,45 +504,44 @@ class Printer {
             StreamBuilder<bool>(
               stream: _manager.isScanning,
               initialData: true,
-              builder: (c, snapshot) =>
-                  Container(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Anxeb.TextButton(
-                            caption: translate('anxeb.common.scan'),
-                            radius: scope.application.settings.dialogs.buttonRadius,
-                            color: scope.application.settings.colors.primary,
-                            enabled: snapshot.data == false,
-                            textColor: Colors.white,
-                            margin: EdgeInsets.only(top: 10, right: 5),
-                            onPressed: () {
-                              _manager.startScan(timeout: Duration(seconds: 4));
-                            },
-                            type: ButtonType.primary,
-                            size: ButtonSize.small,
-                          ),
-                        ),
-                        Expanded(
-                          child: Anxeb.TextButton(
-                            caption: snapshot.data == true ? translate('anxeb.common.cancel') : translate('anxeb.common.close'),
-                            radius: scope.application.settings.dialogs.buttonRadius,
-                            color: scope.application.settings.colors.primary,
-                            textColor: Colors.white,
-                            margin: EdgeInsets.only(top: 10, left: 5),
-                            onPressed: () {
-                              Navigator.of(context).pop(null);
-                              if (snapshot.data == true) {
-                                _manager.stopScan();
-                              }
-                            },
-                            type: ButtonType.primary,
-                            size: ButtonSize.small,
-                          ),
-                        ),
-                      ],
+              builder: (c, snapshot) => Container(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Anxeb.TextButton(
+                        caption: translate('anxeb.common.scan'),
+                        radius: scope.application.settings.dialogs.buttonRadius,
+                        color: scope.application.settings.colors.primary,
+                        enabled: snapshot.data == false,
+                        textColor: Colors.white,
+                        margin: EdgeInsets.only(top: 10, right: 5),
+                        onPressed: () {
+                          _manager.startScan(timeout: Duration(seconds: 4));
+                        },
+                        type: ButtonType.primary,
+                        size: ButtonSize.small,
+                      ),
                     ),
-                  ),
+                    Expanded(
+                      child: Anxeb.TextButton(
+                        caption: snapshot.data == true ? translate('anxeb.common.cancel') : translate('anxeb.common.close'),
+                        radius: scope.application.settings.dialogs.buttonRadius,
+                        color: scope.application.settings.colors.primary,
+                        textColor: Colors.white,
+                        margin: EdgeInsets.only(top: 10, left: 5),
+                        onPressed: () {
+                          Navigator.of(context).pop(null);
+                          if (snapshot.data == true) {
+                            _manager.stopScan();
+                          }
+                        },
+                        type: ButtonType.primary,
+                        size: ButtonSize.small,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           ],
         );
