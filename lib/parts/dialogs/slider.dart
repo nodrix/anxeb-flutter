@@ -36,22 +36,20 @@ class _SliderBlock extends StatefulWidget {
 class _SliderBlockState extends State<_SliderBlock> {
   int _index;
   double _width;
-  double _height;
 
   @override
   void initState() {
-    super.initState();
-
     if (widget.slides.length > 0) {
       widget.slides.first.onOpened?.call();
     }
+
+    _width = _width ?? widget.scope.window.available.width;
+
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    _height = _height ?? widget.scope.window.available.height;
-    _width = _width ?? widget.scope.window.available.width;
-
     final radius = BorderRadius.all(Radius.circular(23 ?? application.settings.dialogs.dialogRadius ?? 20.0));
     final controller = PageController(keepPage: true);
 
@@ -143,19 +141,20 @@ class _SliderBlockState extends State<_SliderBlock> {
         contentPadding: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         content: Container(
+          width: double.maxFinite,
+          height: double.maxFinite,
           child: Stack(
             children: [
-              PageView.builder(
+              PageView(
+                allowImplicitScrolling: true,
+                pageSnapping: true,
                 controller: controller,
+                children: pages,
                 onPageChanged: (index) {
                   setState(() {
                     _index = index;
                     widget.slides[_index].onOpened?.call();
                   });
-                },
-                itemCount: pages.length,
-                itemBuilder: (_, index) {
-                  return pages[index % pages.length];
                 },
               ),
               Column(
