@@ -127,7 +127,7 @@ class _PhotoBlockState extends State<PhotoBlock> {
                       alignment: Alignment.center,
                       child: widget.failIcon ??
                           Icon(
-                            Anxeb.FlutterIcons.broken_image_mdi,
+                            Icons.broken_image,
                             color: Colors.black12,
                             size: 90,
                           ),

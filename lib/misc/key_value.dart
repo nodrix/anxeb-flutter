@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class KeyValue<T> {
   KeyValue(this.key, this.value);
 
@@ -19,5 +17,5 @@ class KeyValue<T> {
   }
 
   @override
-  int get hashCode => hashValues(runtimeType, value);
+  int get hashCode => Object.hash(runtimeType, value);
 }

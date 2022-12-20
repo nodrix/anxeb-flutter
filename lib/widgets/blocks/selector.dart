@@ -1,5 +1,6 @@
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
 
 class SelectorBlock extends StatelessWidget {
   final Anxeb.Scope scope;
@@ -125,7 +126,7 @@ class SelectorBlock extends StatelessWidget {
                   Container(
                     width: width ?? 65,
                     padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-                    child: failedIcon ?? const Icon(Anxeb.FlutterIcons.building_faw5s, size: 40),
+                    child: failedIcon ?? const Icon(FontAwesome5.building, size: 40),
                   ),
                   Expanded(
                     child: Container(

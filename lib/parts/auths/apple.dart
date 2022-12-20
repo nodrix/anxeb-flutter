@@ -20,7 +20,7 @@ class AppleAuth extends AuthProvider {
       final session = await SignInWithApple.getAppleIDCredential(
         nonce: _nonce?.call(),
         scopes: [
-          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.email, //ASAuthorizationAppleIDCredential containing the user info until you can validate that an account has succesfully been created on your server.
           AppleIDAuthorizationScopes.fullName,
         ],
       );

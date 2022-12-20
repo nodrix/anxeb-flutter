@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui show instantiateImageCodec, Codec;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -20,7 +19,7 @@ class SecuredImage extends ImageProvider<SecuredImage> {
   }
 
   @override
-  ImageStreamCompleter load(SecuredImage key, DecoderCallback decode) {
+  ImageStreamCompleter load(SecuredImage key, decode) {
     return new MultiFrameImageStreamCompleter(
         codec: _loadAsync(key, decode),
         scale: key.scale,
@@ -33,7 +32,7 @@ class SecuredImage extends ImageProvider<SecuredImage> {
   //TODO: Validate PEM Certificate
   static final HttpClient _httpClient = new HttpClient()..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
 
-  Future<ui.Codec> _loadAsync(SecuredImage key, DecoderCallback decode) async {
+  Future<ui.Codec> _loadAsync(SecuredImage key, decode) async {
     assert(key == this);
 
     final Uri resolved = Uri.base.resolve(key.url);
@@ -58,7 +57,7 @@ class SecuredImage extends ImageProvider<SecuredImage> {
   }
 
   @override
-  int get hashCode => hashValues(url, scale);
+  int get hashCode => Object.hash(url, scale);
 
   @override
   String toString() => '$runtimeType("$url", scale: $scale)';

@@ -2,8 +2,9 @@ import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
+import 'package:community_material_icon/community_material_icon.dart';
 
 class DateInputField extends FieldWidget<DateTime> {
   final bool autofocus;
@@ -204,7 +205,7 @@ class _DateInputFieldState extends Field<DateTime, DateInputField> {
     if (value != null) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
-      return Icon(FlutterIcons.calendar_month_mco, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+      return Icon(CommunityMaterialIcons.calendar_month, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
 

@@ -1,8 +1,8 @@
 import 'package:anxeb_flutter/middleware/application.dart';
 import 'package:anxeb_flutter/parts/alerts/snack.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:community_material_icon/community_material_icon.dart';
 import 'scope.dart';
 
 class ScopeAlert {
@@ -112,7 +112,7 @@ class ScopeAlerts {
       _scope,
       title: title,
       message: message,
-      icon: FlutterIcons.asterisk_mco,
+      icon: CommunityMaterialIcons.asterisk,
       fillColor: _scope.application.settings.colors.asterisk,
       delay: delay,
     ));

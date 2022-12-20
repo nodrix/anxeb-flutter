@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' hide Overlay;
-import 'package:after_init/after_init.dart';
+import '../misc/after_init.dart';
 import 'form.dart';
 import 'scope.dart';
 
@@ -58,8 +58,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.initialValue,
     this.initialSelected,
     this.borderRadius,
-  })
-      : assert(scope != null && name != null),
+  })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
 
   @override
@@ -321,8 +320,6 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.view.name];
 
   bool get isEmpty {
-    return value
-        ?.toString()
-        ?.isNotEmpty != true;
+    return value?.toString()?.isNotEmpty != true;
   }
 }

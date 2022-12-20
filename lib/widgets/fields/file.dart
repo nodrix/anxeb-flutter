@@ -3,11 +3,11 @@ import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/icons.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 import '../../middleware/device.dart';
@@ -108,6 +108,7 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
 
     if (shouldUseCamera == true) {
       result = await Device.photo(
+        scope: widget.scope,
         title: widget.label,
         fullImage: true,
         initFaceCamera: false,

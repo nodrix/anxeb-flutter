@@ -50,7 +50,7 @@ class _SliderBlockState extends State<_SliderBlock> {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.all(Radius.circular(23 ?? application.settings.dialogs.dialogRadius ?? 20.0));
+    final radius = BorderRadius.all(Radius.circular(24));
     final controller = PageController(keepPage: true);
 
     final pages = widget.slides.map((e) {
@@ -62,7 +62,7 @@ class _SliderBlockState extends State<_SliderBlock> {
               ? Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      colorFilter: ColorFilter.mode(fillColor.withOpacity(0.5), BlendMode.screen),
+                      colorFilter: ColorFilter.mode(fillColor.withOpacity(0.4), BlendMode.screen),
                       fit: BoxFit.cover,
                       alignment: Alignment.center,
                       image: e.cover.image,
@@ -77,10 +77,10 @@ class _SliderBlockState extends State<_SliderBlock> {
                 end: FractionalOffset.bottomCenter,
                 colors: [
                   fillColor.withOpacity(0.5),
-                  fillColor.withOpacity(0.7),
-                  Colors.white.withOpacity(0.8),
+                  Colors.white.withOpacity(0.5),
+                  Colors.white.withOpacity(0.5),
                 ],
-                stops: [0.0, 0.2, 1.0],
+                stops: [0.0, 0.5, 1.0],
               ),
             ),
           ),
@@ -91,7 +91,7 @@ class _SliderBlockState extends State<_SliderBlock> {
                 children: [
                   Container(
                     alignment: Alignment.center,
-                    padding: EdgeInsets.only(top: 30, bottom: 30, left: 10, right: 10),
+                    padding: EdgeInsets.only(top: 30, bottom: 30, left: 7, right: 7),
                     width: _width * .6,
                     child: Text(
                       e.title,

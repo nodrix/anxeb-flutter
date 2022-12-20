@@ -77,7 +77,7 @@ class Scope {
     }
   }
 
-  Future busy({int timeout, String text}) {
+  Future busy({int timeout, String text, bool dismissable = true}) {
     var busyPromise = Completer();
     var textedDialog = text != null;
     alerts.dispose().then((value) {
@@ -89,83 +89,88 @@ class Scope {
         showGeneralDialog(
           context: context,
           pageBuilder: (BuildContext buildContext, Animation<double> animation, Animation<double> secondaryAnimation) {
-            return SafeArea(
-              child: Builder(builder: (BuildContext $context) {
-                var length = window.horizontal(0.16);
-                Future.delayed(Duration(milliseconds: 100), () {
-                  if (_busying == true || _busyContext != null) {
-                    _busying = false;
-                    _busyContext = $context;
-                    if (!busyPromise.isCompleted) {
-                      busyPromise.complete();
+            return WillPopScope(
+              onWillPop: () async {
+                return dismissable != false;
+              },
+              child: SafeArea(
+                child: Builder(builder: (BuildContext $context) {
+                  var length = window.horizontal(0.16);
+                  Future.delayed(Duration(milliseconds: 100), () {
+                    if (_busying == true || _busyContext != null) {
+                      _busying = false;
+                      _busyContext = $context;
+                      if (!busyPromise.isCompleted) {
+                        busyPromise.complete();
+                      }
                     }
-                  }
-                });
-                if (textedDialog) {
-                  return Center(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 15),
-                          margin: EdgeInsets.only(bottom: 20),
-                          decoration: BoxDecoration(
-                            color: application.settings.colors.busybox ?? Color(0xd9666666),
-                            boxShadow: [
-                              BoxShadow(
-                                offset: Offset(0, 8),
-                                blurRadius: 20,
-                                spreadRadius: -10,
-                                color: Color(0x98000000),
-                              )
-                            ],
-                            borderRadius: new BorderRadius.all(
-                              Radius.circular(12.0),
+                  });
+                  if (textedDialog) {
+                    return Center(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(left: 30, right: 30, top: 20, bottom: 15),
+                            margin: EdgeInsets.only(bottom: 20),
+                            decoration: BoxDecoration(
+                              color: application.settings.colors.busybox ?? Color(0xd9666666),
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: Offset(0, 8),
+                                  blurRadius: 20,
+                                  spreadRadius: -10,
+                                  color: Color(0x98000000),
+                                )
+                              ],
+                              borderRadius: new BorderRadius.all(
+                                Radius.circular(12.0),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                SizedBox(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(application.settings.colors.foreground ?? Color(0xffefefef)),
+                                  ),
+                                  height: 32,
+                                  width: 32,
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(top: 16),
+                                  child: Text(text ?? translate('anxeb.common.loading'), //TR 'Cargando'
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w200,
+                                        color: application.settings.colors.foreground ?? Colors.white,
+                                        decoration: TextDecoration.none,
+                                      )),
+                                )
+                              ],
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              SizedBox(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  valueColor: AlwaysStoppedAnimation<Color>(application.settings.colors.foreground ?? Color(0xffefefef)),
-                                ),
-                                height: 32,
-                                width: 32,
-                              ),
-                              Container(
-                                padding: EdgeInsets.only(top: 16),
-                                child: Text(text ?? translate('anxeb.common.loading'), //TR 'Cargando'
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w200,
-                                      color: application.settings.colors.foreground ?? Colors.white,
-                                      decoration: TextDecoration.none,
-                                    )),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    );
+                  }
+                  return Center(
+                    child: SizedBox(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
+                      ),
+                      height: length,
+                      width: length,
                     ),
                   );
-                }
-                return Center(
-                  child: SizedBox(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xffefefef)),
-                    ),
-                    height: length,
-                    width: length,
-                  ),
-                );
-              }),
+                }),
+              ),
             );
           },
           barrierDismissible: false,

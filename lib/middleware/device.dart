@@ -8,7 +8,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:google_ml_kit/google_ml_kit.dart' as ML;
 import 'package:file_picker/file_picker.dart' as Picker;
 import 'package:url_launcher/url_launcher.dart' as UL;
 import '../helpers/camera.dart';
@@ -17,6 +16,7 @@ import 'utils.dart';
 import 'package:package_info/package_info.dart';
 import 'package:open_store/open_store.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:scan/scan.dart';
 
 class Device {
   static final Device _singleton = Device._internal();
@@ -44,7 +44,7 @@ class Device {
     );
   }
 
-  static Future launchUrl(Scope scope, String url) async {
+  static Future launchUrl({@required Scope scope, @required String url}) async {
     if (await UL.canLaunchUrl(Uri.parse(url))) {
       await scope.busy();
       await UL.launchUrl(Uri.parse(url));
@@ -54,7 +54,7 @@ class Device {
     }
   }
 
-  static Future<File> photo({Scope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
+  static Future<File> photo({@required Scope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
     File result;
     bool useCameraHelper;
 
@@ -91,7 +91,7 @@ class Device {
     return result;
   }
 
-  static Future<String> scan({Scope scope, FileSourceOption option, String title, bool autoflash}) async {
+  static Future<String> scan({@required Scope scope, FileSourceOption option, String title, bool autoflash}) async {
     String value;
     bool useCameraHelper;
 
@@ -130,11 +130,13 @@ class Device {
         type: FileType.custom,
         allowMultiple: false,
         callback: (files) async {
-          final barcodeScanner = ML.BarcodeScanner(formats: [ML.BarcodeFormat.all]);
           try {
-            final List<ML.Barcode> barcodes = await barcodeScanner.processImage(ML.InputImage.fromFilePath(files.first.path));
-            if (barcodes.length > 0) {
-              return barcodes.first.rawValue;
+            final barcodeValue = await Scan.parse(files.first.path);
+
+            print(barcodeValue);
+
+            if (barcodeValue?.isNotEmpty == true) {
+              return barcodeValue;
             } else {
               scope.alerts.error(translate('anxeb.device.scan.barcode_not_found')).show(); //No se encontró ningún código de barras en la imagen
             }
@@ -149,7 +151,7 @@ class Device {
     return value?.isNotEmpty == true ? value : null;
   }
 
-  static Future<T> browse<T>({Scope scope, Future<T> Function(List<PlatformFile>) callback, FileType type, List<String> allowedExtensions, bool allowMultiple}) async {
+  static Future<T> browse<T>({@required Scope scope, Future<T> Function(List<PlatformFile>) callback, FileType type, List<String> allowedExtensions, bool allowMultiple}) async {
     FilePickerResult picker;
     T result;
 

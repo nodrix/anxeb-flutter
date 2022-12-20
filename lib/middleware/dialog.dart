@@ -11,8 +11,8 @@ import 'package:anxeb_flutter/widgets/blocks/selector.dart';
 import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
 import 'package:anxeb_flutter/widgets/fields/barcode.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/slider.dart';
@@ -124,7 +124,7 @@ class ScopeDialogs {
     return PeriodDialog(
       _scope,
       title: title,
-      icon: icon ?? FlutterIcons.calendar_week_mco,
+      icon: icon ?? CommunityMaterialIcons.calendar_week,
       selectedValue: selectedValue,
       allowAllMonths: allowAllMonths,
     );

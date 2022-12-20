@@ -160,7 +160,7 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
 
   void _scan() async {
     await Future.delayed(Duration(milliseconds: 200));
-    var $value = await Device.scan(autoflash: widget.autoflash);
+    var $value = await Device.scan(scope: widget.scope, autoflash: widget.autoflash);
     if ($value != null) {
       super.value = $value;
       _controller.selection = TextSelection(baseOffset: _controller.text.length, extentOffset: _controller.text.length);

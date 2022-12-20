@@ -1,7 +1,5 @@
-import 'package:dio/dio.dart';
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_translate/flutter_translate.dart';
-import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as Path;
@@ -16,6 +14,49 @@ class Converters {
   final _humanDateFormat = DateFormat.yMMMd('es_DO');
   final _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
   final _timeFormat = DateFormat('h:mm aa');
+
+  String fromCreditCardTypeToString(CreditCardType type) {
+    return type.toString().split('.')[1];
+  }
+
+  CreditCardType fromCreditCardNumberToType(String value) {
+    final validator = CreditCardValidator();
+    final valres = value != null ? validator.validateCCNum(value.toString()) : null;
+    return valres?.ccType;
+  }
+
+  String fromCreditCardNumberToBrand(String value) {
+    final validator = CreditCardValidator();
+    final valres = value != null ? validator.validateCCNum(value.toString()) : null;
+
+    if (valres?.isValid == true) {
+      if (valres.ccType == CreditCardType.visa) {
+        return 'visa';
+      } else if (valres.ccType == CreditCardType.mastercard) {
+        return 'master_card';
+      } else if (valres.ccType == CreditCardType.amex) {
+        return 'american_express';
+      } else if (valres.ccType == CreditCardType.discover) {
+        return 'discover';
+      } else {
+        return valres.ccType.toString().split('.')[1];
+      }
+    }
+    return null;
+  }
+
+  CreditCardType fromCreditCardBrandToType(String value) {
+    if (value == 'visa') {
+      return CreditCardType.visa;
+    } else if (value == 'master_card') {
+      return CreditCardType.mastercard;
+    } else if (value == 'american_express') {
+      return CreditCardType.amex;
+    } else if (value == 'discover') {
+      return CreditCardType.discover;
+    }
+    return null;
+  }
 
   String fromNamesToSingleName(String names) {
     if (names == null) {
@@ -249,17 +290,17 @@ class Converters {
     if (date == null) return null;
 
     if (withTime == true) {
-      return DateFormat.yMd(translate('formats.date_locale')).format(date.toLocal()) + ' ' + DateFormat.jms(translate('formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
+      return DateFormat.yMd(translate('anxeb.formats.date_locale')).format(date.toLocal()) + ' ' + DateFormat.jms(translate('anxeb.formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
     } else {
-      return DateFormat.yMMMMd(translate('formats.date_locale')).format(date.toLocal());
+      return DateFormat.yMMMMd(translate('anxeb.formats.date_locale')).format(date.toLocal());
     }
   }
 
   String fromDateToLocalizedTime(DateTime date, {bool duration}) {
     if (date == null) return null;
-    final prefix = DateFormat.jms(translate('formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
+    final prefix = DateFormat.jms(translate('anxeb.formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
 
-    return duration == false ? prefix.toUpperCase() : translate('formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date)}).toUpperCase();
+    return duration == false ? prefix.toUpperCase() : translate('anxeb.formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date)}).toUpperCase();
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {

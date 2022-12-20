@@ -24,18 +24,24 @@ class Printer {
   dynamic Function() _fetch;
   int _lastFoundLength;
   BluetoothDevice _device;
+  int _autoDiesconnectDelay;
 
   Printer(this.application) {
     _manager = BluetoothPrint.instance;
   }
 
-  Future init({Future Function(dynamic) persistDevice, dynamic Function() fetchDevice}) async {
+  Future init({Future Function(dynamic) persistDevice, dynamic Function() fetchDevice, int autoDiesconnectDelay}) async {
     _persist = persistDevice;
     _fetch = fetchDevice;
+    if (autoDiesconnectDelay != null) {
+      this._autoDiesconnectDelay = autoDiesconnectDelay;
+    }
     _manager.state.listen((state) {
       switch (state) {
         case BluetoothPrint.CONNECTED:
-          _connected = true;
+          if (_device != null) {
+            _connected = true;
+          }
           break;
         case BluetoothPrint.DISCONNECTED:
           _connected = false;
@@ -47,101 +53,170 @@ class Printer {
   }
 
   Future<bool> _needPermission() async {
-    final isEnabled = await _manager.isOn == true;
-    final isAvailable = await _manager.isAvailable == true;
-    final isGranted = isAvailable == true ? true : await Device.permission.bluetoothScan.isDenied != true;
-    final isAllowed = await Device.permission.bluetooth.isPermanentlyDenied != true;
+    final isEnabled = await _handleFuture(_manager.isOn) == true;
+    final isAvailable = await _handleFuture(_manager.isAvailable) == true;
+    final isGranted = isAvailable == true ? true : await _handleFuture(Device.permission.bluetoothScan.isDenied) != true;
+    final isAllowed = await _handleFuture(Device.permission.bluetooth.isPermanentlyDenied) != true;
 
     return !isEnabled || !isAvailable || !isGranted || !isAllowed;
   }
 
-  Future send({@required Scope scope, dynamic data, String layout}) async {
-    if (await _needPermission() == true) {
-      var result = await scope.dialogs.exception(
-        translate('anxeb.middleware.printer.bt_disabled_title'), //Bluetooth Desactivado
-        dismissible: true,
-        message: translate('anxeb.middleware.printer.bt_desabled_message'),
-        icon: Icons.bluetooth_disabled,
-        buttons: [
-          DialogButton(translate('anxeb.common.yes'), 'settings'),
-          DialogButton(translate('anxeb.common.no'), false),
-        ],
-      ).show();
+  Future<BluetoothDevice> _lookupDevice(String address, [timeout = 2000]) async {
+    var a = DateTime.now().millisecondsSinceEpoch;
+    var completer = Completer<BluetoothDevice>();
+    _manager.startScan(timeout: Duration(milliseconds: timeout)).then((value) {
+      _manager.scanResults.listen((event) async {
+        _lastFoundLength = event.length;
+        final foundDevice = event.firstWhere((element) => element.address == address, orElse: () => null);
 
-      if (result == 'settings') {
-        Device.settings.bluetooth().then((value) async {
-          if (await _needPermission() == false) {
-            send(scope: scope, data: data, layout: layout);
+        event.map((e) => print('ADDRESS FOUND: ${e.address} == $address : ${e.address == address}'));
+        if (foundDevice != null) {
+          if (!completer.isCompleted) {
+            try {
+              await _handleFuture(_manager.stopScan());
+            } catch (err) {
+              //ignore
+            }
+            print('-- FOUND DEVICE IN ${DateTime.now().millisecondsSinceEpoch - a} ms ---------------------------------------------');
+            completer.complete(foundDevice);
           }
-        });
+        }
+      });
+    }).onError((error, stackTrace) {
+      completer.completeError(error);
+    });
+
+    Future.delayed(Duration(milliseconds: timeout)).then((value) {
+      if (!completer.isCompleted) {
+        print('-- LOOKUP TIMEOUT ---------------------------------------------------');
+        completer.complete(null);
       }
+    });
+    return completer.future;
+  }
+
+  Future _handleFuture(Future future) {
+    var completer = Completer();
+    future.then((value) {
+      completer.complete(value);
+    }).onError((error, stackTrace) {
+      completer.completeError(error);
+    });
+    return completer.future;
+  }
+
+  void set({int autoDiesconnectDelay}) {
+    _autoDiesconnectDelay = autoDiesconnectDelay;
+    if (_autoDiesconnectDelay != null && _autoDiesconnectDelay > 0) {
+      _disconnect();
+    }
+  }
+
+  Future send({@required Scope scope, dynamic data, String layout}) async {
+    try {
+      await _handleFuture(Permission.bluetooth.request());
+      await _handleFuture(Permission.bluetoothConnect.request());
+      await _handleFuture(Permission.bluetoothScan.request());
+    } catch (err) {
+      //ignore
+    }
+
+    try {
+      if (await _needPermission() == true) {
+        var result = await scope.dialogs.exception(
+          translate('anxeb.middleware.printer.bt_disabled_title'), //Bluetooth Desactivado
+          dismissible: true,
+          message: translate('anxeb.middleware.printer.bt_desabled_message'),
+          icon: Icons.bluetooth_disabled,
+          buttons: [
+            DialogButton(translate('anxeb.common.yes'), 'settings'),
+            DialogButton(translate('anxeb.common.no'), false),
+          ],
+        ).show();
+
+        if (result == 'settings') {
+          Device.settings.bluetooth().then((value) async {
+            if (await _needPermission() == false) {
+              send(scope: scope, data: data, layout: layout);
+            }
+          });
+        }
+        return;
+      }
+
+      if (_connected == false) {
+        await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+
+        if (_device != null) {
+          await _tryConnect(Anxeb.Device.isAndroid ? 800 : 3000);
+        }
+
+        var fetchedDevice = _fetch?.call();
+        if (fetchedDevice != null) {
+          try {
+            _device = BluetoothDevice();
+            _device.type = fetchedDevice['type'];
+            _device.address = fetchedDevice['address'];
+            _device.name = fetchedDevice['name'];
+
+            final result = await _tryConnect();
+
+            if (result == false) {
+              await scope.idle();
+              await _handleFuture(_manager.disconnect());
+              _connected = false;
+              var result = await scope.dialogs.exception(
+                translate('anxeb.middleware.printer.bt_reset_dialog.title'), //Dispositivo No Responde
+                dismissible: true,
+                message: translate('anxeb.middleware.printer.bt_reset_dialog.message'),
+                icon: Icons.print_disabled,
+                buttons: [
+                  DialogButton(translate('anxeb.common.retry'), 'retry'),
+                  DialogButton(translate('anxeb.common.scan'), 'scan'),
+                ],
+              ).show();
+
+              if (result == 'retry') {
+                send(scope: scope, data: data, layout: layout);
+                return;
+              } else if (result == null) {
+                return;
+              }
+              await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+            }
+          } catch (err) {
+            _device = null;
+          }
+        }
+
+        if (_device == null) {
+          await scope.idle();
+
+          _device = await _chooseDevice(scope);
+          if (_device != null) {
+            await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
+            await _persistDevice();
+            await _tryConnect();
+          } else {
+            return null;
+          }
+        }
+
+        if (await isConnected() == true) {
+          await scope.idle();
+        }
+      }
+    } catch (err) {
+      print('-- ERROR ------------------------------------------------------------------------------------------------------------');
+      scope.alerts.error(Anxeb.translate('anxeb.middleware.printer.error_connecting')).show();
       return;
     }
 
-    if (_connected == false) {
-      await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
-
-      if (_device != null) {
-        await _tryConnect();
-      }
-
-      var fetchedDevice = _fetch?.call();
-      if (fetchedDevice != null) {
-        try {
-          _device = BluetoothDevice();
-          _device.type = fetchedDevice['type'];
-          _device.address = fetchedDevice['address'];
-          _device.name = fetchedDevice['name'];
-          final result = await _tryConnect();
-
-          if (result == false) {
-            await scope.idle();
-            var result = await scope.dialogs.exception(
-              translate('anxeb.middleware.printer.bt_reset_dialog.title'), //Dispositivo No Responde
-              dismissible: true,
-              message: translate('anxeb.middleware.printer.bt_reset_dialog.message'),
-              icon: Icons.print_disabled,
-              buttons: [
-                DialogButton(translate('anxeb.common.retry'), 'retry'),
-                DialogButton(translate('anxeb.common.scan'), 'scan'),
-              ],
-            ).show();
-
-            if (result == 'retry') {
-              send(scope: scope, data: data, layout: layout);
-              return;
-            } else if (result == null) {
-              return;
-            }
-            await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
-          }
-        } catch (err) {
-          _device = null;
-        }
-      }
-
-      if (_device == null) {
-        await scope.idle();
-        _device = await _chooseDevice(scope);
-        if (_device != null) {
-          await scope.busy(text: translate('anxeb.middleware.printer.connecting_busy_label')); //'Conectando\nImpresora'
-          await _persistDevice();
-          await _tryConnect();
-        } else {
-          return null;
-        }
-      }
-
-      if (await isConnected() == true) {
-        await Future.delayed(Duration(milliseconds: 3000));
-        await scope.idle();
-      }
-    }
-
     if (_connected == true) {
+      _notDisconnect();
       await scope.busy(text: translate('anxeb.middleware.printer.printing_busy_label')); //'Imprimiendo\nDocumento'
+      await Future.delayed(Duration(milliseconds: 500));
       try {
-        await Future.delayed(Duration(milliseconds: 600));
         Map<String, dynamic> config = Map();
         List<LineText> list = [];
         const splitter = LineSplitter();
@@ -224,9 +299,10 @@ class Printer {
           }
         }
 
-        await _manager.printReceipt(config, list);
+        await _handleFuture(_manager.printReceipt(config, list));
+        await Future.delayed(Duration(milliseconds: 1500));
+        _attemptDisconnect();
         await scope.idle();
-        _connected = false;
       } catch (err) {
         scope.alerts.error(err).show();
       } finally {
@@ -236,6 +312,33 @@ class Printer {
       _connected = false;
       scope.alerts.error(Anxeb.translate('anxeb.middleware.printer.error_connecting')).show();
     }
+  }
+
+  int _tick;
+
+  void _notDisconnect() {
+    _tick = DateTime.now().millisecondsSinceEpoch;
+  }
+
+  void _attemptDisconnect() {
+    if (_autoDiesconnectDelay != null && _autoDiesconnectDelay > 0) {
+      _tick = DateTime.now().millisecondsSinceEpoch;
+
+      final thisTick = _tick;
+      Future.delayed(Duration(milliseconds: _autoDiesconnectDelay)).then((value) {
+        if (thisTick == _tick) {
+          _disconnect();
+        }
+      });
+    }
+  }
+
+  void _disconnect() {
+    _manager.disconnect();
+    _manager.destroy();
+    _manager = BluetoothPrint.instance;
+    _connected = false;
+    _tick = null;
   }
 
   Future _persistDevice() async {
@@ -248,15 +351,21 @@ class Printer {
     }
   }
 
-  Future<bool> _tryConnect() async {
+  Future<bool> _tryConnect([lookupTimeout = 2000]) async {
     if (_device != null) {
+      if (_connected == false) {
+        await _lookupDevice(_device.address, lookupTimeout);
+      }
+
       if (await _manager.isConnected == false || _connected == false) {
         await _manager.connect(_device);
+        await Future.delayed(Duration(milliseconds: 3600));
         if (await isConnected() != true) {
           _device = null;
           return false;
         }
       }
+
       return true;
     }
     return false;
@@ -292,7 +401,7 @@ class Printer {
     } else if (format == 'LWC') {
       return value.toString().toLowerCase();
     } else {
-      return Anxeb.DateFormat(format, Anxeb.translate('formats.date_locale')).format(Utils.convert.fromTickToDate(value).toLocal());
+      return Anxeb.DateFormat(format, Anxeb.translate('anxeb.formats.date_locale')).format(Utils.convert.fromTickToDate(value).toLocal());
     }
   }
 
@@ -401,6 +510,7 @@ class Printer {
       _manager.state.listen((state) async {
         _connected = false;
         if (state == BluetoothPrint.CONNECTED) {
+          print ('BT IS CONNECTED');
           _connected = true;
           if (!completer.isCompleted) {
             completer.complete(_connected);
@@ -411,8 +521,16 @@ class Printer {
     return completer.future;
   }
 
+  bool _isScanning;
+
   Future<BluetoothDevice> _chooseDevice(Scope scope) async {
-    _manager.startScan(timeout: Duration(seconds: 4));
+    if (_isScanning != true) {
+      _handleFuture(_manager.startScan(timeout: Duration(seconds: 4)));
+
+      _manager.isScanning.listen((event) {
+        _isScanning = event;
+      });
+    }
 
     return await scope.dialogs.custom(
       body: (context) {
@@ -490,6 +608,9 @@ class Printer {
                             subtitle: Text(device.address),
                             dense: true,
                             onTap: () async {
+                              if (_isScanning == true) {
+                                _handleFuture(_manager.stopScan());
+                              }
                               Navigator.of(context).pop(device);
                             },
                             trailing: Icon(
@@ -515,8 +636,11 @@ class Printer {
                         enabled: snapshot.data == false,
                         textColor: Colors.white,
                         margin: EdgeInsets.only(top: 10, right: 5),
-                        onPressed: () {
-                          _manager.startScan(timeout: Duration(seconds: 4));
+                        onPressed: () async {
+                          _handleFuture(_manager.startScan(timeout: Duration(seconds: 4))).onError((error, stackTrace) {
+                            Navigator.of(context).pop(null);
+                            scope.alerts.error(Anxeb.translate('anxeb.middleware.printer.error_scanning')).show();
+                          });
                         },
                         type: ButtonType.primary,
                         size: ButtonSize.small,
@@ -532,7 +656,9 @@ class Printer {
                         onPressed: () {
                           Navigator.of(context).pop(null);
                           if (snapshot.data == true) {
-                            _manager.stopScan();
+                            try {
+                              _handleFuture(_manager.stopScan());
+                            } catch (err) {}
                           }
                         },
                         type: ButtonType.primary,

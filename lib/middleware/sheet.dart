@@ -1,7 +1,7 @@
 import 'package:anxeb_flutter/parts/sheets/notification.dart';
 import 'package:anxeb_flutter/parts/sheets/tip.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'scope.dart';
 
 class ScopeSheet {
@@ -72,7 +72,7 @@ class ScopeSheets {
       fill: _scope.application.settings.colors.tip,
       message: message,
       body: body,
-      icon: Ionicons.md_bulb,
+      icon: Ionicons.bulb,
     );
   }
 

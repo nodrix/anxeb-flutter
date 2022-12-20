@@ -34,7 +34,10 @@ class Validators {
   }
 
   String creditCard(String value) {
-    if (value != null && CreditCardValidator.isCreditCardValid(cardNumber: value) == true) {
+    final validator = CreditCardValidator();
+    final validationResult = validator.validateCCNum(value);
+
+    if (value != null && validationResult.isValid == true) {
       return null;
     }
     return translate('anxeb.utils.validators.credit_card.default_error'); // TR 'Ingrese un número de tarjeta válido';

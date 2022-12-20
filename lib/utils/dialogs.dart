@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import '../middleware/scope.dart';
 import '../parts/panels/menu.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:community_material_icon/community_material_icon.dart';
+import 'package:ionicons/ionicons.dart';
 
 class Dialogs {
   Future<bool> shouldUseCamera(Scope scope, {bool useDocumentLabel}) async {
@@ -15,7 +16,7 @@ class Dialogs {
               label: () => useDocumentLabel == true ? translate('anxeb.utils.dialogs.browse_document') : translate('anxeb.utils.dialogs.browse_image'),
               //TR 'Buscar\nImagen',
               textScale: 0.9,
-              icon: () => useDocumentLabel == true ? FlutterIcons.file_mco : Icons.image,
+              icon: () => useDocumentLabel == true ? CommunityMaterialIcons.file : Icons.image,
               fillColor: () => scope.application.settings.colors.secudary,
               onPressed: () {
                 option = 'browse';
@@ -25,7 +26,7 @@ class Dialogs {
               label: () => translate('anxeb.utils.dialogs.use_camera'),
               //TR 'Usar\nCámara',
               textScale: 0.9,
-              icon: () => FlutterIcons.md_camera_ion,
+              icon: () => Ionicons.camera,
               fillColor: () => scope.application.settings.colors.secudary,
               onPressed: () {
                 option = 'camera';

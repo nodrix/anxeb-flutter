@@ -34,19 +34,19 @@ class AndroidWindowManager {
   static const int FLAG_TRANSLUCENT_STATUS = 0x04000000;
   static const int FLAG_TURN_SCREEN_ON = 0x00200000;
 
-  MethodChannel _channel;
+  late MethodChannel _channel;
 
   AndroidWindowManager(MethodChannel channel) {
     _channel = channel;
   }
 
-  Future<bool> addFlags(int flags) async {
+  Future<bool?> addFlags(int flags) async {
     return await _channel.invokeMethod("addFlags", {
       "flags": flags,
     });
   }
 
-  Future<bool> clearFlags(int flags) async {
+  Future<bool?> clearFlags(int flags) async {
     return await _channel.invokeMethod("clearFlags", {
       "flags": flags,
     });
