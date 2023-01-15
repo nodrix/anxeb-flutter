@@ -1,13 +1,15 @@
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/view.dart';
+import 'package:anxeb_flutter/screen/screen.dart';
 import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_barcode/ai_barcode.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 
-class ScannerHelper extends ViewWidget {
+import '../middleware/device.dart';
+
+class ScannerHelper extends ScreenWidget {
   final String title;
   final bool autoflash;
 
@@ -20,7 +22,7 @@ class ScannerHelper extends ViewWidget {
   _ScannerHelperState createState() => new _ScannerHelperState();
 }
 
-class _ScannerHelperState extends View<ScannerHelper, Application> {
+class _ScannerHelperState extends ScreenView<ScannerHelper, Application> {
   ScannerController _scannerController;
   bool _flashOn;
 
@@ -29,11 +31,9 @@ class _ScannerHelperState extends View<ScannerHelper, Application> {
     _flashOn = widget.autoflash == true;
 
     _scannerController = ScannerController(scannerResult: (result) {
-      pop(result, force: true);
+      pop(result: result, force: true);
     }, scannerViewCreated: () async {
-      TargetPlatform platform = Theme.of(context).platform;
-
-      if (TargetPlatform.iOS == platform) {
+      if (Device.isIOS) {
         await Future.delayed(Duration(milliseconds: 700), () {
           _scannerController.startCamera();
           _scannerController.startCameraPreview();
@@ -112,8 +112,8 @@ class _ScannerHelperState extends View<ScannerHelper, Application> {
   }
 
   @override
-  ViewAction action() {
-    return ViewAction(
+  ScreenAction action() {
+    return ScreenAction(
       scope: scope,
       icon: () => _flashOn == true ? Icons.lightbulb : Icons.lightbulb_outline,
       color: () => scope.application.settings.colors.secudary,

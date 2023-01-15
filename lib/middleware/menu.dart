@@ -9,8 +9,8 @@ typedef VisibleStateCallback = bool Function();
 typedef ErrorStateCallback = String Function();
 
 class MenuItem {
-  final String name;
-  final Future<ViewWidget> Function(Key key) view;
+  final String key;
+  final Future<IView> Function(Key key) view;
   final Function(dynamic data) result;
   final double iconScale;
   final double iconVOffset;
@@ -35,7 +35,7 @@ class MenuItem {
   MenuItem({
     this.caption,
     this.hint,
-    this.name,
+    this.key,
     this.view,
     this.result,
     this.icon,
@@ -63,10 +63,10 @@ class MenuGroup extends MenuItem {
 
   MenuGroup({
     @required String Function() caption,
-    @required String name,
+    @required String key,
     @required IconData icon,
     String hint,
-    Future<ViewWidget> Function(Key key) view,
+    Future<IView> Function(Key key) view,
     Function(dynamic data) result,
     double iconScale,
     double iconVOffset,
@@ -87,7 +87,7 @@ class MenuGroup extends MenuItem {
   }) : super(
           caption: caption,
           hint: hint,
-          name: name,
+          key: key,
           view: view,
           result: result,
           icon: icon,

@@ -1,12 +1,13 @@
-import 'dart:io';
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/view.dart';
+import 'package:anxeb_flutter/screen/screen.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter/material.dart';
 
-class ImagePreviewHelper extends ViewWidget {
+import '../middleware/device.dart';
+
+class ImagePreviewHelper extends ScreenWidget {
   final String title;
   final ImageProvider image;
   final bool canRemove;
@@ -19,7 +20,7 @@ class ImagePreviewHelper extends ViewWidget {
   _ImagePreviewState createState() => new _ImagePreviewState();
 }
 
-class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
+class _ImagePreviewState extends ScreenView<ImagePreviewHelper, Application> {
   PhotoViewControllerBase _controller;
 
   @override
@@ -114,12 +115,12 @@ class _ImagePreviewState extends View<ImagePreviewHelper, Application> {
   }
 
   @override
-  ViewAction action() {
-    return ViewAction(
+  ScreenAction action() {
+    return ScreenAction(
       scope: scope,
       color: () => scope.application.settings.colors.secudary,
-      icon: () => widget.fromCamera == true ? null : (Platform.isAndroid ? Icons.arrow_back : Icons.chevron_left),
-      onPressed: () => pop(true),
+      icon: () => widget.fromCamera == true ? null : (Device.isAndroid ? Icons.arrow_back : Icons.chevron_left),
+      onPressed: () => pop(result: true),
       alternates: [
         AltAction(
           color: () => scope.application.settings.colors.secudary,

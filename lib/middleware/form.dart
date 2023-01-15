@@ -319,7 +319,7 @@ class ScopeForms {
   }
 
   FieldsForm _retrieve(String name) {
-    var $form = _forms[name ?? _scope.view.name];
+    var $form = _forms[name ?? _scope.key];
     if ($form == null) {
       $form = FieldsForm();
       _forms[name] = $form;
@@ -327,7 +327,7 @@ class ScopeForms {
     return $form;
   }
 
-  FieldsForm get current => _retrieve(_scope.view.name);
+  FieldsForm get current => _retrieve(_scope.key);
 
   FieldsForm operator [](name) => _retrieve(name);
 

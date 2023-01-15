@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'scope.dart';
 
-class ViewPanel {
+class ScreenPanel {
   final Scope scope;
   final double height;
   final bool Function() isDisabled;
@@ -16,7 +16,7 @@ class ViewPanel {
   bool rebuild = false;
   bool _display;
 
-  ViewPanel({
+  ScreenPanel({
     @required this.scope,
     this.height,
     this.isDisabled,

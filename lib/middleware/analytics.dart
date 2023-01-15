@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'device.dart';
 import 'scope.dart';
 
 class Analytics {
@@ -28,7 +28,7 @@ class Analytics {
       _messaging = FirebaseMessaging.instance;
       reset();
       _token = await _messaging.getToken();
-      if (Platform.isIOS) {
+      if (Device.isIOS) {
         _messaging.requestPermission();
       }
       _messaging.onTokenRefresh.listen((token) {
@@ -55,8 +55,8 @@ class Analytics {
 
   void setup({Scope scope}) {
     _scope = scope;
-    if (_scope?.view?.name != null) {
-      firebase.logEvent(name: 'view_navigation', parameters: {'name': _scope.view.name});
+    if (_scope?.key != null) {
+      firebase.logEvent(name: 'view_navigation', parameters: {'name': _scope.key});
     }
   }
 
@@ -105,7 +105,7 @@ class Analytics {
       notifications.add(message);
     }
 
-    if (_scope != null && _scope.view.mounted == true && $title != null && $body != null) {
+    if (_scope != null && _scope.mounted == true && $title != null && $body != null) {
       _scope.alerts.notification($title, message: $body).show();
     }
 

@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
+import '../../screen/scope.dart';
 import 'paragraph.dart';
 
 class EmptyBlock extends StatelessWidget {
@@ -34,9 +35,7 @@ class EmptyBlock extends StatelessWidget {
       return Container();
     }
 
-    var size = MediaQuery
-        .of(context)
-        .size;
+    var size = MediaQuery.of(context).size;
 
     var $message = Container();
     var $action = Container();
@@ -106,7 +105,7 @@ class EmptyBlock extends StatelessWidget {
     return Center(
       child: Container(
         width: size.width * 0.66,
-        margin: margin ?? EdgeInsets.only(bottom: size.height * (0.07 + (scope?.view?.isFooter == false ? 0.03 : 0))),
+        margin: margin ?? EdgeInsets.only(bottom: size.height * (0.07 + ((scope is ScreenScope && (scope as ScreenScope)?.view?.isFooter == false) ? 0.03 : 0))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [$icon, $message, $action],

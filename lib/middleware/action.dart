@@ -1,11 +1,11 @@
-import 'dart:io';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:flutter/material.dart';
+import '../screen/scope.dart';
+import 'device.dart';
 
-class ViewAction {
-  final Scope scope;
+class ScreenAction {
+  final ScreenScope scope;
   final IconData Function() icon;
   final VoidCallback onPressed;
   final Color Function() color;
@@ -18,7 +18,7 @@ class ViewAction {
   final bool mini;
   bool _hidden;
 
-  ViewAction({
+  ScreenAction({
     @required this.scope,
     this.icon,
     this.onPressed,
@@ -32,7 +32,7 @@ class ViewAction {
     this.mini,
   });
 
-  ViewAction.back({
+  ScreenAction.back({
     @required this.scope,
     this.isDisabled,
     this.isVisible,
@@ -42,7 +42,7 @@ class ViewAction {
         onPressed = (() => scope.view.dismiss()),
         alternates = null,
         separation = null,
-        locator = ViewActionLocator(alignment: Alignment.bottomLeft),
+        locator = ScreenActionLocator(alignment: Alignment.bottomLeft),
         icon = (() => Icons.chevron_left);
 
   void show() {
@@ -69,7 +69,7 @@ class ViewAction {
       separation: separation,
       topOffset: offset,
       mini: mini,
-      bottomOffset: Platform.isAndroid && scope.window.overlay.extendBodyFullScreen == true ? 60.0 : 0.0,
+      bottomOffset: Device.isAndroid && scope.window.overlay.extendBodyFullScreen == true ? 60.0 : 0.0,
     );
   }
 

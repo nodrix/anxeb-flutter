@@ -60,7 +60,7 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
           : Container(
               padding: EdgeInsets.only(bottom: 10),
               child: new Text(
-                title ?? scope.view.title,
+                title ?? scope.title,
                 textAlign: TextAlign.center,
               ),
             ),

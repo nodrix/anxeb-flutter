@@ -8,6 +8,7 @@ import 'data.dart';
 import 'model.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 enum ApiMethods { PUT, GET, POST, DELETE }
 
@@ -42,13 +43,15 @@ class Api {
       },
     ));
 
-    (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-        //TODO: Validate PEM Certificate
-        return true;
+    if (kIsWeb != true) {
+      (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+        client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+          //TODO: Validate PEM Certificate
+          return true;
+        };
+        return client;
       };
-      return client;
-    };
+    }
   }
 
   Interceptors get interceptors => _dio.interceptors;

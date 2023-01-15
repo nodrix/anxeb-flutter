@@ -1,7 +1,8 @@
-import 'dart:io';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:flutter/material.dart' hide Dialog;
+
+import '../../middleware/device.dart';
 
 class FormSheet extends ScopeSheet {
   final String title;
@@ -21,7 +22,6 @@ class FormSheet extends ScopeSheet {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-
         minHeight: 0,
       ),
       child: Container(
@@ -45,7 +45,7 @@ class FormSheet extends ScopeSheet {
           top: false,
           bottom: true,
           child: Padding(
-            padding: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid ? EdgeInsets.only(bottom: 64) : EdgeInsets.zero,
+            padding: scope.window.overlay.extendBodyFullScreen && Device.isAndroid ? EdgeInsets.only(bottom: 64) : EdgeInsets.zero,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

@@ -3,7 +3,7 @@ import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 
 class CheckBoxField extends FieldWidget<bool> {
-  final Widget title;
+  final String label;
   final ListTileControlAffinity controlAffinity;
 
   CheckBoxField({
@@ -17,10 +17,11 @@ class CheckBoxField extends FieldWidget<bool> {
     GestureTapCallback onTab,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
+    bool value,
     bool focusNext,
     bool readonly,
     BorderRadius borderRadius,
-    this.title,
+    this.label,
     this.controlAffinity,
   })  : assert(name != null),
         super(
@@ -33,6 +34,7 @@ class CheckBoxField extends FieldWidget<bool> {
           readonly: readonly,
           onChanged: onChanged,
           onFocus: onFocus,
+          initialValue: value,
           validator: validator,
           focusNext: focusNext,
           borderRadius: borderRadius,
@@ -48,8 +50,20 @@ class _CheckBoxFieldState extends Field<bool, CheckBoxField> {
     var result = FormField(
       builder: (FormFieldState state) {
         return CheckboxListTile(
-          contentPadding: widget.padding,
-          title: widget.title,
+          contentPadding: EdgeInsets.only(left: 4, right: 0),
+          visualDensity: VisualDensity.standard,
+          dense: false,
+          activeColor: widget.scope.application.settings.colors.primary,
+          tileColor: widget.scope.application.settings.colors.primary,
+          title: Text(
+            widget.label,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
+              letterSpacing: 0.2,
+              fontSize: 15,
+            ),
+          ),
           subtitle: warning != null
               ? Text(
                   warning,

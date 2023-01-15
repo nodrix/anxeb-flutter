@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
+
+import '../../screen/scope.dart';
 
 class FloatAction extends StatefulWidget {
-  final Scope scope;
+  final ScreenScope scope;
   final VoidCallback onPressed;
   final IconData icon;
   final Color color;

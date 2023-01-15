@@ -1,5 +1,6 @@
 import 'dart:io';
 import '../../middleware/utils.dart';
+import '../../screen/scope.dart';
 import 'file.dart';
 import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
@@ -18,34 +19,10 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
   final bool allowMultiples;
   final List<String> allowedExtensions;
   final String launchUrlPrefix;
+  final Future Function({String launchUrl, FileInputValue file, bool readonly}) onPreview;
 
-  FilesInputField({
-    @required Scope scope,
-    Key key,
-    @required String name,
-    String group,
-    String label,
-    IconData icon,
-    EdgeInsets margin,
-    EdgeInsets padding,
-    bool readonly,
-    bool visible,
-    ValueChanged<List<FileInputValue>> onSubmitted,
-    ValueChanged<List<FileInputValue>> onValidSubmit,
-    GestureTapCallback onTab,
-    GestureTapCallback onBlur,
-    GestureTapCallback onFocus,
-    ValueChanged<List<FileInputValue>> onChanged,
-    FormFieldValidator<String> validator,
-    List<FileInputValue> Function(dynamic value) parser,
-    bool focusNext,
-    double fontSize,
-    double labelSize,
-    BorderRadius borderRadius,
-    this.allowMultiples = false,
-    this.allowedExtensions,
-    this.launchUrlPrefix,
-  })  : assert(name != null),
+  FilesInputField({@required Scope scope, Key key, @required String name, String group, String label, IconData icon, EdgeInsets margin, EdgeInsets padding, bool readonly, bool visible, ValueChanged<List<FileInputValue>> onSubmitted, ValueChanged<List<FileInputValue>> onValidSubmit, GestureTapCallback onTab, GestureTapCallback onBlur, GestureTapCallback onFocus, ValueChanged<List<FileInputValue>> onChanged, FormFieldValidator<String> validator, List<FileInputValue> Function(dynamic value) parser, bool focusNext, double fontSize, double labelSize, BorderRadius borderRadius, this.allowMultiples = false, this.allowedExtensions, this.launchUrlPrefix, this.onPreview})
+      : assert(name != null),
         super(
           scope: scope,
           key: key,
@@ -262,12 +239,21 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
 
   Future _preview(FileInputValue value) async {
     if (value != null) {
-      var result = await widget.scope.view.push(DocumentView(
-        launchUrl: widget.launchUrlPrefix,
-        file: value,
-        initialScale: PhotoViewComputedScale.contained,
-        readonly: widget.readonly,
-      ));
+      var result;
+      if (widget.onPreview != null) {
+        result = await widget.onPreview.call(
+          launchUrl: widget.launchUrlPrefix,
+          file: value,
+          readonly: widget.readonly,
+        );
+      } else if (widget.scope is ScreenScope) {
+        result = await (widget.scope as ScreenScope).push(DocumentView(
+          launchUrl: widget.launchUrlPrefix,
+          file: value,
+          initialScale: PhotoViewComputedScale.contained,
+          readonly: widget.readonly,
+        ));
+      }
       present();
       if (result == false) {
         clear();

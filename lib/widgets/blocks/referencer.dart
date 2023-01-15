@@ -1,12 +1,12 @@
-import 'package:anxeb_flutter/anxeb.dart';
+import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class ReferencerBlock<V> extends StatefulWidget {
-  final Scope scope;
-  final Referencer<V> referencer;
-  final ReferenceItemWidget<V> itemWidget;
-  final ReferenceHeaderWidget<V> headerWidget;
+  final Anxeb.Scope scope;
+  final Anxeb.Referencer<V> referencer;
+  final Anxeb.ReferenceItemWidget<V> itemWidget;
+  final Anxeb.ReferenceHeaderWidget<V> headerWidget;
   final EdgeInsets padding;
 
   ReferencerBlock({

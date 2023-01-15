@@ -12,7 +12,7 @@ import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 import '../../middleware/device.dart';
 import '../../middleware/utils.dart';
-
+import '../../screen/scope.dart';
 
 class FileInputValue {
   FileInputValue({this.url, this.path, this.title, this.extension, this.id, this.useFullUrl = false});
@@ -36,6 +36,7 @@ class FileInputValue {
 class FileInputField extends FieldWidget<FileInputValue> {
   final List<String> allowedExtensions;
   final String launchUrlPrefix;
+  final Future Function({String launchUrl, FileInputValue file, bool readonly}) onPreview;
 
   FileInputField({
     @required Scope scope,
@@ -62,6 +63,7 @@ class FileInputField extends FieldWidget<FileInputValue> {
     BorderRadius borderRadius,
     this.allowedExtensions,
     this.launchUrlPrefix,
+    this.onPreview,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -275,12 +277,21 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
 
   Future _preview() async {
     if (value != null) {
-      var result = await widget.scope.view.push(DocumentView(
-        launchUrl: widget.launchUrlPrefix,
-        file: value,
-        initialScale: PhotoViewComputedScale.contained,
-        readonly: widget.readonly,
-      ));
+      var result;
+      if (widget.onPreview != null) {
+        result = await widget.onPreview.call(
+          launchUrl: widget.launchUrlPrefix,
+          file: value,
+          readonly: widget.readonly,
+        );
+      } else if (widget.scope is ScreenScope) {
+        result = await (widget.scope as ScreenScope).push(DocumentView(
+          launchUrl: widget.launchUrlPrefix,
+          file: value,
+          initialScale: PhotoViewComputedScale.contained,
+          readonly: widget.readonly,
+        ));
+      }
       present();
       if (result == false) {
         clear();

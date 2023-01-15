@@ -21,12 +21,12 @@ double _endOffset(ScaffoldPrelayoutGeometry scaffoldGeometry, {Alignment alignme
   return null;
 }
 
-class ViewActionLocator extends FloatingActionButtonLocation {
+class ScreenActionLocator extends FloatingActionButtonLocation {
   final Offset offset;
   final Alignment alignment;
   double _altOffset;
 
-  ViewActionLocator({
+  ScreenActionLocator({
     this.offset,
     this.alignment,
   });

@@ -1,7 +1,8 @@
-import 'dart:io';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:flutter/material.dart' hide Dialog;
+
+import '../../middleware/device.dart';
 
 class TipSheet extends ScopeSheet {
   final String title;
@@ -42,7 +43,7 @@ class TipSheet extends ScopeSheet {
           top: false,
           bottom: true,
           child: Padding(
-            padding: scope.window.overlay.extendBodyFullScreen && Platform.isAndroid
+            padding: scope.window.overlay.extendBodyFullScreen && (Device.isAndroid)
                 ? EdgeInsets.only(
                     top: 25,
                     left: 25,

@@ -1,7 +1,7 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:flutter/material.dart';
 
-class ActionsFooter extends ViewFooter {
+class ActionsFooter extends ScreenFooter {
   @protected
   List<ActionIcon> actions;
   List<ActionButton> buttons;

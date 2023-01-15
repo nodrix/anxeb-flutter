@@ -2,7 +2,7 @@ import 'package:anxeb_flutter/middleware/panel.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
 
-class BoardPanel extends ViewPanel {
+class BoardPanel extends ScreenPanel {
   final Widget child;
   bool _rebuild;
   BoxDecoration _decoration;

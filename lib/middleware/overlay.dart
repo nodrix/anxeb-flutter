@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'package:android_middleware/android_middleware.dart';
 import 'package:android_middleware/middleware/window_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'device.dart';
 
 class Overlay {
   bool extendBodyFullScreen = false;
@@ -25,7 +26,7 @@ class Overlay {
     var $statusBrightness = brightness ?? statusBrightness ?? Brightness.dark;
     var $navigationBrightness = brightness ?? navigationBrightness ?? Brightness.dark;
 
-    if (Platform.isAndroid) {
+    if (Device.isAndroid) {
       if ($statusBrightness == Brightness.light) {
         $statusBrightness = Brightness.dark;
       } else {
@@ -39,19 +40,21 @@ class Overlay {
       }
     }
 
-    if (this.extendBodyFullScreen == true) {
-      AndroidMiddleware.windowManager.addFlags(AndroidWindowManager.FLAG_LAYOUT_NO_LIMITS);
-    } else {
-      AndroidMiddleware.windowManager.clearFlags(AndroidWindowManager.FLAG_LAYOUT_NO_LIMITS);
+    if (Device.isWeb == false) {
+      if (this.extendBodyFullScreen == true) {
+        AndroidMiddleware.windowManager.addFlags(AndroidWindowManager.FLAG_LAYOUT_NO_LIMITS);
+      } else {
+        AndroidMiddleware.windowManager.clearFlags(AndroidWindowManager.FLAG_LAYOUT_NO_LIMITS);
+      }
+      Future.delayed(Duration(milliseconds: instant == true ? 0 : 1000), () {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+          statusBarColor: fill ?? statusFill ?? Colors.transparent,
+          statusBarBrightness: $statusBrightness,
+          statusBarIconBrightness: $statusBrightness,
+          systemNavigationBarColor: fill ?? navigationFill ?? navigationDefaultFill ?? Colors.black,
+          systemNavigationBarIconBrightness: $navigationBrightness,
+        ));
+      });
     }
-    Future.delayed(Duration(milliseconds: instant == true ? 0 : 1000), () {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-        statusBarColor: fill ?? statusFill ?? Colors.transparent,
-        statusBarBrightness: $statusBrightness,
-        statusBarIconBrightness: $statusBrightness,
-        systemNavigationBarColor: fill ?? navigationFill ?? navigationDefaultFill ?? Colors.black,
-        systemNavigationBarIconBrightness: $navigationBrightness,
-      ));
-    });
   }
 }

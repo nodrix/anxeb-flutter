@@ -1,6 +1,7 @@
-import 'dart:io';
 import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:flutter/material.dart';
+
+import '../middleware/device.dart';
 
 class ActionIcon with ActionItem {
   final IconData Function() icon;
@@ -67,7 +68,7 @@ class ActionIcon with ActionItem {
 }
 
 class ActionBack extends ActionIcon {
-  ActionBack() : super(icon: () => Platform.isAndroid ? Icons.arrow_back : Icons.arrow_back_ios);
+  ActionBack() : super(icon: () => Device.isAndroid ? Icons.arrow_back : Icons.arrow_back_ios);
 
   Widget build() => BackButton();
 }

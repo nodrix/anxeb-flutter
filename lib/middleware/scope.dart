@@ -8,16 +8,32 @@ import 'dialog.dart';
 import 'disk.dart';
 import 'analytics.dart';
 import 'form.dart';
-import 'view.dart';
 import 'alert.dart';
 import 'sheet.dart';
 import 'window.dart';
 
 typedef void RefreshCallback(VoidCallback fn);
 
+abstract class IScope {
+  Application get application;
+
+  String get key;
+
+  String get title;
+
+  bool get mounted;
+
+  int get tick;
+
+  void rasterize([VoidCallback fn]);
+
+  void retick();
+
+  Future<bool> dismiss();
+}
+
 class Scope {
   BuildContext _context;
-  View _view;
   Window _window;
   BuildContext _busyContext;
   ScopeDialogs _dialogs;
@@ -28,11 +44,11 @@ class Scope {
   bool _busying;
   int _busyCountDown;
   int tick;
+
   dynamic box;
 
-  Scope(BuildContext context, View view) {
+  Scope(BuildContext context) {
     _context = context;
-    _view = view;
     _window = Window(this);
     _dialogs = ScopeDialogs(this);
     _alerts = ScopeAlerts(this);
@@ -44,9 +60,11 @@ class Scope {
     tick = DateTime.now().toUtc().millisecondsSinceEpoch;
   }
 
-  void rasterize([VoidCallback fn]) {
-    _view.rasterize(fn);
-  }
+  bool get mounted => null;
+
+  void rasterize([VoidCallback fn]) {}
+
+  Future<bool> dismiss() => null;
 
   Future _checkBusyCountDown() async {
     if (_busyCountDown == 1) {
@@ -68,7 +86,7 @@ class Scope {
     if (application.settings.analytics.available == true) {
       application.analytics.setup(scope: this);
     }
-    application?.onEvent?.call(ApplicationEventType.view, reference: view.name);
+    application?.onEvent?.call(ApplicationEventType.view, reference: key);
   }
 
   void dispose() {
@@ -96,6 +114,9 @@ class Scope {
               child: SafeArea(
                 child: Builder(builder: (BuildContext $context) {
                   var length = window.horizontal(0.16);
+                  if (length > 60) {
+                    length = 60;
+                  }
                   Future.delayed(Duration(milliseconds: 100), () {
                     if (_busying == true || _busyContext != null) {
                       _busying = false;
@@ -208,12 +229,18 @@ class Scope {
     return idlePromise.future;
   }
 
+  final _focusNode = new FocusNode();
+
   void unfocus() {
-    FocusScope.of(context).requestFocus(new FocusNode());
+    if (mounted == true && _focusNode.hasFocus != true) {
+      FocusScope.of(context).requestFocus(_focusNode);
+    }
   }
 
   void focus(FocusNode node) {
-    FocusScope.of(context).requestFocus(node);
+    if (mounted == true && node?.context != null && node.hasFocus != true) {
+      FocusScope.of(context).requestFocus(node);
+    }
   }
 
   BuildContext get context => _context;
@@ -221,12 +248,6 @@ class Scope {
   Window get window => _window;
 
   Analytics get analytics => application.analytics;
-
-  Application get application => _view.application;
-
-  GlobalKey<ScaffoldState> get scaffold => _view.scaffold;
-
-  View get view => _view;
 
   Api get api => application.api;
 
@@ -239,6 +260,12 @@ class Scope {
   ScopeSheets get sheets => _sheets;
 
   ScopeForms get forms => _forms;
+
+  Application get application => null;
+
+  String get key => null;
+
+  String get title => null;
 
   AuthProviders get auths => application.auths;
 

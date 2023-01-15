@@ -5,15 +5,37 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as Path;
 
 class Converters {
-  final _digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
-  final _commaRegex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-  final _fullDateFormat = DateFormat('dd/MM/yyyy h:mm:ss a');
-  final _dateFormat = DateFormat('dd/MM/yyyy');
-  final _normalDateFormat = DateFormat('dd/MM/yyyy h:mm a');
-  final _fileDateFormat = DateFormat('dd_MM_yyyy_h_mm_a');
-  final _humanDateFormat = DateFormat.yMMMd('es_DO');
-  final _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
-  final _timeFormat = DateFormat('h:mm aa');
+  List<String> _digits;
+  RegExp _commaRegex;
+  DateFormat _fullDateFormat;
+  DateFormat _dateFormat;
+  DateFormat _normalDateFormat;
+  DateFormat _fileDateFormat;
+  DateFormat _humanDateFormat;
+  DateFormat _humanFullDateFormat;
+  DateFormat _timeFormat;
+
+  Converters() {
+    _digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    _commaRegex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    try {
+      _setDateFormats();
+    } catch (err) {
+      Future.delayed(Duration(milliseconds: 800)).then((value) {
+        _setDateFormats();
+      });
+    }
+  }
+
+  void _setDateFormats() {
+    _fullDateFormat = DateFormat('dd/MM/yyyy h:mm:ss a');
+    _dateFormat = DateFormat('dd/MM/yyyy');
+    _normalDateFormat = DateFormat('dd/MM/yyyy h:mm a');
+    _fileDateFormat = DateFormat('dd_MM_yyyy_h_mm_a');
+    _timeFormat = DateFormat('h:mm aa');
+    _humanDateFormat = DateFormat.yMMMd('es_DO');
+    _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
+  }
 
   String fromCreditCardTypeToString(CreditCardType type) {
     return type.toString().split('.')[1];
@@ -129,7 +151,7 @@ class Converters {
   }
 
   String fromStringToTrimedString(String value) {
-    return value.trim();
+    return value != null ? value.trim() : null;
   }
 
   String fromSecondsToDurationCaption(int seconds) {
@@ -261,7 +283,7 @@ class Converters {
   }
 
   String fromDateToFullDateString(DateTime date, {bool seconds, bool time}) {
-    if (date == null) {
+    if (date == null || _fullDateFormat == null || _dateFormat == null || _normalDateFormat == null) {
       return null;
     }
 
@@ -304,7 +326,7 @@ class Converters {
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {
-    if (date == null) {
+    if (date == null || _timeFormat == null || _humanDateFormat == null || _humanFullDateFormat == null) {
       return null;
     }
     if (withTime == true) {
@@ -355,7 +377,7 @@ class Converters {
   }
 
   String fromDateToFileDateString(DateTime date) {
-    if (date == null) {
+    if (date == null || _fileDateFormat == null) {
       return null;
     }
     return _fileDateFormat.format(date);

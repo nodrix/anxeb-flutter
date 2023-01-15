@@ -59,7 +59,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.initialSelected,
     this.borderRadius,
   })  : assert(scope != null && name != null),
-        super(key: key ?? scope.forms.key(group ?? scope.view.name, name));
+        super(key: key ?? scope.forms.key(group ?? scope.key, name));
 
   @override
   Field createState() => Field();
@@ -134,14 +134,18 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     if (warning != null) {
       this.warning = warning;
     }
-    FocusScope.of(this.context).requestFocus(focusNode);
+    if (mounted == true && focusNode?.context != null && focusNode.hasFocus == false) {
+      FocusScope.of(this.context).requestFocus(focusNode);
+    }
   }
 
   @protected
   void select() {}
 
   void unfocus() {
-    FocusScope.of(this.context).requestFocus(new FocusNode());
+    if (mounted == true && focusNode?.context != null && focusNode.hasFocus == true) {
+      FocusScope.of(this.context).requestFocus(new FocusNode());
+    }
   }
 
   void reset() {
@@ -184,8 +188,10 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     var $warning = _getValidation();
     if ($warning == null) {
       warning = null;
-      if (widget.focusNext == false || !form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty)) {
-        unfocus();
+      if (focusNode.hasFocus == true) {
+        if (widget.focusNext == false || !form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty)) {
+          unfocus();
+        }
       }
       if (widget.onValidSubmit != null) {
         Future.delayed(new Duration(milliseconds: 150), () {
@@ -317,7 +323,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   bool get focused => _focused;
 
-  FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.view.name];
+  FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.key];
 
   bool get isEmpty {
     return value?.toString()?.isNotEmpty != true;

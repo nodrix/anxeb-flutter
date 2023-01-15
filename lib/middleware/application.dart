@@ -4,30 +4,33 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'disk.dart';
 import 'printer.dart';
 
-class Application {
+class Application<N extends Navigator> {
   Settings _settings;
   Api _api;
   String _title;
   Disk _disk;
-  Navigator _navigator;
+  @protected
+  N _navigator;
   AuthProviders _auths;
   Analytics _analytics;
   bool _badgesSupport;
   LocalizationDelegate _localization;
   Printer _printer;
+  DeviceInfo _info;
 
-  Application() {
+  Application({N navigator}) {
     WidgetsFlutterBinding.ensureInitialized();
     _settings = Settings();
     _title = 'Anxeb';
     _disk = Disk();
-    _navigator = Navigator(this);
+    _navigator = navigator;
     _printer = Printer(this);
     init();
     _auths = AuthProviders(this);
     if (_settings.analytics.available == true) {
       _analytics = Analytics();
     }
+    _info = Device.info;
   }
 
   void setBadge(int value) {
@@ -83,12 +86,12 @@ class Application {
     _title = value;
   }
 
-  Navigator get navigator => _navigator;
+  N get navigator => _navigator;
 
   Analytics get analytics => _analytics;
 
   @protected
-  set navigator(value) {
+  set navigator(N value) {
     _navigator = value;
   }
 
@@ -97,6 +100,8 @@ class Application {
   LocalizationDelegate get localization => _localization;
 
   Printer get printer => _printer;
+
+  DeviceInfo get info => _info;
 }
 
 enum ApplicationEventType { error, exception, asterisk, success, information, notification, action, debug, prompt, view }

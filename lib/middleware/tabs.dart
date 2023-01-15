@@ -1,9 +1,8 @@
-import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
+import '../screen/scope.dart';
 
-class ViewTabs {
-  final Scope scope;
+class ScreenTabs {
+  final ScreenScope scope;
   final List<TabItem> items;
   final int initial;
   final rebuild;
@@ -13,18 +12,10 @@ class ViewTabs {
   TabController _controller;
   int _currentIndex;
 
-
   @protected
-  ViewTabs tabs() => null;
+  ScreenTabs tabs() => null;
 
-  ViewTabs({
-    @required this.scope,
-    @required this.items,
-    this.initial,
-    this.onChange,
-    this.onTap,
-    this.rebuild = false
-  });
+  ScreenTabs({@required this.scope, @required this.items, this.initial, this.onChange, this.onTap, this.rebuild = false});
 
   void select(int index) {
     _controller.animateTo(index, duration: Duration(milliseconds: 100), curve: Curves.decelerate);
@@ -61,7 +52,6 @@ class ViewTabs {
       physics: NeverScrollableScrollPhysics(),
     );
   }
-
 
   Widget setup(Scaffold scaffold) {
     return DefaultTabController(
@@ -121,12 +111,12 @@ class TabItem {
         children: <Widget>[
           icon != null
               ? Padding(
-            padding: const EdgeInsets.only(right: 3.0),
-            child: Icon(
-              icon(),
-              size: 16,
-            ),
-          )
+                  padding: const EdgeInsets.only(right: 3.0),
+                  child: Icon(
+                    icon(),
+                    size: 16,
+                  ),
+                )
               : Container(),
           Text(
             caption().toUpperCase(),

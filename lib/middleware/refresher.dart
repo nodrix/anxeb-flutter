@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'scope.dart';
 
-class ViewRefresher {
+class ScreenRefresher {
   final Scope scope;
   final Future Function() action;
   final Future Function() onCompleted;
@@ -10,7 +10,7 @@ class ViewRefresher {
   final bool Function() isDisabled;
   RefreshController _refreshController;
 
-  ViewRefresher({
+  ScreenRefresher({
     @required this.scope,
     this.action,
     this.onCompleted,

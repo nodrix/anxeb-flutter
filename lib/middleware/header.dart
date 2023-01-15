@@ -1,8 +1,8 @@
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
+import '../screen/scope.dart';
 
-class ViewHeader {
-  final Scope scope;
+class ScreenHeader {
+  final ScreenScope scope;
   final List<Widget> childs;
   final VoidCallback dismiss;
   final VoidCallback back;
@@ -14,7 +14,7 @@ class ViewHeader {
   final Color Function() fill;
   Widget leading;
 
-  ViewHeader({
+  ScreenHeader({
     @required this.scope,
     this.childs,
     this.dismiss,

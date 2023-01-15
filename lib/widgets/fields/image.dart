@@ -12,6 +12,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 import '../../middleware/device.dart';
+import '../../screen/scope.dart';
 
 enum ImageInputFieldType { front, rear, local, web }
 
@@ -26,6 +27,7 @@ class ImageInputField extends FieldWidget<String> {
   final FileSourceOption fileSourceOption;
   final bool showTextPreview;
   final String url;
+  final Future Function({String title, ImageProvider image, bool fullImage}) onPreview;
 
   ImageInputField({
     @required Scope scope,
@@ -60,6 +62,7 @@ class ImageInputField extends FieldWidget<String> {
     this.fileSourceOption,
     this.showTextPreview,
     this.url,
+    this.onPreview,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -320,12 +323,21 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   Future _preview() async {
     var image = _takenPicture ?? (widget.url != null ? NetworkImage(widget.url) : null);
     if (image != null) {
-      var result = await widget.scope.view.push(ImagePreviewHelper(
-        title: widget.label,
-        image: image,
-        canRemove: true,
-        fullImage: widget.fullImage,
-      ));
+      var result;
+      if (widget.onPreview != null) {
+        result = await widget.onPreview.call(
+          title: widget.label,
+          image: image,
+          fullImage: widget.fullImage,
+        );
+      } else if (widget.scope is ScreenScope) {
+        result = await (widget.scope as ScreenScope).push(ImagePreviewHelper(
+          title: widget.label,
+          image: image,
+          canRemove: true,
+          fullImage: widget.fullImage,
+        ));
+      }
       if (result == false) {
         clear();
       }

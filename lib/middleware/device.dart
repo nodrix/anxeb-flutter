@@ -11,12 +11,14 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:file_picker/file_picker.dart' as Picker;
 import 'package:url_launcher/url_launcher.dart' as UL;
 import '../helpers/camera.dart';
+import '../screen/scope.dart';
 import 'dialog.dart';
 import 'utils.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:open_store/open_store.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:scan/scan.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class Device {
   static final Device _singleton = Device._internal();
@@ -33,9 +35,11 @@ class Device {
 
   static DevicePermissions permission = DevicePermissions();
 
-  static bool isAndroid = Platform.isAndroid == true;
+  static bool isAndroid = kIsWeb != true && Platform.isAndroid == true;
 
-  static bool isIOS = Platform.isIOS == true;
+  static bool isIOS = kIsWeb != true && Platform.isIOS == true;
+
+  static bool isWeb = kIsWeb == true;
 
   static Future launchStore({String appStoreId, String androidAppBundleId}) async {
     OpenStore.instance.open(
@@ -54,7 +58,7 @@ class Device {
     }
   }
 
-  static Future<File> photo({@required Scope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
+  static Future<File> photo({@required ScreenScope scope, FileSourceOption option, String title, bool initFaceCamera, bool allowMainCamera, bool fullImage, bool flash, ResolutionPreset resolution, String fileName}) async {
     File result;
     bool useCameraHelper;
 
@@ -68,7 +72,7 @@ class Device {
     }
 
     if (useCameraHelper) {
-      result = await scope.view.push(CameraHelper(
+      result = await scope.push(CameraHelper(
         title: title,
         fullImage: fullImage,
         initFaceCamera: initFaceCamera,
@@ -340,19 +344,23 @@ class DeviceInfo {
   }
 
   Future<DeviceInfo> init() async {
-    final info = DeviceInfoPlugin();
-    if (Platform.isAndroid) {
-      _android = await info.androidInfo;
-    } else {
-      _ios = await info.iosInfo;
+    if (isWeb == false) {
+      final info = DeviceInfoPlugin();
+      if (isAndroid) {
+        _android = await info.androidInfo;
+      } else if (isIOS) {
+        _ios = await info.iosInfo;
+      }
     }
     _package = await PackageInfo.fromPlatform();
     return this;
   }
 
-  bool get isAndroid => Platform.isAndroid;
+  bool get isAndroid => kIsWeb != true && Platform.isAndroid;
 
-  bool get isIOS => Platform.isIOS;
+  bool get isIOS => kIsWeb != true && Platform.isIOS;
+
+  bool get isWeb => kIsWeb == true;
 
   PackageInfo get package => _package;
 

@@ -27,6 +27,7 @@ class TextInputField<V> extends FieldWidget<V> {
   final int maxLength;
   final bool suffixActions;
   final int errorMaxLines;
+  final bool selectOnFocus;
 
   TextInputField({
     @required Scope scope,
@@ -72,6 +73,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.maxLength,
     this.suffixActions,
     this.errorMaxLines,
+    this.selectOnFocus,
     this.formatter,
   })  : assert(name != null),
         super(
@@ -203,8 +205,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   @override
   void onFocus() {
     _editing = false;
-
-    if (warning != null) {
+    if (warning != null || widget.selectOnFocus != false) {
       select();
     }
     super.onFocus();
@@ -321,7 +322,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
         suffixText: widget.suffix,
-        fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
+        fillColor: (focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input) ?? widget.scope.application.settings.fields.fillColor,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
         border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius ?? BorderRadius.all(Radius.circular(8))),

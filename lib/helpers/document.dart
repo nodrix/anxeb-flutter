@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/view.dart';
+import 'package:anxeb_flutter/screen/screen.dart';
 import 'package:anxeb_flutter/misc/action_menu.dart';
 import 'package:anxeb_flutter/parts/headers/actions.dart';
 import 'package:anxeb_flutter/widgets/blocks/empty.dart';
@@ -18,7 +18,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart' as Launcher;
 
-class DocumentView extends ViewWidget {
+class DocumentView extends ScreenWidget {
   final FileInputValue file;
   final String launchUrl;
   final bool readonly;
@@ -40,7 +40,7 @@ class DocumentView extends ViewWidget {
   _DocumentState createState() => new _DocumentState();
 }
 
-class _DocumentState extends View<DocumentView, Application> {
+class _DocumentState extends ScreenView<DocumentView, Application> {
   PhotoViewControllerBase _controller;
   File _data;
   bool _refreshing;
@@ -404,7 +404,7 @@ class _DocumentState extends View<DocumentView, Application> {
         await scope.busy();
         await scope.api.delete(widget.file.url);
         await widget.updated?.call(null);
-        pop(null, force: true);
+        pop(force: true);
       } catch (err) {
         scope.alerts.error(err).show();
       } finally {

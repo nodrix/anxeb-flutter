@@ -1,13 +1,13 @@
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'device.dart';
 
-class ViewFooter {
+class ScreenFooter {
   final Scope scope;
   final Widget child;
   final bool Function() isVisible;
 
-  ViewFooter({
+  ScreenFooter({
     @required this.scope,
     this.isVisible,
     this.child,
@@ -26,7 +26,7 @@ class ViewFooter {
       elevation: 20,
       clipBehavior: Clip.hardEdge,
       child: Container(
-        decoration: Platform.isAndroid
+        decoration: Device.isAndroid
             ? BoxDecoration(
                 border: Border(
                   bottom: BorderSide(width: 1.0, color: Colors.white),

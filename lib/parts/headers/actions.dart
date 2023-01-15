@@ -3,7 +3,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/action_icon.dart';
 import 'package:flutter/material.dart';
 
-class ActionsHeader extends ViewHeader {
+class ActionsHeader extends ScreenHeader {
   Widget Function() _body;
 
   ActionsHeader({

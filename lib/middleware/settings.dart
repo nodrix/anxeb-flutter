@@ -19,6 +19,12 @@ class _Dialogs {
   double dialogRadius;
 }
 
+class _Fields {
+  double radius;
+  Color fillColor;
+  double fontSize;
+}
+
 class _Colors {
   Color action = Colors.blue.shade500;
   Color background = Color(0xfffafafa);
@@ -103,6 +109,7 @@ class Settings {
   _Colors _colors;
   _Auths _auths;
   _Dialogs _dialogs;
+  _Fields _fields;
   _Panels _panels;
   _Analytics _analytics;
   _General _general;
@@ -111,6 +118,7 @@ class Settings {
     _colors = _Colors();
     _auths = _Auths();
     _dialogs = _Dialogs();
+    _fields = _Fields();
     _panels = _Panels();
     _analytics = _Analytics();
     _general = _General();
@@ -121,6 +129,8 @@ class Settings {
   _Auths get auths => _auths;
 
   _Dialogs get dialogs => _dialogs;
+
+  _Fields get fields => _fields;
 
   _Panels get panels => _panels;
 

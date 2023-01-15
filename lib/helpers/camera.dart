@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:anxeb_flutter/middleware/action.dart';
 import 'package:anxeb_flutter/middleware/application.dart';
-import 'package:anxeb_flutter/middleware/view.dart';
+import 'package:anxeb_flutter/screen/screen.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:anxeb_flutter/widgets/blocks/empty.dart';
 import 'package:camera/camera.dart';
@@ -10,9 +10,10 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import '../middleware/device.dart';
 import 'preview.dart';
 
-class CameraHelper extends ViewWidget {
+class CameraHelper extends ScreenWidget {
   final String title;
   final bool allowMainCamera;
   final Image frameImage;
@@ -37,7 +38,7 @@ class CameraHelper extends ViewWidget {
   _CameraHelperState createState() => new _CameraHelperState();
 }
 
-class _CameraHelperState extends View<CameraHelper, Application> {
+class _CameraHelperState extends ScreenView<CameraHelper, Application> {
   CameraController _camera;
   CameraDescription _mainCamera;
   CameraDescription _faceCamera;
@@ -74,7 +75,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   }
 
   void _submit(File result) {
-    pop(result);
+    pop(result: result);
   }
 
   void _debug(String text) {
@@ -308,8 +309,8 @@ class _CameraHelperState extends View<CameraHelper, Application> {
   }
 
   @override
-  ViewAction action() {
-    return ViewAction(
+  ScreenAction action() {
+    return ScreenAction(
       scope: scope,
       icon: () => Icons.camera_alt,
       color: () => scope.application.settings.colors.secudary,
@@ -322,7 +323,7 @@ class _CameraHelperState extends View<CameraHelper, Application> {
       alternates: [
         AltAction(
           color: () => scope.application.settings.colors.secudary,
-          icon: () => (Platform.isAndroid ? Icons.arrow_back : Icons.chevron_left),
+          icon: () => (Device.isAndroid ? Icons.arrow_back : Icons.chevron_left),
           onPressed: () => dismiss(),
         ),
         AltAction(
