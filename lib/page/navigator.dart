@@ -1,11 +1,12 @@
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:flutter/material.dart';
+import '../middleware/application.dart';
 import '../middleware/menu.dart';
 import 'page.dart';
 import 'scope.dart';
 
-class PageNavigator extends Anxeb.Navigator {
-  final PageMiddleware middleware;
+class PageNavigator<A extends Application, M> extends Anxeb.Navigator {
+  final PageMiddleware<A, M> middleware;
 
   PageNavigator(this.middleware) : super(middleware.application);
 
@@ -227,7 +228,7 @@ class PageNavigator extends Anxeb.Navigator {
     return result;
   }
 
-  PageScope get scope => middleware.scope;
+  PageScope<A> get scope => middleware.scope;
 
-  PageInfo get info => middleware.info;
+  PageInfo<A, M> get info => middleware.info;
 }

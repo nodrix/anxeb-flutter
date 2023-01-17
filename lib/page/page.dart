@@ -6,32 +6,32 @@ import '../misc/after_init.dart';
 
 enum PagePushAction { replace, push }
 
-typedef PageRedirectHandler = Future<String> Function(BuildContext context, GoRouterState state, PageScope scope, [PageInfo info]);
+typedef PageRedirectHandler<M> = Future<String> Function(BuildContext context, GoRouterState state, PageScope<Application> scope, [PageInfo<Application, M> info]);
 
-class PageMiddleware {
-  final Application application;
+class PageMiddleware<A extends Application, M> {
+  final A application;
   final PageRedirectHandler redirect;
 
-  PageInfo info;
+  PageInfo<A, M> info;
 
-  PageScope get scope => info?.scope;
+  PageScope<A> get scope => info?.scope;
 
   PageMiddleware({@required this.application, this.redirect});
 }
 
-class PageWidget extends StatefulWidget implements IView {
+class PageWidget<A extends Application, M> extends StatefulWidget implements IView {
   final String name;
   final String path;
   final String title;
   final Key key;
-  final dynamic _inmeta = {};
+  final _PageArgs _inmeta = _PageArgs();
 
-  PageWidget(this.name, {
+  PageWidget(
+    this.name, {
     @required this.path,
     this.key,
     this.title,
-  })
-      : assert(path != null),
+  })  : assert(path != null),
         super(key: key);
 
   @override
@@ -42,27 +42,28 @@ class PageWidget extends StatefulWidget implements IView {
     return [];
   }
 
-  Future init(PageMiddleware middleware, [BuildContext context, GoRouterState state, PageInfo parent]) async {
-    _inmeta['middleware'] = middleware;
+  Future init(PageMiddleware<A, M> middleware, {BuildContext context, GoRouterState state, PageInfo<A, M> parent}) async {
+    _inmeta.middleware = middleware;
     if (context != null) {
-      await prepare(context, state, parent);
+      await prepare(context, state, parent: parent);
     }
   }
 
-  Future prepare(BuildContext context, GoRouterState state, [PageInfo parent]) async {
-    _inmeta['info'] = PageInfo(
+  Future prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, PageInfo<A, M> parent}) async {
+    _inmeta.info = PageInfo<A, M>(
       name: name,
       title: title,
       context: context,
       state: state,
+      container: container,
       parent: parent,
-      meta: meta,
+      meta: meta?.call(),
     );
     middleware.info = info;
   }
 
   @protected
-  dynamic get meta => {};
+  M meta() => null;
 
   Future<String> redirect(BuildContext context, GoRouterState state) async {
     if (info == null) {
@@ -84,7 +85,7 @@ class PageWidget extends StatefulWidget implements IView {
         name: '${name}_${page.name}',
         path: page.path,
         pageBuilder: (context, state) {
-          page.prepare(context, state, info);
+          page.prepare(context, state, parent: info);
           return transitionBuilder<void>(context: context, state: state, child: page);
         },
         redirect: (context, GoRouterState state) async {
@@ -105,11 +106,11 @@ class PageWidget extends StatefulWidget implements IView {
     );
   }
 
-  PageInfo get info => _inmeta['info'] as PageInfo;
+  PageInfo<A, M> get info => _inmeta.info;
 
-  PageMiddleware get middleware => _inmeta['middleware'] as PageMiddleware;
+  PageMiddleware<A, M> get middleware => _inmeta.middleware;
 
-  Application get application => middleware.application;
+  A get application => middleware.application;
 }
 
 abstract class PageState<T extends PageWidget> extends State<T> {
@@ -124,9 +125,9 @@ abstract class PageState<T extends PageWidget> extends State<T> {
   Future<bool> pop({dynamic result, bool force});
 }
 
-class PageView<T extends PageWidget, A extends Application> extends PageState<T> with AfterInitMixin<T> {
+class PageView<T extends PageWidget, A extends Application, M> extends PageState<T> with AfterInitMixin<T> {
   GlobalKey<ScaffoldState> _scaffold;
-  PageScope _scope;
+  PageScope<A> _scope;
   bool _initialized;
   bool _initializing;
   bool _postinitialized;
@@ -157,10 +158,11 @@ class PageView<T extends PageWidget, A extends Application> extends PageState<T>
   }
 
   Future _init() async {
-    _scope = PageScope(context, this);
+    _scope = PageScope<A>(context, this);
     await _scope.setup();
     widget.info.scope = _scope;
     setup();
+    container?.rasterize?.call();
   }
 
   @override
@@ -180,7 +182,6 @@ class PageView<T extends PageWidget, A extends Application> extends PageState<T>
       widget.info.scope = _scope;
     }
     prebuild();
-
     var scaffoldContent = Scaffold(
       key: _scaffold,
       resizeToAvoidBottomInset: true,
@@ -274,38 +275,6 @@ class PageView<T extends PageWidget, A extends Application> extends PageState<T>
     return false;
   }
 
-  //Page.info.meta debe guardarse en un arreglo cuando se instancian los pages en entry. Este deberia ser consumido en cada redirect mapeando un meta por cada instancia.. ese meta puede ser modificado en un constructor del page si es necesario
-
-  /*Future<T> push<T>(PageWidget page, {PagePushAction action}) async {
-    scope.idle();
-    await scope.alerts.dispose(quick: true);
-
-    var settings = RouteSettings(
-      name: screen.name,
-      arguments: _PushedScreenArguments<A>(
-        application: application,
-        scope: _scope,
-      ),
-    );
-
-    var result;
-    if (action == ScreenPushAction.replace) {
-      //result = await Navigator.of(_scope.context).pushReplacement($route);
-      _scope.context.pushReplacement(location)
-    } else {
-      result = await Navigator.of(_scope.context).push($route);
-    }
-
-    await _scope.setup();
-    if (mounted) {
-      setup();
-      _scope.window.overlay.apply();
-      Future.delayed(Duration(milliseconds: 150), rasterize);
-      Future.delayed(Duration(milliseconds: 250), rasterize);
-    }
-    return result as T;
-  }*/
-
   void go(String route) async {
     scope.idle();
     await scope.alerts.dispose(quick: true);
@@ -367,7 +336,7 @@ class PageView<T extends PageWidget, A extends Application> extends PageState<T>
 
   String get title => widget?.title ?? application.title;
 
-  PageScope get scope => _scope;
+  PageScope<A> get scope => _scope;
 
   Window get window => _scope.window;
 
@@ -375,19 +344,30 @@ class PageView<T extends PageWidget, A extends Application> extends PageState<T>
 
   Settings get settings => application?.settings;
 
-  PageInfo get info => widget.info;
+  M get meta => info?.meta;
+
+  PageInfo<A, M> get info => widget.info;
+
+  PageContainer<A, M> get container => info.container;
 
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
 }
 
-class PageInfo<A extends Application> {
+class _PageArgs<A extends Application, M> {
+  PageInfo<A, M> info;
+
+  PageMiddleware<A, M> middleware;
+}
+
+class PageInfo<A extends Application, M> {
   final String name;
   final String title;
   final BuildContext context;
   final GoRouterState state;
-  final PageInfo parent;
-  dynamic meta = {};
-  PageScope scope;
+  final PageContainer<A, M> container;
+  final PageInfo<A, M> parent;
+  M meta;
+  PageScope<A> scope;
   dynamic value;
 
   PageInfo({
@@ -395,6 +375,7 @@ class PageInfo<A extends Application> {
     @required this.title,
     @required this.context,
     @required this.state,
+    this.container,
     this.parent,
     this.meta,
   });

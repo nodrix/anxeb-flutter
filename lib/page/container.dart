@@ -4,13 +4,34 @@ import '../middleware/application.dart';
 import 'page.dart';
 import 'scope.dart';
 
-class PageContainer<A extends Application> {
-  final Key key;
-  PageMiddleware _middleware;
+class _ContainerBlock extends StatefulWidget {
+  final PageWidget child;
+
+  _ContainerBlock({Key key, this.child}) : super(key: key);
+
+  @override
+  _ContainerBlockState createState() => _ContainerBlockState();
+}
+
+class _ContainerBlockState extends State<_ContainerBlock> {
+  void rasterize([VoidCallback fn]) => setState(fn ?? (() {}));
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+}
+
+class PageContainer<A extends Application, M> {
+  PageMiddleware<A, M> _middleware;
   BuildContext _context;
   GoRouterState _state;
-
-  PageContainer({this.key});
+  GlobalKey<_ContainerBlockState> _key;
 
   @protected
   Future setup() async {}
@@ -19,14 +40,21 @@ class PageContainer<A extends Application> {
     return child;
   }
 
+  Future rasterize() async {
+    if (_key?.currentState?.mounted == true) {
+      _key.currentState.rasterize();
+    }
+  }
+
   @protected
   List<PageWidget Function()> pages() {
     return [];
   }
 
-  Future init(PageMiddleware middleware) async {
+  Future init(PageMiddleware<A, M> middleware) async {
     _middleware = middleware;
-    setup();
+    await setup();
+    await rasterize();
   }
 
   Future prepare(BuildContext context, GoRouterState state) async {
@@ -47,8 +75,9 @@ class PageContainer<A extends Application> {
         name: page.name,
         path: '/${page.path}',
         pageBuilder: (context, state) {
-          page.prepare(context, state);
-          return PageWidget.transitionBuilder<void>(context: context, state: state, child: page);
+          _key = GlobalKey();
+          page.prepare(context, state, container: this);
+          return PageWidget.transitionBuilder<void>(context: context, state: state, child: _ContainerBlock(key: _key, child: page));
         },
         redirect: (context, GoRouterState state) async {
           return await page.redirect(context, state);
@@ -59,13 +88,15 @@ class PageContainer<A extends Application> {
     return routes;
   }
 
-  PageMiddleware get middleware => _middleware;
+  PageMiddleware<A, M> get middleware => _middleware;
 
-  A get application => _middleware.application as A;
+  A get application => _middleware.application;
 
-  PageScope get scope => _middleware.scope;
+  PageScope<A> get scope => _middleware.scope;
 
-  PageInfo get info => _middleware.info;
+  PageInfo<A, M> get info => _middleware.info;
+
+  M get meta => info.meta;
 
   BuildContext get context => _context;
 

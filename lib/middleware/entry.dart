@@ -59,10 +59,10 @@ class EntryScreen extends StatelessWidget {
   }
 }
 
-class EntryPage extends StatefulWidget {
+class EntryPage<A extends Application, M> extends StatefulWidget {
   final ThemeData theme;
   final String title;
-  final PageMiddleware middleware;
+  final PageMiddleware<A, M> middleware;
   final List<PageWidget Function()> pages;
   final List<PageContainer Function()> containers;
   final PageWidget Function() errorPage;
@@ -100,10 +100,14 @@ class _EntryPageState extends State<EntryPage> {
           container.init(widget.middleware);
 
           routes.add(ShellRoute(
-            navigatorKey: container.key,
+            navigatorKey: GlobalKey(),
             pageBuilder: (context, state, child) {
               container.prepare(context, state);
-              return PageWidget.transitionBuilder<void>(context: context, state: state, child: container.build(context, state, child));
+              return PageWidget.transitionBuilder<void>(
+                context: context,
+                state: state,
+                child: container.build(context, state, child),
+              );
             },
             routes: container.getRoutes(),
           ));
@@ -134,7 +138,7 @@ class _EntryPageState extends State<EntryPage> {
         routes: routes,
         errorPageBuilder: (context, state) {
           final page = widget.errorPage();
-          page.init(widget.middleware, context, state);
+          page.init(widget.middleware, context: context, state: state);
           return PageWidget.transitionBuilder<void>(context: context, state: state, child: page);
         },
         redirect: (context, GoRouterState state) async {

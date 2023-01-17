@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../middleware/application.dart';
 import '../middleware/scope.dart';
 
-class PageScope extends Scope implements IScope {
+class PageScope<A extends Application> extends Scope implements IScope {
   Anxeb.PageView view;
 
   PageScope(BuildContext context, this.view) : super(context);
@@ -13,7 +13,7 @@ class PageScope extends Scope implements IScope {
   }
 
   @override
-  Application get application => view.application;
+  A get application => view.application as A;
 
   @override
   String get key => view.path;
