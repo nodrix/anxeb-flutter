@@ -28,6 +28,7 @@ class TextInputField<V> extends FieldWidget<V> {
   final bool suffixActions;
   final int errorMaxLines;
   final bool selectOnFocus;
+  final bool borderless;
 
   TextInputField({
     @required Scope scope,
@@ -56,6 +57,7 @@ class TextInputField<V> extends FieldWidget<V> {
     double labelSize,
     bool selected,
     BorderRadius borderRadius,
+    bool isDense,
     this.controller,
     this.type,
     this.autofocus,
@@ -75,6 +77,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.errorMaxLines,
     this.selectOnFocus,
     this.formatter,
+    this.borderless,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -103,6 +106,7 @@ class TextInputField<V> extends FieldWidget<V> {
           labelSize: labelSize,
           fontSize: fontSize,
           borderRadius: borderRadius,
+          isDense: isDense,
         );
 
   @override
@@ -299,7 +303,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       style: widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null),
       decoration: InputDecoration(
         filled: true,
-        contentPadding: EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+        contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
         prefixIcon: widget.icon != null
             ? Icon(
                 widget.icon,
@@ -322,10 +326,18 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
         suffixText: widget.suffix,
-        fillColor: (focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input) ?? widget.scope.application.settings.fields.fillColor,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
-        border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius ?? BorderRadius.all(Radius.circular(8))),
+        border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+        disabledBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.disabledBorder,
+        enabledBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.enabledBorder,
+        focusedBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.focusedBorder,
+        errorBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.errorBorder,
+        focusedErrorBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.focusedErrorBorder,
+        fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
+        hoverColor: widget.scope.application.settings.fields.hoverColor,
+        errorStyle: widget.scope.application.settings.fields.errorStyle,
+        isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
         suffixIcon: widget.suffixActions == false
             ? null
             : GestureDetector(

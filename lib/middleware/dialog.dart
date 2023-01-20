@@ -15,6 +15,7 @@ import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../parts/dialogs/form.dart';
 import '../parts/dialogs/slider.dart';
 import 'application.dart';
 import 'field.dart';
@@ -550,6 +551,26 @@ class DialogButton<T> {
   DialogButton(
     this.caption,
     this.value, {
+    this.onTap,
+    this.fillColor,
+    this.textColor,
+    this.icon,
+    this.swapIcon,
+    this.visible,
+  });
+}
+
+class FormButton {
+  final String caption;
+  final Color fillColor;
+  final Color textColor;
+  final IconData icon;
+  final Future Function(FormScope scope) onTap;
+  final bool swapIcon;
+  final bool visible;
+
+  FormButton({
+    @required this.caption,
     this.onTap,
     this.fillColor,
     this.textColor,

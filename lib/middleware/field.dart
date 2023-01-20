@@ -30,6 +30,7 @@ class FieldWidget<V> extends StatefulWidget {
   final V initialValue;
   final bool initialSelected;
   final BorderRadius borderRadius;
+  final bool isDense;
 
   FieldWidget({
     @required this.scope,
@@ -58,6 +59,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.initialValue,
     this.initialSelected,
     this.borderRadius,
+    this.isDense,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.key, name));
 

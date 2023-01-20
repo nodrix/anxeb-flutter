@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class IconButton extends StatefulWidget {
   IconButton({
+    this.keyless,
     this.margin,
     this.padding,
     this.action,
@@ -22,6 +23,7 @@ class IconButton extends StatefulWidget {
     this.opaque,
   });
 
+  final bool keyless;
   final EdgeInsets margin;
   final EdgeInsets padding;
   final Future Function() action;
@@ -40,7 +42,7 @@ class IconButton extends StatefulWidget {
   final double borderWidth;
   final double borderPadding;
   final bool opaque;
-  
+
   @override
   _IconButtonState createState() => _IconButtonState();
 }
@@ -70,7 +72,7 @@ class _IconButtonState extends State<IconButton> {
                 : null,
             child: ClipOval(
               child: Material(
-                key: GlobalKey(),
+                key: widget.keyless == true ? null : GlobalKey(),
                 color: widget.opaque == true ? Colors.black.withOpacity(0.2) : $fill,
                 child: InkWell(
                   splashColor: Colors.white,

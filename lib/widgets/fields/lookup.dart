@@ -36,6 +36,7 @@ class LookupInputField<V> extends FieldWidget<V> {
     bool focusNext,
     V value,
     BorderRadius borderRadius,
+    bool isDense,
     this.autofocus,
     this.fixedLabel,
     this.hint,
@@ -67,6 +68,7 @@ class LookupInputField<V> extends FieldWidget<V> {
           focusNext: focusNext,
           initialValue: value,
           borderRadius: borderRadius,
+          isDense: isDense,
         );
 
   @override
@@ -129,7 +131,7 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
             isFocused: focused,
             decoration: InputDecoration(
               filled: true,
-              contentPadding: EdgeInsets.only(left: 0, top: 7, bottom: 0, right: 0),
+              contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
               prefixIcon: Icon(
                 widget.icon ?? FontAwesome5.dot_circle,
                 color: widget.scope.application.settings.colors.primary,
@@ -143,9 +145,17 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
                       fontSize: 15,
                     )
                   : null,
-              fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
-              border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
+              border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+              disabledBorder: widget.scope.application.settings.fields.disabledBorder,
+              enabledBorder: widget.scope.application.settings.fields.enabledBorder,
+              focusedBorder: widget.scope.application.settings.fields.focusedBorder,
+              errorBorder: widget.scope.application.settings.fields.errorBorder,
+              focusedErrorBorder: widget.scope.application.settings.fields.focusedErrorBorder,
+              fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
+              hoverColor: widget.scope.application.settings.fields.hoverColor,
+              errorStyle: widget.scope.application.settings.fields.errorStyle,
+              isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
               suffixIcon: GestureDetector(
                 dragStartBehavior: DragStartBehavior.down,
                 behavior: HitTestBehavior.opaque,

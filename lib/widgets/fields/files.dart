@@ -21,8 +21,35 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
   final String launchUrlPrefix;
   final Future Function({String launchUrl, FileInputValue file, bool readonly}) onPreview;
 
-  FilesInputField({@required Scope scope, Key key, @required String name, String group, String label, IconData icon, EdgeInsets margin, EdgeInsets padding, bool readonly, bool visible, ValueChanged<List<FileInputValue>> onSubmitted, ValueChanged<List<FileInputValue>> onValidSubmit, GestureTapCallback onTab, GestureTapCallback onBlur, GestureTapCallback onFocus, ValueChanged<List<FileInputValue>> onChanged, FormFieldValidator<String> validator, List<FileInputValue> Function(dynamic value) parser, bool focusNext, double fontSize, double labelSize, BorderRadius borderRadius, this.allowMultiples = false, this.allowedExtensions, this.launchUrlPrefix, this.onPreview})
-      : assert(name != null),
+  FilesInputField({
+    @required Scope scope,
+    Key key,
+    @required String name,
+    String group,
+    String label,
+    IconData icon,
+    EdgeInsets margin,
+    EdgeInsets padding,
+    bool readonly,
+    bool visible,
+    ValueChanged<List<FileInputValue>> onSubmitted,
+    ValueChanged<List<FileInputValue>> onValidSubmit,
+    GestureTapCallback onTab,
+    GestureTapCallback onBlur,
+    GestureTapCallback onFocus,
+    ValueChanged<List<FileInputValue>> onChanged,
+    FormFieldValidator<String> validator,
+    List<FileInputValue> Function(dynamic value) parser,
+    bool focusNext,
+    double fontSize,
+    double labelSize,
+    BorderRadius borderRadius,
+    bool isDense,
+    this.allowMultiples = false,
+    this.allowedExtensions,
+    this.launchUrlPrefix,
+    this.onPreview,
+  })  : assert(name != null),
         super(
           scope: scope,
           key: key,
@@ -46,6 +73,7 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
           fontSize: fontSize,
           labelSize: labelSize,
           borderRadius: borderRadius,
+          isDense: isDense,
         );
 
   @override
@@ -157,7 +185,7 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
             isFocused: focused,
             decoration: InputDecoration(
               filled: true,
-              contentPadding: EdgeInsets.only(left: 0, top: 7, bottom: 0, right: 0),
+              contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
               prefixIcon: Icon(
                 widget.icon ?? FontAwesome5.dot_circle,
                 size: widget.iconSize,
@@ -165,9 +193,17 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
               ),
               labelText: (value != null && value.isNotEmpty) ? widget.label : null,
               labelStyle: widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null,
-              fillColor: focused ? widget.scope.application.settings.colors.focus : widget.scope.application.settings.colors.input,
               errorText: warning,
-              border: UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
+              border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+              disabledBorder: widget.scope.application.settings.fields.disabledBorder,
+              enabledBorder: widget.scope.application.settings.fields.enabledBorder,
+              focusedBorder: widget.scope.application.settings.fields.focusedBorder,
+              errorBorder: widget.scope.application.settings.fields.errorBorder,
+              focusedErrorBorder: widget.scope.application.settings.fields.focusedErrorBorder,
+              fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
+              hoverColor: widget.scope.application.settings.fields.hoverColor,
+              errorStyle: widget.scope.application.settings.fields.errorStyle,
+              isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
               suffixIcon: GestureDetector(
                 dragStartBehavior: DragStartBehavior.down,
                 behavior: HitTestBehavior.opaque,

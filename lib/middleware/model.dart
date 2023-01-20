@@ -10,6 +10,7 @@ class Model<T> {
   SharedPreferences _shared;
   List<_ModelField> _fields;
   String _primaryField;
+  bool $deleted = false;
 
   Model([data]) {
     update(data);
@@ -161,6 +162,8 @@ class Model<T> {
 
   dynamic get $pk => _primaryField != null ? toValue() : null;
 
+  bool get $exists => _pk != null;
+
   @protected
   Data get data {
     return _data;
@@ -193,20 +196,20 @@ class ModelHelper<T> {
   Model<T> _model;
   String _api;
 
-  Future<bool> delete() async {
+  Future<T> delete() async {
     var result = await _scope.dialogs.confirm(translate('anxeb.middleware.helper.delete_confirm')).show(); //TR ¿Estás seguro que quieres eliminar este registro?
     if (result) {
       try {
         await _scope.busy();
         await _application.api.delete('/$_api/${_model.$pk}');
-        return true;
+        return model;
       } catch (err) {
         _scope.alerts.error(err).show();
       } finally {
         await _scope.idle();
       }
     }
-    return false;
+    return null;
   }
 
   void _set({Scope scope, Model<T> model, String api}) {

@@ -19,10 +19,28 @@ class _Dialogs {
   double dialogRadius;
 }
 
+class _Alerts {
+  bool Function() showFromBottom;
+  EdgeInsets Function() margin;
+  BorderRadius borderRadius;
+}
+
 class _Fields {
   double radius;
   Color fillColor;
   double fontSize;
+  InputBorder border;
+  InputBorder disabledBorder;
+  InputBorder enabledBorder;
+  InputBorder focusedBorder;
+  InputBorder errorBorder;
+  InputBorder focusedErrorBorder;
+  Color hoverColor;
+  Color focusColor;
+  TextStyle errorStyle;
+  EdgeInsets contentPaddingWithIcon;
+  EdgeInsets contentPaddingNoIcon;
+  bool isDense;
 }
 
 class _Colors {
@@ -109,6 +127,7 @@ class Settings {
   _Colors _colors;
   _Auths _auths;
   _Dialogs _dialogs;
+  _Alerts _alerts;
   _Fields _fields;
   _Panels _panels;
   _Analytics _analytics;
@@ -118,6 +137,7 @@ class Settings {
     _colors = _Colors();
     _auths = _Auths();
     _dialogs = _Dialogs();
+    _alerts = _Alerts();
     _fields = _Fields();
     _panels = _Panels();
     _analytics = _Analytics();
@@ -129,6 +149,8 @@ class Settings {
   _Auths get auths => _auths;
 
   _Dialogs get dialogs => _dialogs;
+
+  _Alerts get alerts => _alerts;
 
   _Fields get fields => _fields;
 
