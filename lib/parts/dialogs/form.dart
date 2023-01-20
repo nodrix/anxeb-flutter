@@ -5,7 +5,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
 import '../../middleware/application.dart';
 
-class FormDialog<V> extends ScopeDialog<V> {
+class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   final String subtitle;
   final V model;
   final IconData icon;
@@ -15,7 +15,7 @@ class FormDialog<V> extends ScopeDialog<V> {
   final String title;
   final MainAxisAlignment buttonAlignment;
 
-  FormScope _scope;
+  FormScope<A> _scope;
 
   FormDialog(
     Scope scope, {
@@ -34,13 +34,13 @@ class FormDialog<V> extends ScopeDialog<V> {
   }
 
   @protected
-  void init(FormScope scope) {}
+  void init(FormScope<A> scope) {}
 
   @protected
-  Widget body(FormScope scope) => Container();
+  Widget body(FormScope<A> scope) => Container();
 
   @protected
-  List<FormButton> buttons(FormScope scope) => [];
+  List<FormButton> buttons(FormScope<A> scope) => [];
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class FormDialog<V> extends ScopeDialog<V> {
       key: dialogKey,
       builder: (context, setState) {
         final mustInit = _scope == null;
-        _scope = _scope ?? FormScope(context, parent: scope, setState: setState, key: dialogKey);
+        _scope = _scope ?? FormScope<A>(context, parent: scope, setState: setState, key: dialogKey);
         if (mustInit) {
           init(_scope);
         }
@@ -104,7 +104,7 @@ class FormDialog<V> extends ScopeDialog<V> {
                   ? Material(
                       color: Colors.transparent,
                       child: Container(
-                        margin: EdgeInsets.only(right: 2,bottom: 6),
+                        margin: EdgeInsets.only(right: 2, bottom: 6),
                         child: InkWell(
                           onTap: () async {
                             final result = await close?.call(_scope);
@@ -179,7 +179,7 @@ class FormDialog<V> extends ScopeDialog<V> {
   bool get exists => model != null;
 
   @protected
-  Future Function(FormScope scope) get close => null;
+  Future Function(FormScope<A> scope) get close => null;
 }
 
 class FormScope<A extends Application> extends Scope implements IScope {
