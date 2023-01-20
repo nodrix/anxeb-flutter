@@ -13,7 +13,9 @@ class FormDialog<V> extends ScopeDialog<V> {
   final EdgeInsets insetPadding;
   final BorderRadius borderRadius;
   final String title;
-  bool _initialized;
+  final MainAxisAlignment buttonAlignment;
+
+  FormScope _scope;
 
   FormDialog(
     Scope scope, {
@@ -24,7 +26,9 @@ class FormDialog<V> extends ScopeDialog<V> {
     this.contentPadding,
     this.insetPadding,
     this.borderRadius,
+    this.buttonAlignment,
     bool dismissible,
+    Key key,
   }) : super(scope) {
     super.dismissible = dismissible != null ? dismissible : (this.buttons == null);
   }
@@ -44,13 +48,13 @@ class FormDialog<V> extends ScopeDialog<V> {
     return StatefulBuilder(
       key: dialogKey,
       builder: (context, setState) {
-        final formScope = FormScope(context, parent: scope, setState: setState, key: dialogKey);
-        final formButtons = buttons(formScope);
-
-        if (_initialized != true) {
-          init(formScope);
-          _initialized = true;
+        final mustInit = _scope == null;
+        _scope = _scope ?? FormScope(context, parent: scope, setState: setState, key: dialogKey);
+        if (mustInit) {
+          init(_scope);
         }
+
+        final formButtons = buttons(_scope);
 
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
@@ -96,16 +100,41 @@ class FormDialog<V> extends ScopeDialog<V> {
                   ],
                 ),
               ),
+              close != null
+                  ? Material(
+                      color: Colors.transparent,
+                      child: Container(
+                        margin: EdgeInsets.only(right: 2,bottom: 6),
+                        child: InkWell(
+                          onTap: () async {
+                            final result = await close?.call(_scope);
+                            if (result == false) {
+                              Navigator.of(context).pop(null);
+                            } else if (result == null) {
+                              //ignore
+                            } else {
+                              Navigator.of(context).pop(result is V ? result : model);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(100),
+                          child: Container(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(Icons.close),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              body?.call(formScope) ?? Container(),
+              body?.call(_scope) ?? Container(),
               Container(
                 padding: EdgeInsets.only(top: 10),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: buttonAlignment ?? MainAxisAlignment.end,
                   children: formButtons.where(($button) => $button.visible != false).map(($button) {
                     var button = TextButton(
                       caption: $button.caption,
@@ -117,7 +146,7 @@ class FormDialog<V> extends ScopeDialog<V> {
                       textColor: $button.textColor ?? Colors.white,
                       margin: EdgeInsets.only(top: 10, left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
                       onPressed: () async {
-                        final result = await $button?.onTap?.call(formScope);
+                        final result = await $button?.onTap?.call(_scope);
                         if (result == false) {
                           Navigator.of(context).pop(null);
                         } else if (result == null) {
@@ -148,6 +177,9 @@ class FormDialog<V> extends ScopeDialog<V> {
   }
 
   bool get exists => model != null;
+
+  @protected
+  Future Function(FormScope scope) get close => null;
 }
 
 class FormScope<A extends Application> extends Scope implements IScope {
@@ -179,15 +211,15 @@ class FormScope<A extends Application> extends Scope implements IScope {
 }
 
 class FormSpacer extends StatelessWidget {
-  final bool row;
+  final bool column;
 
-  FormSpacer({this.row});
+  FormSpacer({this.column});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: row == true ? 18 : 0,
-      width: row != true ? 10 : 0,
+      height: column == true ? 18 : 0,
+      width: column != true ? 10 : 0,
     );
   }
 }
