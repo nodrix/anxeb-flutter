@@ -41,6 +41,9 @@ class _Fields {
   EdgeInsets contentPaddingWithIcon;
   EdgeInsets contentPaddingNoIcon;
   bool isDense;
+  TextStyle hintStyle;
+  Color iconColor;
+  Color suffixIconColor;
 }
 
 class _Colors {
