@@ -240,6 +240,14 @@ class Validators {
     }
   }
 
+  String emailOrEmpty(String value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    } else {
+      return email(value);
+    }
+  }
+
   String password(String value) {
     if (value == null || value.isEmpty) {
       return translate('anxeb.utils.validators.password.default_error'); // TR 'Contraseña requerida';
