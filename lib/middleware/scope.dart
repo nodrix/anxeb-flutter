@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:anxeb_flutter/screen/scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:go_router/go_router.dart';
 import 'api.dart';
 import 'application.dart';
 import 'auth.dart';
@@ -223,7 +225,11 @@ class Scope {
       idlePromise.complete();
     } else {
       _idling = true;
-      Navigator.of(_busyContext).pop(idlePromise);
+      if (this is ScreenScope) {
+        Navigator.of(_busyContext).pop(idlePromise);
+      } else {
+        GoRouter.of(_busyContext).pop(idlePromise);
+      }
     }
     rasterize();
     return idlePromise.future;
