@@ -5,79 +5,82 @@ import '../middleware/menu.dart';
 import 'scope.dart';
 import 'screen.dart';
 
-class ScreenNavigator extends Anxeb.Navigator {
+class ScreenNavigator extends StatefulWidget {
+  final ScreenScope scope;
+  final bool Function(Anxeb.MenuItem item) isActive;
+  final bool Function() isVisible;
+  final List<MenuGroup> Function() groups;
+  final String Function() role;
+  final List<String> Function() roles;
+  final Widget Function() header;
+  final Widget Function() footer;
+  final Color backgroundColor;
+
+  ScreenNavigator({
+    Key key,
+    @required this.scope,
+    this.isActive,
+    this.isVisible,
+    this.groups,
+    this.role,
+    this.roles,
+    this.header,
+    this.footer,
+    this.backgroundColor,
+  }) : super(key: key);
+
+  @override
+  State<ScreenNavigator> createState() => _ScreenNavigatorState();
+}
+
+class _ScreenNavigatorState extends State<ScreenNavigator> {
   GlobalKey<ScreenState> _currentScreenKey;
+  List<MenuGroup> _groups;
+  String _role;
+  List<String> _roles;
+  Widget _header;
+  Widget _footer;
 
-  ScreenNavigator(Application application) : super(application);
-
-  Future<T> push<T>(Future<ScreenWidget> Function(Key key) getScreen) async {
-    if (source != null) {
-      var dismissed = _currentScreen != null ? await _currentScreen.dismiss() : true;
-
-      if (dismissed != false) {
-        if (_currentScreen == null) {
-          collapse();
-        }
-        _currentScreenKey = GlobalKey<ScreenState>();
-
-        var screen = await getScreen(_currentScreenKey);
-        var $openedKey = _currentScreenKey;
-        var result = await _screen.push<T>(
-          screen,
-          transition: ScreenTransitionType.fade,
-        );
-        if (_currentScreenKey == $openedKey) {
-          _currentScreenKey = null;
-        }
-        return result;
-      }
-    }
-    return null;
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
-  Widget build() {
-    if (source == null) {
-      return null;
+  Widget build(BuildContext context) {
+    _groups = widget.groups();
+    _role = widget.role?.call();
+    _roles = widget.roles?.call();
+    _header = widget.header?.call();
+    _footer = widget.footer?.call();
+
+    if (_groups?.isEmpty == true || widget.isVisible?.call() == false) {
+      return Container();
     }
-    if (groups.length > 0 || header != null || footer != null) {
-      return Drawer(
-        elevation: 20.0,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            header(),
-            Expanded(
-              child: Container(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: groups.map(($group) => _buildItem($group)).toList() + (footer != null ? [footer()] : []),
-                ),
+
+    return Drawer(
+      elevation: 20.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          _header,
+          Expanded(
+            child: Container(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: _groups.map(($group) => _buildItem($group)).toList() + (_footer != null ? [_footer] : []),
               ),
             ),
-          ],
-        ),
-      );
-    } else {
-      return null;
-    }
-  }
-
-  @override
-  Future end() async {
-    if (_currentScreen != null) {
-      await _currentScreen.pop(force: true);
-    }
-    super.end();
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildItem(Anxeb.MenuItem $item, [Anxeb.MenuItem parent]) {
-    var $role = role?.call();
-    var $roles = roles?.call();
-
     var $hidden = $item.visible == false || ($item.isVisible != null && $item.isVisible() == false);
-    var $unauthorized = (source == null) || ($role != null && $item.roles != null && !$item.roles.contains($role)) || ($roles != null && $item.roles != null && !$roles.any(($role) => $item.roles.contains($role)));
+    var $unauthorized = (_role != null && $item.roles != null && !$item.roles.contains(_role)) || (_roles != null && $item.roles != null && !_roles.any(($role) => $item.roles.contains($role)));
 
     if ($hidden || $unauthorized) {
       return Container();
@@ -219,12 +222,50 @@ class ScreenNavigator extends Anxeb.Navigator {
     );
   }
 
-  Future<bool> exit([result]) async => _screen != null ? await _screen.pop(result: result) : false;
+  Future _onItemTab(Anxeb.MenuItem item) async {
+    if (item.home == true) {
+      await home();
+    }
+
+    if (item.view != null) {
+      push((key) => item.view(key)).then((data) {
+        item.result?.call(data);
+      });
+    }
+  }
 
   void collapse() {
-    final scaffold = _screen.scaffold;
+    final scaffold = _parentScreen.scaffold;
     if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
       scaffold.currentState.openEndDrawer();
+    }
+  }
+
+  Future<T> push<T>(Future<ScreenWidget> Function(Key key) getScreen) async {
+    if (_currentScreen != null ? await _currentScreen.dismiss() : true) {
+      return null;
+    }
+
+    if (_currentScreen == null) {
+      collapse();
+    }
+    _currentScreenKey = GlobalKey<ScreenState>();
+
+    var screen = await getScreen(_currentScreenKey);
+    var $openedKey = _currentScreenKey;
+    var result = await _parentScreen.push<T>(
+      screen,
+      transition: ScreenTransitionType.fade,
+    );
+    if (_currentScreenKey == $openedKey) {
+      _currentScreenKey = null;
+    }
+    return result;
+  }
+
+  Future end() async {
+    if (_currentScreen != null) {
+      await _currentScreen.pop(force: true);
     }
   }
 
@@ -241,22 +282,12 @@ class ScreenNavigator extends Anxeb.Navigator {
     }
   }
 
-  Future _onItemTab(Anxeb.MenuItem item) async {
-    if (item.home == true) {
-      await home();
-    }
-
-    if (item.view != null) {
-      push((key) => item.view(key)).then((data) {
-        item.result?.call(data);
-      });
-    }
-  }
-
   bool _isItemActive(Anxeb.MenuItem item) {
     var result = item.active != null ? item.active : (item.isActive != null ? item.isActive() : null);
     if (result == null) {
-      if (_currentScreen != null && _currentScreen.name == item.key) {
+      if (result == null && widget.isActive != null) {
+        return widget.isActive(item);
+      } else if (_currentScreen != null && _currentScreen.name == item.key) {
         result = true;
       } else if (_currentScreen == null && item.home == true) {
         result = true;
@@ -265,9 +296,11 @@ class ScreenNavigator extends Anxeb.Navigator {
     return result;
   }
 
+  Future<bool> exit([result]) async => _parentScreen != null ? await _parentScreen.pop(result: result) : false;
+
   ScreenState get _currentScreen => _currentScreenKey?.currentState?.mounted == true ? _currentScreenKey.currentState : null;
 
-  ScreenView get _screen => source as ScreenView;
+  ScreenView get _parentScreen => widget.scope.view;
 
-  ScreenScope get scope => _currentScreen?.scope ?? _screen?.scope;
+  Application get application => widget.scope.application;
 }

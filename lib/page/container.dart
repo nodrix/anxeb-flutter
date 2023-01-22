@@ -4,46 +4,16 @@ import '../middleware/application.dart';
 import 'page.dart';
 import 'scope.dart';
 
-class _ContainerBlock extends StatefulWidget {
-  final PageWidget child;
-
-  _ContainerBlock({Key key, this.child}) : super(key: key);
-
-  @override
-  _ContainerBlockState createState() => _ContainerBlockState();
-}
-
-class _ContainerBlockState extends State<_ContainerBlock> {
-  void rasterize([VoidCallback fn]) => setState(fn ?? (() {}));
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
-}
-
 class PageContainer<A extends Application, M> {
   PageMiddleware<A, M> _middleware;
   BuildContext _context;
   GoRouterState _state;
-  GlobalKey<_ContainerBlockState> _key;
 
   @protected
   Future setup() async {}
 
   Widget build(BuildContext context, GoRouterState state, Widget child) {
     return child;
-  }
-
-  Future rasterize() async {
-    if (_key?.currentState?.mounted == true) {
-      _key.currentState.rasterize();
-    }
   }
 
   @protected
@@ -54,12 +24,19 @@ class PageContainer<A extends Application, M> {
   Future init(PageMiddleware<A, M> middleware) async {
     _middleware = middleware;
     await setup();
-    await rasterize();
   }
 
   Future prepare(BuildContext context, GoRouterState state) async {
     _context = context;
     _state = state;
+  }
+
+  void go(String route) async {
+    if (scope == null) {
+      GoRouter.of(context).go(route);
+    } else {
+      return scope.go(route);
+    }
   }
 
   List<RouteBase> getRoutes() {
@@ -75,9 +52,8 @@ class PageContainer<A extends Application, M> {
         name: page.name,
         path: '/${page.path}',
         pageBuilder: (context, state) {
-          _key = GlobalKey();
           page.prepare(context, state, container: this);
-          return PageWidget.transitionBuilder<void>(context: context, state: state, child: _ContainerBlock(key: _key, child: page));
+          return PageWidget.transitionBuilder(context: context, state: state, child: page);
         },
         redirect: (context, GoRouterState state) async {
           return await page.redirect(context, state);

@@ -100,14 +100,10 @@ class _EntryPageState extends State<EntryPage> {
           container.init(widget.middleware);
 
           routes.add(ShellRoute(
-            navigatorKey: GlobalKey(),
+            navigatorKey: GlobalKey<NavigatorState>(),
             pageBuilder: (context, state, child) {
               container.prepare(context, state);
-              return PageWidget.transitionBuilder<void>(
-                context: context,
-                state: state,
-                child: container.build(context, state, child),
-              );
+              return PageWidget.transitionBuilder(context: context, state: state, child: container.build(context, state, child));
             },
             routes: container.getRoutes(),
           ));
@@ -125,7 +121,7 @@ class _EntryPageState extends State<EntryPage> {
             path: '/${page.path}',
             pageBuilder: (context, state) {
               page.prepare(context, state);
-              return PageWidget.transitionBuilder<void>(context: context, state: state, child: page);
+              return PageWidget.transitionBuilder(context: context, state: state, child: page);
             },
             redirect: (context, GoRouterState state) async {
               return await page.redirect(context, state);
@@ -139,7 +135,7 @@ class _EntryPageState extends State<EntryPage> {
         errorPageBuilder: (context, state) {
           final page = widget.errorPage();
           page.init(widget.middleware, context: context, state: state);
-          return PageWidget.transitionBuilder<void>(context: context, state: state, child: page);
+          return PageWidget.transitionBuilder(context: context, state: state, child: page);
         },
         redirect: (context, GoRouterState state) async {
           return await widget.middleware?.redirect?.call(context, state, widget.middleware.scope);

@@ -74,6 +74,7 @@ class MenuSearchButton extends StatefulWidget {
   final Function onExpansionComplete;
   final Function onCollapseComplete;
   final Function(bool isOpen) onPressButton;
+  final int speed;
 
   const MenuSearchButton({
     this.width,
@@ -92,6 +93,7 @@ class MenuSearchButton extends StatefulWidget {
     this.onExpansionComplete,
     this.onCollapseComplete,
     this.onPressButton,
+    this.speed,
     Key key,
   }) : super(key: key);
 
@@ -134,7 +136,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
     _textEditingController = TextEditingController();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration: Duration(milliseconds: speed),
     );
   }
 
@@ -153,7 +155,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
         children: [
           AnimatedOpacity(
             opacity: _active ? 0 : 1,
-            duration: const Duration(milliseconds: 100),
+            duration: Duration(milliseconds: speed),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -203,7 +205,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
           borderRadius: BorderRadius.circular(30),
         ),
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 100),
+          duration: Duration(milliseconds: speed),
           height: 36,
           width: (!_active) ? 0 : (widget.width ?? 300),
           curve: Curves.easeOut,
@@ -213,12 +215,12 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
           child: Stack(
             children: [
               AnimatedPositioned(
-                duration: Duration(milliseconds: 100),
+                duration: Duration(milliseconds: speed),
                 right: 6,
                 curve: Curves.easeOut,
                 child: AnimatedOpacity(
                   opacity: _active ? 1 : 0,
-                  duration: const Duration(milliseconds: 100),
+                  duration: Duration(milliseconds: speed),
                   child: InkWell(
                     enableFeedback: false,
                     focusColor: Colors.transparent,
@@ -246,13 +248,13 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
                 ),
               ),
               AnimatedPositioned(
-                duration: Duration(milliseconds: 100),
+                duration: Duration(milliseconds: speed),
                 left: 10,
                 curve: Curves.easeOut,
                 top: 11,
                 child: AnimatedOpacity(
                   opacity: (!_active) ? 0 : 1,
-                  duration: const Duration(milliseconds: 100),
+                  duration: Duration(milliseconds: speed),
                   child: Container(
                     alignment: Alignment.centerLeft,
                     width: (MediaQuery.of(context).size.width) / 3,
@@ -363,4 +365,6 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
       FocusManager.instance.primaryFocus?.unfocus();
     }
   }
+
+  int get speed => widget.speed ?? 200;
 }

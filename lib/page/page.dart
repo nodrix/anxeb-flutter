@@ -11,7 +11,6 @@ typedef PageRedirectHandler<M> = Future<String> Function(BuildContext context, G
 class PageMiddleware<A extends Application, M> {
   final A application;
   final PageRedirectHandler redirect;
-
   PageInfo<A, M> info;
 
   PageScope<A> get scope => info?.scope;
@@ -86,7 +85,7 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
         path: page.path,
         pageBuilder: (context, state) {
           page.prepare(context, state, parent: info);
-          return transitionBuilder<void>(context: context, state: state, child: page);
+          return transitionBuilder(context: context, state: state, child: page);
         },
         redirect: (context, GoRouterState state) async {
           return await page.redirect(context, state);
@@ -160,15 +159,8 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   Future _init() async {
     _scope = PageScope<A>(context, this);
     await _scope.setup();
-    widget.info.scope = _scope;
     setup();
-    container?.rasterize?.call();
-  }
-
-  @override
-  initState() {
-    super.initState();
-    rasterize();
+    widget.info.scope = _scope;
   }
 
   @override
@@ -178,13 +170,17 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
 
   @override
   Widget build(BuildContext context) {
-    if (widget.info.scope == null) {
+    if (widget.info.scope != _scope) {
       widget.info.scope = _scope;
     }
+
     prebuild();
+    var $drawer = drawer();
+
     var scaffoldContent = Scaffold(
       key: _scaffold,
       resizeToAvoidBottomInset: true,
+      drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer ? $drawer : null),
       backgroundColor: application.settings.colors.background,
       extendBody: _scope.window.overlay.extendBody,
       extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,

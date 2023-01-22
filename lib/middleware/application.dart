@@ -4,13 +4,11 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'disk.dart';
 import 'printer.dart';
 
-class Application<N extends Navigator> {
+class Application {
   Settings _settings;
   Api _api;
   String _title;
   Disk _disk;
-  @protected
-  N _navigator;
   AuthProviders _auths;
   Analytics _analytics;
   bool _badgesSupport;
@@ -18,12 +16,11 @@ class Application<N extends Navigator> {
   Printer _printer;
   DeviceInfo _info;
 
-  Application({N navigator}) {
+  Application() {
     WidgetsFlutterBinding.ensureInitialized();
     _settings = Settings();
     _title = 'Anxeb';
     _disk = Disk();
-    _navigator = navigator;
     _printer = Printer(this);
     init();
     _auths = AuthProviders(this);
@@ -86,14 +83,9 @@ class Application<N extends Navigator> {
     _title = value;
   }
 
-  N get navigator => _navigator;
-
   Analytics get analytics => _analytics;
 
-  @protected
-  set navigator(N value) {
-    _navigator = value;
-  }
+  Widget drawer(Scope scope) => null;
 
   Disk get disk => _disk;
 

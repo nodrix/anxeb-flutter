@@ -140,7 +140,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
     var scaffoldContent = Scaffold(
       key: _scaffold,
       appBar: _header?.build(),
-      drawer: $drawer == true ? application.navigator.drawer() : ($drawer is Drawer ? $drawer : null),
+      drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer ? $drawer : null),
       resizeToAvoidBottomInset: true,
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
