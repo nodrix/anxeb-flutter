@@ -4,11 +4,10 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
-
 enum OptionsInputFieldType { dropdown, dialog }
 
 class OptionsInputField<V> extends FieldWidget<V> {
-  final List<V> options;
+  final Future<List<V>> Function() options;
   final OptionsInputFieldType type;
   final bool autofocus;
   final bool fixedLabel;
@@ -18,7 +17,7 @@ class OptionsInputField<V> extends FieldWidget<V> {
   final String Function(V value) displayText;
   final IconData Function(V value) displayIcon;
   final dynamic Function(V value) dataValue;
-  final bool Function(V a, V b) comparer;
+  final bool Function(V option, V value) comparer;
 
   OptionsInputField({
     @required Scope scope,
@@ -86,13 +85,17 @@ class OptionsInputField<V> extends FieldWidget<V> {
 
 class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
   GlobalKey<FormState> _fieldKey;
+  List<V> _options;
+  bool _busy;
 
   _OptionsInputFieldState() {
     _fieldKey = GlobalKey<FormState>();
   }
 
   @override
-  void init() {}
+  void init() {
+    _loadOptions();
+  }
 
   @override
   void focus({String warning}) {
@@ -133,10 +136,11 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
     }
 
     var result = GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (widget.readonly == true) {
           return;
         }
+        await _loadOptions();
         focus();
         if (widget.type == OptionsInputFieldType.dialog) {
           _getOptionFromDialog();
@@ -176,7 +180,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
               suffixIcon: GestureDetector(
                 dragStartBehavior: DragStartBehavior.down,
                 behavior: HitTestBehavior.opaque,
-                onTap: () {
+                onTap: () async {
                   if (widget.readonly == true) {
                     return;
                   }
@@ -223,7 +227,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
                             super.submit(selectedValue);
                           },
                           hint: value != null ? Text(_displayText ?? '', style: TextStyle(color: widget.scope.application.settings.colors.focus)) : Text(widget.label, style: TextStyle(color: Color(0x88000000))),
-                          items: widget.options.map((item) {
+                          items: options.map((item) {
                             return DropdownMenuItem<V>(value: item, child: Text(widget.displayText != null ? widget.displayText(item) : item?.toString()));
                           }).toList(),
                         ),
@@ -247,11 +251,28 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
     return result;
   }
 
+  Future _loadOptions() async {
+    try {
+      rasterize(() async {
+        _busy = true;
+      });
+      _options = await widget.options?.call();
+      value = _options.firstWhere((item) => (widget.comparer != null ? widget.comparer(item, value) : item == value), orElse: () => null);
+    } catch (err) {
+      _options = null;
+      warning = err.toString();
+    } finally {
+      rasterize(() async {
+        _busy = false;
+      });
+    }
+  }
+
   void _getOptionFromDialog() async {
     var result = await widget.scope.dialogs
         .options<V>(
           widget.label,
-          options: widget.options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
+          options: options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
           selectedValue: value,
           icon: widget.icon,
         )
@@ -266,7 +287,25 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
     }
   }
 
-  Icon _getIcon() {
+  Widget _getIcon() {
+    if (_busy == true) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Container(
+            padding: EdgeInsets.only(right: 10),
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.primary),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     if (widget.readonly == true) {
       return Icon(Icons.lock_outline);
     }
@@ -277,6 +316,8 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
       return Icon(Icons.list, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
+
+  List<V> get options => _options ?? [];
 
   String get _displayText => widget.displayText != null ? widget.displayText(value) : value?.toString();
 }
