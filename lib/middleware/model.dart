@@ -137,7 +137,7 @@ class Model<T> {
   }
 
   dynamic toValue() {
-    _pushFieldsToData();
+    _pushFieldsToData(usePrimaryKeys: true);
     return _primaryField != null ? _data[_primaryField] : _data.toObjects();
   }
 
