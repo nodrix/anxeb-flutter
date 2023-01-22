@@ -85,12 +85,14 @@ class Model<T> {
 
   void update([data]) {
     if (data is String || data is int) {
-      _pk = data;
       _data = Data();
+      _pk = data;
     } else if (data is Model) {
       _data = data.data;
+      _pk = _primaryField != null ? _data[_primaryField] : null;
     } else {
       _data = data != null ? (data is Data ? data : Data(data)) : Data();
+      _pk = _primaryField != null ? _data[_primaryField] : null;
     }
     _init(forcePush: data != null);
   }
