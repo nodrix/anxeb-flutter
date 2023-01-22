@@ -4,6 +4,8 @@ typedef ReferenceLoaderHandler<T> = Future<List<T>> Function(ReferencerPage<T> p
 typedef ReferenceComparerHandler<T> = bool Function(T a, T b);
 typedef ReferenceItemWidget<T> = Widget Function(ReferencerPage<T> page, T item);
 typedef ReferenceHeaderWidget<T> = Widget Function(ReferencerPage<T> page);
+typedef ReferenceCreateWidget<T> = Widget Function(ReferencerPage<T> page);
+typedef ReferenceEmptyWidget<T> = Widget Function(ReferencerPage<T> page);
 
 class Referencer<V> {
   final ReferenceLoaderHandler<V> loader;

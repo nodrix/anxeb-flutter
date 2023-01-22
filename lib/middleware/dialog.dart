@@ -73,6 +73,10 @@ class ScopeDialogs {
     Function() updater,
     ReferenceItemWidget<V> itemWidget,
     ReferenceHeaderWidget<V> headerWidget,
+    ReferenceCreateWidget<V> createWidget,
+    ReferenceEmptyWidget<V> emptyWidget,
+    double width,
+    double height,
   }) {
     return ReferencerDialog<V>(
       _scope,
@@ -81,6 +85,10 @@ class ScopeDialogs {
       referencer: Referencer<V>(loader: loader, comparer: comparer, updater: updater),
       itemWidget: itemWidget,
       headerWidget: headerWidget,
+      createWidget: createWidget,
+      emptyWidget: emptyWidget,
+      width: width,
+      height: height,
     );
   }
 
@@ -245,7 +253,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group}) {
+  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, double width, String acceptLabel, String cancelLabel, bool swap, String group}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -273,6 +281,7 @@ class ScopeDialogs {
       title: title,
       icon: icon ?? Icons.edit,
       iconSize: 48,
+      width: width,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.info,
       body: (context) {

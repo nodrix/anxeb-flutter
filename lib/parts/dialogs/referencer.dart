@@ -12,9 +12,23 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
   final Referencer<V> referencer;
   final ReferenceItemWidget<V> itemWidget;
   final ReferenceHeaderWidget<V> headerWidget;
+  final ReferenceCreateWidget<V> createWidget;
+  final ReferenceEmptyWidget<V> emptyWidget;
+  final double width;
+  final double height;
 
-  ReferencerDialog(Scope scope, {this.title, this.icon, this.referencer, this.itemWidget, this.headerWidget})
-      : assert(title != null),
+  ReferencerDialog(
+    Scope scope, {
+    this.title,
+    this.icon,
+    this.referencer,
+    this.itemWidget,
+    this.headerWidget,
+    this.createWidget,
+    this.emptyWidget,
+    this.width,
+    this.height,
+  })  : assert(title != null),
         super(scope) {
     super.dismissible = true;
   }
@@ -65,8 +79,8 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
               ),
             ),
       content: Container(
-        height: scope.window.vertical(0.6),
-        width: scope.window.available.width,
+        height: height ?? scope.window.vertical(0.6),
+        width: width ?? scope.window.available.width,
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
@@ -77,6 +91,8 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 referencer: referencer,
                 itemWidget: itemWidget,
                 headerWidget: headerWidget,
+                createWidget: createWidget,
+                emptyWidget: emptyWidget,
               ),
             ),
             Container(

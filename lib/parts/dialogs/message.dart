@@ -17,6 +17,7 @@ class MessageDialog extends ScopeDialog {
   final EdgeInsets contentPadding;
   final EdgeInsets insetPadding;
   final BorderRadius borderRadius;
+  final double width;
 
   MessageDialog(
     Scope scope, {
@@ -33,6 +34,7 @@ class MessageDialog extends ScopeDialog {
     this.contentPadding,
     this.insetPadding,
     this.borderRadius,
+    this.width,
     bool dismissible,
   }) : super(scope) {
     super.dismissible = dismissible != null ? dismissible : (this.buttons == null);
@@ -82,29 +84,32 @@ class MessageDialog extends ScopeDialog {
                   ),
                 )
               : Container(),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          message != null
-              ? Container(
-                  padding: EdgeInsets.only(bottom: 4, top: 4),
-                  child: new Text(
-                    message,
-                    textAlign: textAlign ?? (title != null ? TextAlign.left : TextAlign.center),
-                  ),
-                )
-              : Container(),
-          body?.call(context) ?? Container(),
-          buttons != null
-              ? Container(
-                  padding: EdgeInsets.only(top: 10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: TextButton.createList(context, buttons, settings: scope.application.settings),
-                  ),
-                )
-              : Container(),
-        ],
+      content: Container(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            message != null
+                ? Container(
+                    padding: EdgeInsets.only(bottom: 4, top: 4),
+                    child: new Text(
+                      message,
+                      textAlign: textAlign ?? (title != null ? TextAlign.left : TextAlign.center),
+                    ),
+                  )
+                : Container(),
+            body?.call(context) ?? Container(),
+            buttons != null
+                ? Container(
+                    padding: EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: TextButton.createList(context, buttons, settings: scope.application.settings),
+                    ),
+                  )
+                : Container(),
+          ],
+        ),
       ),
     );
   }
