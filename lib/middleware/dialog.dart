@@ -577,6 +577,8 @@ class FormButton {
   final Future Function(FormScope scope) onTap;
   final bool swapIcon;
   final bool visible;
+  final bool rightDivisor;
+  final bool leftDivisor;
 
   FormButton({
     @required this.caption,
@@ -586,5 +588,7 @@ class FormButton {
     this.icon,
     this.swapIcon,
     this.visible,
+    this.rightDivisor,
+    this.leftDivisor,
   });
 }

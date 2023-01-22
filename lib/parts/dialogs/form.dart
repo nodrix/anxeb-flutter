@@ -23,6 +23,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Radius _cornerRadius;
   FormScope<A> _scope;
   Color _headerFillColor;
+  Color _footerFillColor;
   EdgeInsets _headerPadding;
 
   FormDialog(
@@ -94,6 +95,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
       return null;
     }
     _headerFillColor = scope.application.settings.dialogs.headerColor ?? Color(0xfff0f0f0);
+    _footerFillColor = scope.application.settings.dialogs.footerColor;
     _headerPadding = EdgeInsets.only(left: 18, top: 18, right: 18, bottom: 6);
 
     return Column(
@@ -188,44 +190,83 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _headerFillColor,
+        color: _footerFillColor,
         borderRadius: BorderRadius.only(bottomLeft: _cornerRadius, bottomRight: _cornerRadius),
       ),
-      padding: footerPadding ?? EdgeInsets.only(bottom: 16, left: 16, right: 16, top: 16),
-      child: Row(
-        mainAxisAlignment: buttonAlignment ?? MainAxisAlignment.end,
-        children: formButtons.where(($button) => $button.visible != false).map(($button) {
-          var button = TextButton(
-            caption: $button.caption,
-            padding: EdgeInsets.only(left: 14, right: $button.icon != null ? 18 : 14, top: 6, bottom: 6),
-            radius: scope.application.settings.dialogs.buttonRadius,
-            icon: $button.icon,
-            swapIcon: $button.swapIcon,
-            color: $button.fillColor ?? scope.application.settings.colors.primary,
-            textColor: $button.textColor ?? Colors.white,
-            margin: EdgeInsets.only(left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
-            onPressed: () async {
-              final result = await $button?.onTap?.call(_scope);
-              if (result == false) {
-                Navigator.of(context).pop(null);
-              } else if (result == null) {
-                //ignore
-              } else {
-                Navigator.of(context).pop(result is V ? result : model);
-              }
-            },
-            type: ButtonType.primary,
-            size: ButtonSize.small,
-          );
+      padding: EdgeInsets.only(left: footerPadding?.left ?? 16, right: footerPadding?.right ?? 16),
+      child: Container(
+        padding: EdgeInsets.only(top: footerPadding?.top ?? 16, bottom: footerPadding?.bottom ?? 16),
+        child: Row(
+          mainAxisAlignment: buttonAlignment ?? MainAxisAlignment.end,
+          children: formButtons.where(($button) => $button.visible != false).map(($button) {
+            var button = TextButton(
+              caption: $button.caption,
+              padding: EdgeInsets.only(left: 14, right: $button.icon != null ? 18 : 14, top: 6, bottom: 6),
+              radius: scope.application.settings.dialogs.buttonRadius,
+              icon: $button.icon,
+              swapIcon: $button.swapIcon,
+              color: $button.fillColor ?? scope.application.settings.colors.primary,
+              textColor: $button.textColor ?? Colors.white,
+              margin: EdgeInsets.only(left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
+              onPressed: () async {
+                final result = await $button?.onTap?.call(_scope);
+                if (result == false) {
+                  Navigator.of(context).pop(null);
+                } else if (result == null) {
+                  //ignore
+                } else {
+                  Navigator.of(context).pop(result is V ? result : model);
+                }
+              },
+              type: ButtonType.primary,
+              size: ButtonSize.small,
+            );
 
-          var isLast = formButtons.last == $button;
+            var isLast = formButtons.last == $button;
 
-          return Container(
-            child: button,
-            width: button.width,
-            padding: EdgeInsets.only(right: isLast ? 0 : 10),
-          );
-        }).toList(),
+            return Row(
+              children: [
+                $button.leftDivisor == true
+                    ? Container(
+                        height: 32,
+                        padding: EdgeInsets.only(right: 10),
+                        child: DottedLine(
+                          direction: Axis.vertical,
+                          lineLength: double.infinity,
+                          lineThickness: 1,
+                          dashLength: 2,
+                          dashColor: scope.application.settings.colors.primary,
+                          dashRadius: 0.0,
+                          dashGapLength: 4.0,
+                          dashGapColor: Colors.transparent,
+                        ),
+                      )
+                    : Container(),
+                Container(
+                  child: button,
+                  width: button.width,
+                  padding: EdgeInsets.only(right: isLast ? 0 : 10),
+                ),
+                $button.rightDivisor == true
+                    ? Container(
+                        height: 32,
+                        padding: EdgeInsets.only(right: 10),
+                        child: DottedLine(
+                          direction: Axis.vertical,
+                          lineLength: double.infinity,
+                          lineThickness: 1,
+                          dashLength: 2,
+                          dashColor: scope.application.settings.colors.primary,
+                          dashRadius: 0.0,
+                          dashGapLength: 4.0,
+                          dashGapColor: Colors.transparent,
+                        ),
+                      )
+                    : Container(),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

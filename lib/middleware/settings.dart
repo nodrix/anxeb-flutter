@@ -18,6 +18,7 @@ class _Dialogs {
   double buttonRadius;
   double dialogRadius;
   Color headerColor;
+  Color footerColor;
 }
 
 class _Alerts {
