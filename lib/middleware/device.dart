@@ -136,9 +136,6 @@ class Device {
         callback: (files) async {
           try {
             final barcodeValue = await Scan.parse(files.first.path);
-
-            print(barcodeValue);
-
             if (barcodeValue?.isNotEmpty == true) {
               return barcodeValue;
             } else {

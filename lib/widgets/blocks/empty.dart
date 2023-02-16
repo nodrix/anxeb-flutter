@@ -1,7 +1,5 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/material.dart';
-import '../../screen/scope.dart';
 import 'paragraph.dart';
 
 class EmptyBlock extends StatelessWidget {
