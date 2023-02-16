@@ -1,7 +1,7 @@
 name: anxeb_flutter
 description: Highly scalable mobile Flutter cross-platform library
 publish_to: 'none'
-version: 2.9.1
+version: 2.9.2
 homepage: https://github.com/nodrix/anxeb-flutter
 
 environment:
@@ -55,11 +55,11 @@ dependencies:
   in_app_review: ^2.0.6
   easy_mask: ^2.0.1
   bluetooth_print: ^4.3.0
-  smooth_page_indicator: ^1.0.0+2
+  smooth_page_indicator: ^1.0.1
   open_store: ^0.5.0
   scan: ^1.6.0
   flutter_html: ^2.2.1
-  go_router: ^6.0.0
+  go_router: ^6.0.6
   dotted_line: ^3.1.0
 
 flutter:
