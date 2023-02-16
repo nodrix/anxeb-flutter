@@ -38,7 +38,7 @@ class Converters {
   }
 
   String fromCreditCardTypeToString(CreditCardType type) {
-    return type.toString().split('.')[1];
+    return type.name;
   }
 
   CreditCardType fromCreditCardNumberToType(String value) {
@@ -61,7 +61,7 @@ class Converters {
       } else if (valres.ccType == CreditCardType.discover) {
         return 'discover';
       } else {
-        return valres.ccType.toString().split('.')[1];
+        return valres.ccType.name;
       }
     }
     return null;

@@ -324,16 +324,20 @@ class _ModelField {
     } else if (enumValues != null) {
       if (propertyValue == null) {
         data[fieldName] = null;
-      } else if (propertyValue is List<Model> || propertyValue is Iterable) {
+      } else if (propertyValue is Iterable) {
         var items = [];
         for (var item in propertyValue) {
-          items.add(item.toString().split('.')[1]);
+          if (enumValues.contains(item)) {
+            items.add((item as Enum).name);
+          }
         }
         data[fieldName] = items;
       } else {
-        data[fieldName] = propertyValue.toString().split('.')[1];
+        if (enumValues.contains(propertyValue)) {
+          data[fieldName] = (propertyValue as Enum).name;
+        }
       }
-    } else if (propertyValue is List<Model>) {
+    } else if (propertyValue is Iterable) {
       var items = [];
       for (var item in propertyValue) {
         if (usePrimaryKeys == true) {
