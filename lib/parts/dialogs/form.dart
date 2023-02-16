@@ -26,8 +26,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Color _footerFillColor;
   EdgeInsets _headerPadding;
 
-  FormDialog(
-    Scope scope, {
+  FormDialog(Scope scope, {
     @required this.model,
     @required this.title,
     @required this.width,
@@ -119,26 +118,27 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                     padding: EdgeInsets.zero,
                     labelPadding: EdgeInsets.zero,
                     tabs: $tabs
-                        .map(($tab) => Tab(
-                              child: Container(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      child: $tab.icon == null ? null : Icon($tab.icon(), color: scope.application.settings.colors.primary, size: 18),
-                                      padding: $tab.icon == null ? null : EdgeInsets.only(right: 4, top: 2),
-                                    ),
-                                    Text(
-                                      $tab.caption(),
-                                      style: TextStyle(color: scope.application.settings.colors.primary, fontWeight: FontWeight.w400, fontSize: 14, height: 1.1),
-                                    ),
-                                  ],
+                        .map(($tab) =>
+                        Tab(
+                          child: Container(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: $tab.icon == null ? null : Icon($tab.icon(), color: scope.application.settings.colors.primary, size: 18),
+                                  padding: $tab.icon == null ? null : EdgeInsets.only(right: 4, top: 2),
                                 ),
-                                padding: EdgeInsets.only(left: 18),
-                              ),
-                              height: 28,
-                            ))
+                                Text(
+                                  $tab.caption(),
+                                  style: TextStyle(color: scope.application.settings.colors.primary, fontWeight: FontWeight.w400, fontSize: 14, height: 1.1),
+                                ),
+                              ],
+                            ),
+                            padding: EdgeInsets.only(left: 18),
+                          ),
+                          height: 28,
+                        ))
                         .toList(),
                   ),
                 ),
@@ -228,19 +228,19 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
               children: [
                 $button.leftDivisor == true
                     ? Container(
-                        height: 32,
-                        padding: EdgeInsets.only(right: 10),
-                        child: DottedLine(
-                          direction: Axis.vertical,
-                          lineLength: double.infinity,
-                          lineThickness: 1,
-                          dashLength: 2,
-                          dashColor: scope.application.settings.colors.primary,
-                          dashRadius: 0.0,
-                          dashGapLength: 4.0,
-                          dashGapColor: Colors.transparent,
-                        ),
-                      )
+                  height: 32,
+                  padding: EdgeInsets.only(right: 10),
+                  child: DottedLine(
+                    direction: Axis.vertical,
+                    lineLength: double.infinity,
+                    lineThickness: 1,
+                    dashLength: 2,
+                    dashColor: scope.application.settings.colors.primary,
+                    dashRadius: 0.0,
+                    dashGapLength: 4.0,
+                    dashGapColor: Colors.transparent,
+                  ),
+                )
                     : Container(),
                 Container(
                   child: button,
@@ -249,19 +249,19 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                 ),
                 $button.rightDivisor == true
                     ? Container(
-                        height: 32,
-                        padding: EdgeInsets.only(right: 10),
-                        child: DottedLine(
-                          direction: Axis.vertical,
-                          lineLength: double.infinity,
-                          lineThickness: 1,
-                          dashLength: 2,
-                          dashColor: scope.application.settings.colors.primary,
-                          dashRadius: 0.0,
-                          dashGapLength: 4.0,
-                          dashGapColor: Colors.transparent,
-                        ),
-                      )
+                  height: 32,
+                  padding: EdgeInsets.only(right: 10),
+                  child: DottedLine(
+                    direction: Axis.vertical,
+                    lineLength: double.infinity,
+                    lineThickness: 1,
+                    dashLength: 2,
+                    dashColor: scope.application.settings.colors.primary,
+                    dashRadius: 0.0,
+                    dashGapLength: 4.0,
+                    dashGapColor: Colors.transparent,
+                  ),
+                )
                     : Container(),
               ],
             );
@@ -286,10 +286,10 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
             decoration: subtitle == null
                 ? null
                 : BoxDecoration(
-                    border: Border(
-                      right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
-                    ),
-                  ),
+              border: Border(
+                right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+              ),
+            ),
             child: Icon(
               icon,
               size: subtitle == null ? 34 : 46,
@@ -306,40 +306,40 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                 ),
                 subtitle != null
                     ? Container(
-                        padding: EdgeInsets.only(left: 1),
-                        child: Text(
-                          subtitle.toUpperCase(),
-                          style: TextStyle(fontSize: 12, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w300),
-                        ),
-                      )
+                  padding: EdgeInsets.only(left: 1),
+                  child: Text(
+                    subtitle.toUpperCase(),
+                    style: TextStyle(fontSize: 12, color: scope.application.settings.colors.primary, fontWeight: FontWeight.w300),
+                  ),
+                )
                     : Container(),
               ],
             ),
           ),
           close != null
               ? Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    margin: EdgeInsets.only(right: 2, bottom: 6),
-                    child: InkWell(
-                      onTap: () async {
-                        final result = await close?.call(_scope);
-                        if (result == false) {
-                          Navigator.of(context).pop(null);
-                        } else if (result == null) {
-                          //ignore
-                        } else {
-                          Navigator.of(context).pop(result is V ? result : model);
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(100),
-                      child: Container(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.close),
-                      ),
-                    ),
-                  ),
-                )
+            color: Colors.transparent,
+            child: Container(
+              margin: EdgeInsets.only(right: 2, bottom: 6),
+              child: InkWell(
+                onTap: () async {
+                  final result = await close?.call(_scope);
+                  if (result == false) {
+                    Navigator.of(context).pop(null);
+                  } else if (result == null) {
+                    //ignore
+                  } else {
+                    Navigator.of(context).pop(result is V ? result : model);
+                  }
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: Container(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(Icons.close),
+                ),
+              ),
+            ),
+          )
               : Container(),
         ],
       ),
@@ -397,63 +397,72 @@ class FormSpacer extends StatelessWidget {
 class FormRowContainer extends StatelessWidget {
   final Scope scope;
   final String title;
+  final bool visible;
   final IconData icon;
   final List<Widget> fields;
+  final Widget child;
 
   FormRowContainer({
     @required this.scope,
     this.title,
+    this.visible,
     this.icon,
-    @required this.fields,
+    this.fields,
+    this.child,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (visible == false) {
+      return Container();
+    }
     return Column(
       children: [
         title != null
             ? Container(
-                padding: EdgeInsets.only(top: 0, bottom: 3),
-                margin: EdgeInsets.only(bottom: 8, top: 12),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        icon != null ? Icon(icon, size: 12, color: scope.application.settings.colors.primary) : Container(),
-                        Expanded(
-                          child: Text(
-                            title.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: EdgeInsets.only(top: 6),
-                      child: DottedLine(
-                        direction: Axis.horizontal,
-                        lineLength: double.infinity,
-                        lineThickness: 1,
-                        dashLength: 2,
-                        dashColor: scope.application.settings.colors.primary,
-                        dashRadius: 0.0,
-                        dashGapLength: 4.0,
-                        dashGapColor: Colors.transparent,
+          padding: EdgeInsets.only(top: 0, bottom: 3),
+          margin: EdgeInsets.only(bottom: 8, top: 12),
+          child: Column(
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  icon != null ? Icon(icon, size: 12, color: scope.application.settings.colors.primary) : Container(),
+                  Expanded(
+                    child: Text(
+                      title.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.only(top: 6),
+                child: DottedLine(
+                  direction: Axis.horizontal,
+                  lineLength: double.infinity,
+                  lineThickness: 1,
+                  dashLength: 2,
+                  dashColor: scope.application.settings.colors.primary,
+                  dashRadius: 0.0,
+                  dashGapLength: 4.0,
+                  dashGapColor: Colors.transparent,
                 ),
-              )
+              ),
+            ],
+          ),
+        )
             : Container(),
-        Container(
+        child != null
+            ? child
+            : Container(
           height: 64,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: fields,
+            children: fields ?? [],
           ),
         )
       ],

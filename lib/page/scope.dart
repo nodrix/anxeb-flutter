@@ -8,9 +8,9 @@ class PageScope<A extends Application> extends Scope implements IScope {
 
   PageScope(BuildContext context, this.view) : super(context);
 
-  void go(String route) async {
-    return view.go(route);
-  }
+  void go(String route, {Map<String, String> params, Map<String, dynamic> query}) async => view.go(route, params: params, query: query);
+
+  void push(String route, {Map<String, String> params, Map<String, dynamic> query}) async => view.push(route, params: params, query: query);
 
   @override
   A get application => view.application as A;

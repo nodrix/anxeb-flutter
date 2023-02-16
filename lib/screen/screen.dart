@@ -27,10 +27,10 @@ enum ScreenTransitionType {
   fade,
 }
 
-class ScreenWidget extends StatefulWidget implements IView {
+class ScreenWidget<A extends Application> extends StatefulWidget implements IView {
   final String name;
   final String title;
-  final Application application;
+  final A application;
   final bool root;
   final Key key;
 
@@ -65,7 +65,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
   ScreenActionLocator _locator;
   ScreenScope _scope;
   ScreenScope _parent;
-  Application _application;
+  A _application;
   ScreenPanel _panel;
   ScreenRefresher _refresher;
   ScreenHeader _header;

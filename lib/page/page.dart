@@ -21,7 +21,6 @@ class PageMiddleware<A extends Application, M> {
 class PageWidget<A extends Application, M> extends StatefulWidget implements IView {
   final String name;
   final String path;
-  final String title;
   final Key key;
   final _PageArgs _inmeta = _PageArgs();
 
@@ -29,9 +28,11 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
     this.name, {
     @required this.path,
     this.key,
-    this.title,
   })  : assert(path != null),
         super(key: key);
+
+  @protected
+  String title({GoRouterState state}) => null;
 
   @override
   PageView createState() => PageView();
@@ -50,8 +51,8 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
 
   Future prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, PageInfo<A, M> parent}) async {
     _inmeta.info = PageInfo<A, M>(
-      name: name,
-      title: title,
+      name: state.name,
+      title: title(state: state),
       context: context,
       state: state,
       container: container,
@@ -81,7 +82,7 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
       page.init(middleware);
 
       routes.add(GoRoute(
-        name: '${name}_${page.name}',
+        name: page.name.startsWith('_') ? '$name${page.name}' : page.name,
         path: page.path,
         pageBuilder: (context, state) {
           page.prepare(context, state, parent: info);
@@ -159,8 +160,10 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   Future _init() async {
     _scope = PageScope<A>(context, this);
     await _scope.setup();
-    setup();
-    widget.info.scope = _scope;
+    if (widget.info.scope != _scope) {
+      widget.info.scope = _scope;
+      setup();
+    }
   }
 
   @override
@@ -172,6 +175,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   Widget build(BuildContext context) {
     if (widget.info.scope != _scope) {
       widget.info.scope = _scope;
+      setup();
     }
 
     prebuild();
@@ -271,13 +275,31 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
     return false;
   }
 
-  void go(String route) async {
-    scope.idle();
-    await scope.alerts.dispose(quick: true);
-    scope.context.go(route);
-    await scope.setup();
-    if (mounted) {
-      setup();
+  void go(String route, {bool force, Map<String, String> params, Map<String, dynamic> query}) async {
+    await scope.idle();
+
+    var value = force == true ? true : await beforePop();
+    if (value == true) {
+      await scope.alerts.dispose(quick: true);
+      if (params != null) {
+        scope.context.goNamed(route, params: params, queryParams: query ?? Map());
+      } else {
+        scope.context.go(route);
+      }
+    }
+  }
+
+  void push(String route, {bool force, Map<String, String> params, Map<String, dynamic> query}) async {
+    await scope.idle();
+
+    var value = force == true ? true : await beforePop();
+    if (value == true) {
+      await scope.alerts.dispose(quick: true);
+      if (params != null) {
+        scope.context.pushNamed(route, params: params, queryParams: query ?? Map());
+      } else {
+        scope.context.push(route);
+      }
     }
   }
 
@@ -330,7 +352,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
 
   String get path => widget.path;
 
-  String get title => widget?.title ?? application.title;
+  String get title => widget.title() ?? application.title;
 
   PageScope<A> get scope => _scope;
 

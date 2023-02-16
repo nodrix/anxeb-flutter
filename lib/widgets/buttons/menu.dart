@@ -7,6 +7,8 @@ class MenuButton extends StatelessWidget {
   final PageScope<Application> scope;
   final String caption;
   final IconData icon;
+  final bool visible;
+  final Color color;
   final GestureTapCallback onTap;
   final EdgeInsets margin;
 
@@ -14,12 +16,17 @@ class MenuButton extends StatelessWidget {
     @required this.scope,
     this.caption,
     this.icon,
+    this.visible,
+    this.color,
     this.onTap,
     this.margin,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (visible == false){
+      return Container();
+    }
     return Container(
       margin: margin,
       child: Material(
@@ -36,7 +43,7 @@ class MenuButton extends StatelessWidget {
                 icon != null
                     ? Container(
                         margin: EdgeInsets.only(right: 4),
-                        child: Icon(icon, color: scope.application.settings.colors.primary),
+                        child: Icon(icon, color: color ?? scope.application.settings.colors.primary),
                       )
                     : Container(),
                 Text(
@@ -45,7 +52,7 @@ class MenuButton extends StatelessWidget {
                     fontSize: 15,
                     letterSpacing: 0.15,
                     fontWeight: FontWeight.w300,
-                    color: scope.application.settings.colors.primary,
+                    color: color ?? scope.application.settings.colors.primary,
                   ),
                 ),
               ],
