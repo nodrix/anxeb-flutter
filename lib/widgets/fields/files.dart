@@ -45,6 +45,8 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
     double labelSize,
     BorderRadius borderRadius,
     bool isDense,
+    List<FileInputValue> Function() fetcher,
+    Function(List<FileInputValue> value) applier,
     this.allowMultiples = false,
     this.allowedExtensions,
     this.launchUrlPrefix,
@@ -74,6 +76,8 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
           labelSize: labelSize,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override

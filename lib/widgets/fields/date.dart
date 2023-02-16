@@ -13,6 +13,7 @@ class DateInputField extends FieldWidget<DateTime> {
   final String prefix;
   final String suffix;
   final String displayFormat;
+  final String Function(DateTime value) displayText;
   final dynamic Function(DateTime value) dataValue;
   final String locale;
   final bool pickTime;
@@ -39,12 +40,15 @@ class DateInputField extends FieldWidget<DateTime> {
     bool focusNext,
     BorderRadius borderRadius,
     bool isDense,
+    DateTime Function() fetcher,
+    Function(DateTime value) applier,
     this.autofocus,
     this.fixedLabel,
     this.hint,
     this.prefix,
     this.suffix,
     this.displayFormat,
+    this.displayText,
     this.dataValue,
     this.locale,
     this.pickTime,
@@ -71,6 +75,8 @@ class DateInputField extends FieldWidget<DateTime> {
           focusNext: focusNext,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override
@@ -185,7 +191,7 @@ class _DateInputFieldState extends Field<DateTime, DateInputField> {
               child: Container(
                 padding: EdgeInsets.only(top: 2),
                 child: Text(
-                  _displayText ?? widget.label,
+                  widget.displayText?.call(value) ?? _displayText ?? widget.label,
                   style: TextStyle(
                     fontSize: 16,
                     color: _displayText != null ? widget.scope.application.settings.colors.text : Color(0x88000000),

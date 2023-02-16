@@ -53,6 +53,8 @@ class ImageInputField extends FieldWidget<String> {
     double labelSize,
     BorderRadius borderRadius,
     bool isDense,
+    String Function() fetcher,
+    Function(String value) applier,
     this.type,
     this.fullImage,
     this.initFaceCamera,
@@ -89,6 +91,8 @@ class ImageInputField extends FieldWidget<String> {
           labelSize: labelSize,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override

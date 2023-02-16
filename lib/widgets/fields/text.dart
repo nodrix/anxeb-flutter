@@ -29,6 +29,7 @@ class TextInputField<V> extends FieldWidget<V> {
   final int errorMaxLines;
   final bool selectOnFocus;
   final bool borderless;
+  final bool disableCounter;
 
   TextInputField({
     @required Scope scope,
@@ -51,13 +52,14 @@ class TextInputField<V> extends FieldWidget<V> {
     V Function(dynamic value) parser,
     bool focusNext,
     bool focusOnlyEmpty,
-    V value,
     double iconSize,
     double fontSize,
     double labelSize,
     bool selected,
     BorderRadius borderRadius,
     bool isDense,
+    V Function() fetcher,
+    Function(V value) applier,
     this.controller,
     this.type,
     this.autofocus,
@@ -78,6 +80,7 @@ class TextInputField<V> extends FieldWidget<V> {
     this.selectOnFocus,
     this.formatter,
     this.borderless,
+    this.disableCounter,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -100,13 +103,14 @@ class TextInputField<V> extends FieldWidget<V> {
           parser: parser,
           focusNext: focusNext,
           focusOnlyEmpty: focusOnlyEmpty,
-          initialValue: value,
           initialSelected: selected,
           iconSize: iconSize,
           labelSize: labelSize,
           fontSize: fontSize,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override
@@ -303,6 +307,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       style: widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null),
       decoration: InputDecoration(
         filled: true,
+        counterText: widget.disableCounter == true ? '' : null,
         contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
         prefixIcon: widget.icon != null
             ? Icon(

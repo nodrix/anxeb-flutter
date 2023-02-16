@@ -63,6 +63,18 @@ class FieldsForm {
     }
   }
 
+  fetch() {
+    for (var field in fields.values) {
+      field.fetch();
+    }
+  }
+
+  apply() {
+    for (var field in fields.values) {
+      field.apply();
+    }
+  }
+
   void focusNextInvalid() {
     for (var i = 0; i <= fields.length; i++) {
       for (var field in fields.values) {

@@ -17,10 +17,11 @@ class CheckBoxField extends FieldWidget<bool> {
     GestureTapCallback onTab,
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
-    bool value,
     bool focusNext,
     bool readonly,
     BorderRadius borderRadius,
+    bool Function() fetcher,
+    Function(bool value) applier,
     this.label,
     this.controlAffinity,
   })  : assert(name != null),
@@ -34,10 +35,11 @@ class CheckBoxField extends FieldWidget<bool> {
           readonly: readonly,
           onChanged: onChanged,
           onFocus: onFocus,
-          initialValue: value,
           validator: validator,
           focusNext: focusNext,
           borderRadius: borderRadius,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override

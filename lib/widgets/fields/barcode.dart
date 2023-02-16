@@ -39,10 +39,11 @@ class BarcodeInputField extends FieldWidget<String> {
     FormFieldValidator<String> validator,
     String Function(dynamic value) parser,
     bool focusNext,
-    String value,
     bool selected,
     BorderRadius borderRadius,
     bool isDense,
+    String Function() fetcher,
+    Function(String value) applier,
     this.controller,
     this.type,
     this.autofocus,
@@ -75,10 +76,11 @@ class BarcodeInputField extends FieldWidget<String> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
-          initialValue: value,
           initialSelected: selected,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override

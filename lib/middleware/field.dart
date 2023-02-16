@@ -27,7 +27,8 @@ class FieldWidget<V> extends StatefulWidget {
   final V Function(dynamic value) parser;
   final bool focusNext;
   final bool focusOnlyEmpty;
-  final V initialValue;
+  final V Function() fetcher;
+  final Function(V value) applier;
   final bool initialSelected;
   final BorderRadius borderRadius;
   final bool isDense;
@@ -56,11 +57,13 @@ class FieldWidget<V> extends StatefulWidget {
     this.parser,
     this.focusNext,
     this.focusOnlyEmpty,
-    this.initialValue,
+    @required this.fetcher,
+    @required this.applier,
     this.initialSelected,
     this.borderRadius,
     this.isDense,
-  })  : assert(scope != null && name != null),
+  })
+      : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.key, name));
 
   @override
@@ -84,6 +87,10 @@ abstract class FieldState<V, F extends FieldWidget<V>> extends State<F> {
   void reset();
 
   dynamic data();
+
+  void fetch();
+
+  void apply();
 }
 
 class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInitMixin<F> {
@@ -122,8 +129,8 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     setup();
     if (_initialized != true) {
       _initialized = true;
-      if (widget.initialValue != null) {
-        value = widget.initialValue;
+      if (widget.fetcher != null) {
+        value = widget.fetcher();
         if (widget.initialSelected == true) {
           select();
         }
@@ -162,18 +169,35 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
   }
 
+  void fetch() {
+    if (widget.fetcher != null) {
+      value = widget.fetcher();
+    }
+  }
+
+  void apply() {
+    if (widget.applier != null) {
+      value = widget.applier(value);
+    }
+  }
+
   String validate({bool showMessage}) {
     var validation = _getValidation();
     if (validation != null && showMessage != false) {
       warning = validation;
     } else {
       warning = null;
+      apply();
     }
     return validation;
   }
 
   bool valid() {
-    return _getValidation() == null;
+    final result = _getValidation() == null;
+    if (result == true) {
+      apply();
+    }
+    return result;
   }
 
   @protected
@@ -195,6 +219,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
           unfocus();
         }
       }
+      apply();
       if (widget.onValidSubmit != null) {
         Future.delayed(new Duration(milliseconds: 150), () {
           widget.onValidSubmit(value);
@@ -275,6 +300,12 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       if (widget.onChanged != null) {
         widget.onChanged(null);
       }
+      apply();
+      if (widget.onValidSubmit != null) {
+        Future.delayed(new Duration(milliseconds: 150), () {
+          widget.onValidSubmit(value);
+        });
+      }
     });
   }
 
@@ -292,10 +323,14 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   @protected
   setValueSilent(dynamic value) {
-    if (value is V) {
+    if (value == null) {
+      _value = null;
+    } else if (widget.parser != null) {
+      _value = widget.parser(value);
+    } else if (value is V) {
       _value = value;
     } else {
-      _value = value != null ? widget.parser(value) : null;
+      _value = null;
     }
   }
 
@@ -314,10 +349,14 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   V get value => _value;
 
   set value(dynamic value) {
-    if (value is V) {
+    if (value == null) {
+      _value = null;
+    } else if (widget.parser != null) {
+      _value = widget.parser(value);
+    } else if (value is V) {
       _value = value;
     } else {
-      _value = value != null ? widget.parser?.call(value) : null;
+      _value = null;
     }
     present();
     rasterize();
@@ -328,6 +367,8 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.key];
 
   bool get isEmpty {
-    return value?.toString()?.isNotEmpty != true;
+    return value
+        ?.toString()
+        ?.isNotEmpty != true;
   }
 }

@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
+
 enum OptionsInputFieldType { dropdown, dialog }
 
 class OptionsInputField<V> extends FieldWidget<V> {
@@ -42,7 +43,8 @@ class OptionsInputField<V> extends FieldWidget<V> {
     BorderRadius borderRadius,
     bool isDense,
     @required this.options,
-    V value,
+    V Function() fetcher,
+    Function(V value) applier,
     this.type,
     this.autofocus,
     this.fixedLabel,
@@ -76,7 +78,8 @@ class OptionsInputField<V> extends FieldWidget<V> {
           focusNext: focusNext,
           borderRadius: borderRadius,
           isDense: isDense,
-          initialValue: value,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override
@@ -126,6 +129,15 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
   @override
   void reset() {
     super.reset();
+  }
+
+  @override
+  void fetch() async {
+    if (widget.fetcher != null) {
+      _options = [];
+      value = widget.fetcher();
+      await _loadOptions();
+    }
   }
 
   @override

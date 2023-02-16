@@ -62,6 +62,8 @@ class FileInputField extends FieldWidget<FileInputValue> {
     double labelSize,
     BorderRadius borderRadius,
     bool isDense,
+    FileInputValue Function() fetcher,
+    Function(FileInputValue value) applier,
     this.allowedExtensions,
     this.launchUrlPrefix,
     this.onPreview,
@@ -90,6 +92,8 @@ class FileInputField extends FieldWidget<FileInputValue> {
           labelSize: labelSize,
           borderRadius: borderRadius,
           isDense: isDense,
+          fetcher: fetcher,
+          applier: applier,
         );
 
   @override
