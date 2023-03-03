@@ -1,7 +1,7 @@
 name: anxeb_flutter
 description: Highly scalable mobile Flutter cross-platform library
 publish_to: 'none'
-version: 2.9.2
+version: 2.9.3
 homepage: https://github.com/nodrix/anxeb-flutter
 
 environment:
@@ -41,9 +41,9 @@ dependencies:
   credit_card_validator: ^2.0.1
   file_picker: ^5.2.3
   sign_in_with_apple: ^4.2.0
-  firebase_core: ^2.4.0
-  firebase_messaging: ^14.1.4
-  firebase_analytics: ^10.0.7
+  firebase_core: ^2.6.0
+  firebase_messaging: ^14.2.3
+  firebase_analytics: ^10.1.2
   flutter_app_badger: ^1.5.0
   url_launcher: ^6.1.7
   flutter_pdfview: ^1.2.5
