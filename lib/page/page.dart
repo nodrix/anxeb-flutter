@@ -352,7 +352,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
 
   String get path => widget.path;
 
-  String get title => widget.title() ?? application.title;
+  String get title => widget.title();
 
   PageScope<A> get scope => _scope;
 

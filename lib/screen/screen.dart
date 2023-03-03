@@ -78,6 +78,9 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
   bool _postinitialized;
   dynamic value;
 
+  @protected
+  bool resizeToAvoidBottomInset;
+
   ScreenView() {
     _scaffold = GlobalKey<ScaffoldState>();
   }
@@ -141,7 +144,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
       key: _scaffold,
       appBar: _header?.build(),
       drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer ? $drawer : null),
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset ?? true,
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: _footer?.build(),
@@ -430,7 +433,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
 
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
 
-  String get title => widget?.title ?? application.title;
+  String get title => widget?.title;
 
   bool get isFooter => _footer != null;
 

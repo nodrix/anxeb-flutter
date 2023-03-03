@@ -36,7 +36,7 @@ class ScreenHeader {
 
   PreferredSizeWidget build() {
     return AppBar(
-      title: body?.call() ?? Text(this.title?.call() ?? scope.view.title ?? scope.application.title),
+      title: body?.call() ?? (this.title?.call() ?? scope.view.title != null ? Text(this.title?.call() ?? scope.view.title) : null),
       elevation: elevation?.call(),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),

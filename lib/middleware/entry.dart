@@ -145,7 +145,7 @@ class _EntryPageState extends State<EntryPage> {
 
     return MaterialApp.router(
         routerConfig: _router,
-        title: this.widget.title ?? application.title,
+        title: this.widget.title,
         theme: this.widget.theme ??
             ThemeData(
               primaryColor: application.settings.colors.primary,
