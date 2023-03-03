@@ -34,6 +34,7 @@ class TextButton extends StatefulWidget {
   final BorderRadius borderRadius;
   final bool subtitleUppercase;
   final double width;
+  final TextStyle textStyle;
 
   const TextButton({
     this.padding,
@@ -56,6 +57,7 @@ class TextButton extends StatefulWidget {
     this.borderRadius,
     this.subtitleUppercase,
     this.width,
+    this.textStyle,
   });
 
   @override
@@ -172,6 +174,10 @@ class _TextButtonState extends State<TextButton> {
         borderRadius: $borderRadius,
         side: BorderSide(color: widget.textColor ?? Colors.black, width: 1.5),
       );
+    }
+
+    if (widget.textStyle != null) {
+      textStyle = widget.textStyle;
     }
 
     final $buttonContent = Padding(
