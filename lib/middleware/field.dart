@@ -3,6 +3,78 @@ import '../misc/after_init.dart';
 import 'form.dart';
 import 'scope.dart';
 
+class FieldWidgetTheme {
+  final bool isDense;
+  final Color fillColor;
+  final Color focusColor;
+  final InputBorder border;
+  final Color prefixIconColor;
+  final Color iconColor;
+  final TextStyle hintStyle;
+  final double prefixIconSize;
+  final Color hoverColor;
+  final TextStyle errorStyle;
+  final TextStyle inputStyle;
+  final TextStyle suffixStyle;
+  final TextStyle prefixStyle;
+  final Color suffixIconColor;
+  final EdgeInsets contentPaddingWithIcon;
+  final EdgeInsets contentPaddingNoIcon;
+  final BorderRadius disabledBorder;
+  final BorderRadius enabledBorder;
+  final BorderRadius focusedBorder;
+  final BorderRadius errorBorder;
+  final BorderRadius focusedErrorBorder;
+  final FontWeight labelFontWeight;
+  final Color dangerColor;
+  final Color labelColor;
+  final double labelLetterSpacing;
+  final double labelFontSize;
+  final String labelFontFamily;
+  final TextStyle labelStyle;
+  final Color suffixIconReadonlyColor;
+  final double suffixIconSize;
+  final Color suffixIconDangerColor;
+  final Color suffixIconSuccessColor;
+  final Color suffixIconFocusedColor;
+
+  FieldWidgetTheme({
+    this.isDense,
+    this.fillColor,
+    this.focusColor,
+    this.border,
+    this.prefixIconColor,
+    this.iconColor,
+    this.hintStyle,
+    this.prefixIconSize,
+    this.hoverColor,
+    this.errorStyle,
+    this.inputStyle,
+    this.suffixStyle,
+    this.prefixStyle,
+    this.suffixIconColor,
+    this.contentPaddingWithIcon,
+    this.contentPaddingNoIcon,
+    this.disabledBorder,
+    this.enabledBorder,
+    this.focusedBorder,
+    this.errorBorder,
+    this.focusedErrorBorder,
+    this.labelFontWeight,
+    this.dangerColor,
+    this.labelColor,
+    this.labelLetterSpacing,
+    this.labelFontSize,
+    this.labelFontFamily,
+    this.labelStyle,
+    this.suffixIconReadonlyColor,
+    this.suffixIconSize,
+    this.suffixIconDangerColor,
+    this.suffixIconSuccessColor,
+    this.suffixIconFocusedColor,
+  });
+}
+
 class FieldWidget<V> extends StatefulWidget {
   final Scope scope;
   final Key key;
@@ -32,6 +104,7 @@ class FieldWidget<V> extends StatefulWidget {
   final bool initialSelected;
   final BorderRadius borderRadius;
   final bool isDense;
+  final FieldWidgetTheme theme;
 
   FieldWidget({
     @required this.scope,
@@ -62,8 +135,8 @@ class FieldWidget<V> extends StatefulWidget {
     this.initialSelected,
     this.borderRadius,
     this.isDense,
-  })
-      : assert(scope != null && name != null),
+    this.theme,
+  })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.key, name));
 
   @override
@@ -367,8 +440,6 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   FieldsForm get form => widget.scope.forms[widget.group ?? widget.scope.key];
 
   bool get isEmpty {
-    return value
-        ?.toString()
-        ?.isNotEmpty != true;
+    return value?.toString()?.isNotEmpty != true;
   }
 }

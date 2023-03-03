@@ -58,6 +58,7 @@ class TextInputField<V> extends FieldWidget<V> {
     bool selected,
     BorderRadius borderRadius,
     bool isDense,
+    FieldWidgetTheme theme,
     V Function() fetcher,
     Function(V value) applier,
     this.controller,
@@ -111,6 +112,7 @@ class TextInputField<V> extends FieldWidget<V> {
           isDense: isDense,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override
@@ -303,49 +305,58 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
           widget.onChanged(_convertValue(text));
         }
       },
+
       textAlign: TextAlign.left,
-      style: widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null),
+      style: widget.theme?.inputStyle ?? (widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
       decoration: InputDecoration(
         filled: true,
         counterText: widget.disableCounter == true ? '' : null,
-        contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+        contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
         prefixIcon: widget.icon != null
             ? Icon(
                 widget.icon,
-                size: widget.iconSize,
-                color: widget.scope.application.settings.colors.primary,
+                size: widget.iconSize ?? widget.theme?.prefixIconSize,
+                color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
               )
             : null,
         labelText: widget.label != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
         labelStyle: widget.fixedLabel == true
             ? TextStyle(
-                fontWeight: FontWeight.w500,
-                color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-                letterSpacing: 0.8,
-                fontSize: 15,
+                fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
+                color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
+                letterSpacing: widget.theme?.labelLetterSpacing ?? 0.8,
+                fontSize: widget.theme?.labelFontSize ?? 15,
+                fontFamily: widget.theme?.labelFontFamily,
               )
-            : (widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null),
+            : (widget.labelSize != null
+                ? TextStyle(
+                    fontWeight: widget.theme?.labelFontWeight,
+                    color: widget.theme?.labelColor,
+                    letterSpacing: widget.theme?.labelLetterSpacing,
+                    fontSize: widget.labelSize,
+                  )
+                : widget.theme?.labelStyle),
         floatingLabelBehavior: widget.fixedLabel == true ? FloatingLabelBehavior.always : null,
         hintText: widget.hint,
-        hintStyle: widget.scope.application.settings.fields.hintStyle,
-        iconColor: widget.scope.application.settings.fields.iconColor,
-        suffixIconColor: widget.scope.application.settings.fields.suffixIconColor,
-        prefixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
-        suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+        hintStyle: widget.theme?.hintStyle ?? widget.scope.application.settings.fields.hintStyle,
+        iconColor: widget.theme?.iconColor ?? widget.scope.application.settings.fields.iconColor,
+        suffixIconColor: widget.theme?.suffixIconColor ?? widget.scope.application.settings.fields.suffixIconColor,
+        prefixStyle: widget.theme?.prefixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+        suffixStyle: widget.theme?.suffixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
         suffixText: widget.suffix,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
-        border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-        disabledBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.disabledBorder,
-        enabledBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.enabledBorder,
-        focusedBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.focusedBorder,
-        errorBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.errorBorder,
-        focusedErrorBorder: widget.borderless == true ? null : widget.scope.application.settings.fields.focusedErrorBorder,
-        fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
-        hoverColor: widget.scope.application.settings.fields.hoverColor,
-        errorStyle: widget.scope.application.settings.fields.errorStyle,
-        isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
+        border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+        disabledBorder: widget.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
+        enabledBorder: widget.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
+        focusedBorder: widget.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
+        errorBorder: widget.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
+        focusedErrorBorder: widget.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
+        fillColor: focused ? (widget.theme?.focusColor ?? widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.theme?.fillColor ?? widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
+        hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
+        errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
+        isDense: widget.isDense ?? widget.theme?.isDense ?? widget.scope.application.settings.fields.isDense,
         suffixIcon: widget.suffixActions == false
             ? null
             : GestureDetector(
@@ -387,6 +398,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
               ),
       ),
     );
+
     return result;
   }
 
@@ -426,27 +438,27 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   Icon _getIcon() {
     if (widget.readonly == true) {
-      return Icon(Icons.lock_outline);
+      return Icon(Icons.lock_outline, color: widget.theme?.suffixIconReadonlyColor ?? widget.theme?.suffixIconColor, size: widget.theme?.suffixIconSize);
     }
 
     if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
       if (_controller.text.length == 0) {
-        return Icon(Icons.keyboard_arrow_left, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+        return Icon(Icons.keyboard_arrow_left, color: warning != null ? (widget.theme?.suffixIconDangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary));
       } else {
         if (focused) {
-          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off, semanticLabel: _obscureText ? translate('anxeb.widgets.fields.text.show_label') : translate('anxeb.widgets.fields.text.hide_label'), color: widget.scope.application.settings.colors.primary);
+          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off, semanticLabel: _obscureText ? translate('anxeb.widgets.fields.text.show_label') : translate('anxeb.widgets.fields.text.hide_label'), color: widget.theme?.suffixIconFocusedColor ?? widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
         } else {
-          return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
+          return Icon(Icons.clear, color: widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
         }
       }
     } else {
       if (focused && warning == null) {
-        return Icon(Icons.done, color: widget.scope.application.settings.colors.success);
+        return Icon(Icons.done, color: widget.theme?.suffixIconSuccessColor ?? widget.scope.application.settings.colors.success);
       } else {
         if (_controller.text.length > 0) {
-          return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
+          return Icon(Icons.clear, color: widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
         } else {
-          return Icon(Icons.keyboard_arrow_left, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+          return Icon(Icons.keyboard_arrow_left, color: warning != null ? (widget.theme?.suffixIconDangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary));
         }
       }
     }
