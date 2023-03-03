@@ -9,15 +9,19 @@ class ActionButton with ActionItem {
   final bool Function() isDisabled;
   final bool Function() isVisible;
   final VoidCallback onPressed;
+  final Widget Function() child;
+  final BorderRadius Function() borderRadius;
 
   ActionButton({
-    @required this.caption,
+    this.caption,
     this.icon,
     this.color,
     this.fill,
     this.isDisabled,
     this.isVisible,
     this.onPressed,
+    this.child,
+    this.borderRadius,
   });
 
   Widget build() {
@@ -32,20 +36,20 @@ class ActionButton with ActionItem {
           padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.symmetric(horizontal: 10)),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              borderRadius: borderRadius?.call() ?? BorderRadius.all(Radius.circular(8.0)),
             ),
           ),
         ),
-        child: Row(
+        child: child?.call() ?? Row(
           children: <Widget>[
             icon != null
                 ? Padding(
-                    padding: const EdgeInsets.only(right: 5.0),
-                    child: Icon(
-                      icon(),
-                      color: $color,
-                    ),
-                  )
+              padding: const EdgeInsets.only(right: 5.0),
+              child: Icon(
+                icon(),
+                color: $color,
+              ),
+            )
                 : Container(),
             Text(
               caption?.call()?.toUpperCase() ?? '',
