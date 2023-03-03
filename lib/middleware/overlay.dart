@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'device.dart';
+import 'scope.dart';
 
 class Overlay {
   bool extendBodyFullScreen = false;
@@ -11,20 +12,20 @@ class Overlay {
   bool extendBody = false;
   Brightness navigationBrightness;
   Color navigationFill;
-  Color navigationDefaultFill;
   Brightness statusBrightness;
   Color statusFill;
   Brightness brightness;
   Color fill;
   SystemUiOverlayStyle style;
+  Scope scope;
 
-  Overlay({this.navigationBrightness, this.navigationFill, this.navigationDefaultFill, this.statusBrightness, this.statusFill, this.brightness, this.fill, this.style}) {
+  Overlay({this.scope, this.navigationBrightness, this.navigationFill, this.statusBrightness, this.statusFill, this.brightness, this.fill, this.style}) {
     style = SystemUiOverlayStyle.light;
   }
 
   void apply({bool instant}) {
-    var $statusBrightness = brightness ?? statusBrightness ?? Brightness.dark;
-    var $navigationBrightness = brightness ?? navigationBrightness ?? Brightness.dark;
+    var $statusBrightness = brightness ?? statusBrightness ?? scope?.application?.settings?.overlay?.brightness ?? Brightness.dark;
+    var $navigationBrightness = brightness ?? navigationBrightness ?? scope?.application?.settings?.overlay?.brightness?? Brightness.dark;
 
     if (Device.isAndroid) {
       if ($statusBrightness == Brightness.light) {
@@ -48,10 +49,10 @@ class Overlay {
       }
       Future.delayed(Duration(milliseconds: instant == true ? 0 : 1000), () {
         SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-          statusBarColor: fill ?? statusFill ?? Colors.transparent,
+          statusBarColor: fill ?? statusFill ?? scope?.application?.settings?.overlay?.fill ?? Colors.transparent,
           statusBarBrightness: $statusBrightness,
           statusBarIconBrightness: $statusBrightness,
-          systemNavigationBarColor: fill ?? navigationFill ?? navigationDefaultFill ?? Colors.black,
+          systemNavigationBarColor: fill ?? navigationFill ?? scope?.application?.settings?.overlay?.fill ?? scope?.application?.settings?.colors?.navigation ?? Colors.black,
           systemNavigationBarIconBrightness: $navigationBrightness,
         ));
       });

@@ -128,6 +128,11 @@ class _Auths {
   _AuthsApple get apple => _apple;
 }
 
+class _Overlay {
+  Brightness brightness;
+  Color fill;
+}
+
 class Settings {
   _Colors _colors;
   _Auths _auths;
@@ -137,6 +142,7 @@ class Settings {
   _Panels _panels;
   _Analytics _analytics;
   _General _general;
+  _Overlay _overlay;
 
   Settings() {
     _colors = _Colors();
@@ -147,6 +153,7 @@ class Settings {
     _panels = _Panels();
     _analytics = _Analytics();
     _general = _General();
+    _overlay = _Overlay();
   }
 
   _Colors get colors => _colors;
@@ -164,4 +171,6 @@ class Settings {
   _Analytics get analytics => _analytics;
 
   _General get general => _general;
+
+  _Overlay get overlay => _overlay;
 }
