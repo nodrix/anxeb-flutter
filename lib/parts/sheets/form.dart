@@ -8,9 +8,19 @@ class FormSheet extends ScopeSheet {
   final String title;
   final Color fill;
   final LinearGradient gradient;
+  final BoxDecoration boxDecoration;
+  final EdgeInsets titlePadding;
+  final TextStyle titleStyle;
 
-  FormSheet(Scope scope, {this.title, this.fill, this.gradient})
-      : assert(title != null),
+  FormSheet(
+    Scope scope, {
+    this.title,
+    this.fill,
+    this.gradient,
+    this.boxDecoration,
+    this.titlePadding,
+    this.titleStyle,
+  })  : assert(title != null),
         super(scope);
 
   @protected
@@ -26,21 +36,22 @@ class FormSheet extends ScopeSheet {
       ),
       child: Container(
         padding: EdgeInsets.only(bottom: scope.window.insets.bottom),
-        decoration: BoxDecoration(
-          color: this.fill,
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-          gradient: this.gradient ??
-              LinearGradient(
-                begin: FractionalOffset.topCenter,
-                end: FractionalOffset.bottomCenter,
-                colors: [
-                  fill.withOpacity(1),
-                  fill.withOpacity(1),
-                ],
-                stops: [0.0, 1.0],
-              ),
-        ),
+        decoration: this.boxDecoration ??
+            BoxDecoration(
+              color: this.fill,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+              gradient: this.gradient ??
+                  LinearGradient(
+                    begin: FractionalOffset.topCenter,
+                    end: FractionalOffset.bottomCenter,
+                    colors: [
+                      fill.withOpacity(1),
+                      fill.withOpacity(1),
+                    ],
+                    stops: [0.0, 1.0],
+                  ),
+            ),
         child: SafeArea(
           top: false,
           bottom: true,
@@ -51,7 +62,7 @@ class FormSheet extends ScopeSheet {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                    padding: EdgeInsets.only(bottom: 0, top: 8, left: 8, right: 8),
+                    padding: titlePadding ?? EdgeInsets.only(bottom: 0, top: 8, left: 8, right: 8),
                     child: Row(
                       children: <Widget>[
                         Expanded(
@@ -59,12 +70,13 @@ class FormSheet extends ScopeSheet {
                             padding: EdgeInsets.only(left: 14),
                             child: Text(
                               title,
-                              style: TextStyle(
-                                fontSize: 20,
-                                letterSpacing: 0.5,
-                                fontWeight: FontWeight.w600,
-                                color: scope.application.settings.colors.primary,
-                              ),
+                              style: titleStyle ??
+                                  TextStyle(
+                                    fontSize: 20,
+                                    letterSpacing: 0.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: scope.application.settings.colors.primary,
+                                  ),
                             ),
                           ),
                         ),
