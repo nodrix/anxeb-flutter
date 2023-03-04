@@ -148,7 +148,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: _footer?.build(),
-      backgroundColor: _scope.application.settings.colors.background,
+      backgroundColor: _scope.window.overlay.background ?? _scope.application.settings.colors.background,
       extendBody: _scope.window.overlay.extendBody,
       extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
       body: WillPopScope(

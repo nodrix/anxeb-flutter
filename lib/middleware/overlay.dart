@@ -16,10 +16,11 @@ class Overlay {
   Color statusFill;
   Brightness brightness;
   Color fill;
+  Color background;
   SystemUiOverlayStyle style;
   Scope scope;
 
-  Overlay({this.scope, this.navigationBrightness, this.navigationFill, this.statusBrightness, this.statusFill, this.brightness, this.fill, this.style}) {
+  Overlay({this.scope, this.navigationBrightness, this.navigationFill, this.statusBrightness, this.statusFill, this.brightness, this.fill, this.background, this.style}) {
     style = SystemUiOverlayStyle.light;
   }
 
