@@ -12,6 +12,9 @@ class ActionIcon with ActionItem {
   final VoidCallback onPressed;
   final int Function() notifications;
   final BoxDecoration notificationDecoration;
+  final TextStyle Function() notificationStyle;
+  final EdgeInsets Function() notificationPadding;
+  final Offset Function() notificationOffset;
 
   ActionIcon({
     @required this.icon,
@@ -22,6 +25,9 @@ class ActionIcon with ActionItem {
     this.onPressed,
     this.notifications,
     this.notificationDecoration,
+    this.notificationStyle,
+    this.notificationPadding,
+    this.notificationOffset,
   });
 
   Widget build() {
@@ -43,10 +49,10 @@ class ActionIcon with ActionItem {
             child: button,
           ),
           Positioned(
-            right: 8,
-            top: 3,
+            right: notificationOffset?.call()?.dx ?? 8,
+            top: notificationOffset?.call()?.dy ?? 3,
             child: Container(
-              padding: EdgeInsets.all(4),
+              padding: notificationPadding?.call() ?? EdgeInsets.all(4),
               decoration: notificationDecoration ??
                   BoxDecoration(
                     shape: BoxShape.circle,
@@ -55,7 +61,7 @@ class ActionIcon with ActionItem {
                   ),
               child: Text(
                 nots.toString(),
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                style: notificationStyle?.call() ?? TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
               ),
             ),
           ),
