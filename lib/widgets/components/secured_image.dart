@@ -1,17 +1,20 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:http/http.dart';
 import 'dart:ui' as ui show instantiateImageCodec, Codec;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 class SecuredImage extends ImageProvider<SecuredImage> {
-  const SecuredImage(this.url, {this.scale = 1.0, this.headers})
-      : assert(url != null),
-        assert(scale != null);
-
+  final Client _client = new Client();
   final String url;
   final double scale;
   final Map<String, String> headers;
+
+  SecuredImage(
+    this.url, {
+    this.scale = 1.0,
+    this.headers,
+  });
 
   @override
   Future<SecuredImage> obtainKey(ImageConfiguration configuration) {
@@ -29,24 +32,15 @@ class SecuredImage extends ImageProvider<SecuredImage> {
         });
   }
 
-  //TODO: Validate PEM Certificate
-  static final HttpClient _httpClient = new HttpClient()..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
-
   Future<ui.Codec> _loadAsync(SecuredImage key, decode) async {
     assert(key == this);
-
     final Uri resolved = Uri.base.resolve(key.url);
-    final HttpClientRequest request = await _httpClient.getUrl(resolved);
-    headers?.forEach((String name, String value) {
-      request.headers.add(name, value);
-    });
-    final HttpClientResponse response = await request.close();
-    if (response.statusCode != HttpStatus.ok) throw new Exception('HTTP request failed, statusCode: ${response?.statusCode}, $resolved');
+    final Response response = await _client.get(resolved, headers: headers);
 
-    final Uint8List bytes = await consolidateHttpClientResponseBytes(response);
-    if (bytes.lengthInBytes == 0) throw new Exception('NetworkImageSSL is an empty file: $resolved');
+    if (response.statusCode != 200) throw Exception('HTTP request failed, statusCode: ${response?.statusCode}, $resolved');
+    if (response.bodyBytes.lengthInBytes == 0) throw new Exception('Content is empty: $resolved');
 
-    return await ui.instantiateImageCodec(bytes);
+    return await ui.instantiateImageCodec(response.bodyBytes);
   }
 
   @override
@@ -58,7 +52,4 @@ class SecuredImage extends ImageProvider<SecuredImage> {
 
   @override
   int get hashCode => Object.hash(url, scale);
-
-  @override
-  String toString() => '$runtimeType("$url", scale: $scale)';
 }
