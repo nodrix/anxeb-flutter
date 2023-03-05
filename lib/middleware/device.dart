@@ -152,7 +152,7 @@ class Device {
     return value?.isNotEmpty == true ? value : null;
   }
 
-  static Future<T> browse<T>({@required Scope scope, Future<T> Function(List<PlatformFile>) callback, FileType type, List<String> allowedExtensions, bool allowMultiple}) async {
+  static Future<T> browse<T>({@required Scope scope, Future<T> Function(List<PlatformFile>) callback, FileType type, List<String> allowedExtensions, bool allowMultiple, bool withData = false, bool withReadStream = false, String dialogTitle, bool showBusyOnPicking}) async {
     FilePickerResult picker;
     T result;
 
@@ -163,8 +163,11 @@ class Device {
         type: type,
         allowMultiple: allowMultiple,
         allowedExtensions: allowedExtensions,
+        withData: withData,
+        withReadStream: withReadStream,
+        dialogTitle: dialogTitle,
         onFileLoading: (state) async {
-          if (state == FilePickerStatus.picking) {
+          if (showBusyOnPicking != false && state == FilePickerStatus.picking) {
             await scope?.busy?.call(
               timeout: 0,
               text: translate('anxeb.device.browse.loading_busy_label'), //Cargando Archivo
@@ -173,7 +176,9 @@ class Device {
           }
         },
       );
-      await Future.delayed(Duration(milliseconds: 500));
+      if (showBusyOnPicking != false) {
+        await Future.delayed(Duration(milliseconds: 500));
+      }
     } on PlatformException catch (err) {
       await Future.delayed(Duration(milliseconds: 500));
 
