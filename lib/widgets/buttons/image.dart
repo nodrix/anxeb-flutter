@@ -223,7 +223,7 @@ class _ImageButtonState extends State<ImageButton> {
     );
     
     var touchWidget = Material(
-      key: GlobalKey(),
+      key: widget.key,
       color: Colors.transparent,
       child: InkWell(
         onTap: widget.onTap != null
