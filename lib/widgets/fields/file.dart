@@ -3,7 +3,6 @@ import 'package:anxeb_flutter/helpers/document.dart';
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/misc/icons.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';

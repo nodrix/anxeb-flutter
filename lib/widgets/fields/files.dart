@@ -10,7 +10,6 @@ import 'package:camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:path/path.dart';
 import 'package:photo_view/photo_view.dart';
 import '../../middleware/device.dart';
