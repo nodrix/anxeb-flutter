@@ -19,6 +19,9 @@ class _Dialogs {
   double dialogRadius;
   Color headerColor;
   Color footerColor;
+  EdgeInsets buttonPaddingWithIcon;
+  EdgeInsets buttonPaddingWithoutIcon;
+  TextStyle buttonTextStyle;
 }
 
 class _Alerts {

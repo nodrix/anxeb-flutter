@@ -3,6 +3,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/widgets/buttons/text.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
+import 'package:flutter/services.dart';
 import '../../middleware/application.dart';
 import '../../middleware/tabs.dart';
 
@@ -19,6 +20,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   final EdgeInsets insetPadding;
   final BorderRadius borderRadius;
   final MainAxisAlignment buttonAlignment;
+  final bool dismissable;
 
   Radius _cornerRadius;
   FormScope<A> _scope;
@@ -26,6 +28,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Color _footerFillColor;
   EdgeInsets _headerPadding;
   BuildContext _context;
+  FocusNode _focusNode = FocusNode();
 
   FormDialog(
     Scope scope, {
@@ -41,6 +44,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
     this.insetPadding,
     this.borderRadius,
     this.buttonAlignment,
+    this.dismissable,
     bool dismissible,
     Key key,
   }) : super(scope) {
@@ -64,6 +68,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Widget build(BuildContext context) {
     final GlobalKey dialogKey = GlobalKey();
     _context = context;
+
     return StatefulBuilder(
       key: dialogKey,
       builder: (context, setState) {
@@ -76,7 +81,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
         final $content = _getTabsWidget() ?? _getBodyWidget() ?? Container();
         final $header = _getDialogHeader();
 
-        return AlertDialog(
+        final $dialog = AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
           contentPadding: EdgeInsets.zero,
           buttonPadding: EdgeInsets.zero,
@@ -86,6 +91,25 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
           contentTextStyle: TextStyle(fontSize: title != null ? 16.4 : 20, color: scope.application.settings.colors.text, fontWeight: FontWeight.w400),
           title: $header,
           content: $content,
+        );
+
+        if (dismissable != true) {
+          return $dialog;
+        }
+
+        return RawKeyboardListener(
+          focusNode: _focusNode,
+          onKey: (value) {
+            if (value.isKeyPressed(LogicalKeyboardKey.escape)) {
+              pop();
+            }
+          },
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).requestFocus(_focusNode);
+            },
+            child: $dialog,
+          ),
         );
       },
     );
@@ -203,7 +227,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
           children: formButtons.where(($button) => $button.visible != false).map(($button) {
             var button = TextButton(
               caption: $button.caption,
-              padding: EdgeInsets.only(left: 14, right: $button.icon != null ? 18 : 14, top: 6, bottom: 6),
+              padding: $button.icon != null ? (scope.application.settings.dialogs.buttonPaddingWithIcon ?? EdgeInsets.only(left: 14, right: 18, top: 6, bottom: 6)) : (scope.application.settings.dialogs.buttonPaddingWithoutIcon ?? EdgeInsets.only(left: 14, right: 14, top: 6, bottom: 6)),
               radius: scope.application.settings.dialogs.buttonRadius,
               icon: $button.icon,
               swapIcon: $button.swapIcon,
@@ -211,17 +235,23 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
               textColor: $button.textColor ?? Colors.white,
               margin: EdgeInsets.only(left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
               onPressed: () async {
+                if (_context == null) {
+                  return null;
+                }
                 final result = await $button?.onTap?.call(_scope);
                 if (result == false) {
                   Navigator.of(_context).pop(null);
+                  _context = null;
                 } else if (result == null) {
                   //ignore
                 } else {
                   Navigator.of(_context).pop(result is V ? result : model);
+                  _context = null;
                 }
               },
               type: ButtonType.primary,
               size: ButtonSize.small,
+              textStyle: scope.application.settings.dialogs.buttonTextStyle,
             );
 
             var isLast = formButtons.last == $button;
@@ -325,13 +355,18 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                     margin: EdgeInsets.only(right: 2, bottom: 6),
                     child: InkWell(
                       onTap: () async {
+                        if (_context == null) {
+                          return null;
+                        }
                         final result = await close?.call(_scope);
                         if (result == false) {
                           Navigator.of(_context).pop(null);
+                          _context = null;
                         } else if (result == null) {
                           //ignore
                         } else {
                           Navigator.of(_context).pop(result is V ? result : model);
+                          _context = null;
                         }
                       },
                       borderRadius: BorderRadius.circular(100),
@@ -352,9 +387,10 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
 
   @protected
   void pop([dynamic result]) {
-    if (_context != null) {
-      Navigator.of(_context).pop(result ?? model);
+    if (_context == null) {
+      return null;
     }
+    Navigator.of(_context).pop(result ?? model);
   }
 
   @protected
