@@ -209,8 +209,8 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog qr(String value, {IconData icon, String title, List<DialogButton> buttons, String tip}) {
-    final size = _scope.window.available.width * 0.6;
+  MessageDialog qr(String value, {IconData icon, String title, List<DialogButton> buttons, String tip, double size}) {
+    final $size = size ?? _scope.window.available.width * 0.6;
 
     return MessageDialog(
       _scope,
@@ -225,18 +225,18 @@ class ScopeDialogs {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              width: size,
-              height: size,
+              width: $size,
+              height: $size,
               child: QrImage(
                 data: value,
                 version: QrVersions.auto,
                 foregroundColor: _scope.application.settings.colors.text,
-                size: size,
+                size: $size,
               ),
             ),
             tip != null
                 ? Container(
-                    width: size,
+                    width: $size,
                     padding: EdgeInsets.all(6),
                     child: Text(
                       tip ?? '',
@@ -253,7 +253,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group) fields, IconData icon, double width, String acceptLabel, String cancelLabel, bool swap, String group}) {
+  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group, Function accept, Function cancel) fields, IconData icon, double width, String acceptLabel, String cancelLabel, bool swap, String group, bool dismissible}) {
     var cancel = (BuildContext context) {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -265,14 +265,12 @@ class ScopeDialogs {
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
-    var accept = () {
+    var accept = (BuildContext context) {
       if (form.valid() == true) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
           _scope.unfocus();
         });
-        return form.data();
-      } else {
-        return null;
+        Navigator.of(context).pop(form.data());
       }
     };
 
@@ -284,8 +282,9 @@ class ScopeDialogs {
       width: width,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.info,
+      dismissible: dismissible,
       body: (context) {
-        var $fields = fields.call(_scope, context, $formName);
+        var $fields = fields.call(_scope, context, $formName, () => accept(context), () => cancel(context));
         return Container(
           child: Column(
             children: $fields,
@@ -296,10 +295,10 @@ class ScopeDialogs {
       buttons: swap == true
           ? [
               DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
-              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
             ]
           : [
-              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept()),
+              DialogButton(acceptLabel ?? translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
               DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
             ],
     );
@@ -392,8 +391,7 @@ class ScopeDialogs {
     bool swap,
     int lines,
     String group,
-    double inputIconSize,
-    double inputFontSize,
+    FieldWidgetTheme theme,
   }) {
     T _value = value;
     var cancel = (BuildContext context) {
@@ -437,8 +435,7 @@ class ScopeDialogs {
         margin: const EdgeInsets.only(top: 20),
         label: label,
         fetcher: () => value,
-        fontSize: inputFontSize,
-        iconSize: inputIconSize,
+        theme: theme,
         validator: validator ?? Utils.validators.required,
         action: TextInputAction.done,
         maxLines: lines,
