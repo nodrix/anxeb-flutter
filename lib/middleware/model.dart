@@ -11,6 +11,7 @@ class Model<T> {
   List<_ModelField> _fields;
   String _primaryField;
   bool $deleted = false;
+  bool $updated = false;
 
   Model([data]) {
     update(data);
