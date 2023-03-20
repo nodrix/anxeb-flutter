@@ -80,13 +80,13 @@ class Api {
     try {
       switch (method) {
         case ApiMethods.GET:
-          return await _dio.get(route, queryParameters: query, cancelToken: cancelToken);
+          return await _dio.get(route, queryParameters: query, cancelToken: cancelToken, options: options);
         case ApiMethods.DELETE:
-          return await _dio.delete(route, queryParameters: query, cancelToken: cancelToken, data: body);
+          return await _dio.delete(route, queryParameters: query, cancelToken: cancelToken, data: body, options: options);
         case ApiMethods.POST:
           return await _dio.post(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body, options: options);
         case ApiMethods.PUT:
-          return await _dio.put(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body);
+          return await _dio.put(route, queryParameters: query, cancelToken: cancelToken, onSendProgress: progress, data: body, options: options);
       }
     } catch (err) {
       var apiException = ApiException.fromErr(err);
@@ -257,6 +257,8 @@ class ApiException implements Exception {
     }
     return null;
   }
+
+  dynamic get meta => raw != null ? raw['meta'] : null;
 
   String toString() {
     return message;
