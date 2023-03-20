@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Overlay;
 import '../misc/after_init.dart';
 import 'form.dart';
@@ -10,9 +11,11 @@ class FieldWidgetTheme {
   final InputBorder border;
   final Color prefixIconColor;
   final Color iconColor;
-  final TextStyle hintStyle;
+
   final double prefixIconSize;
   final Color hoverColor;
+  final TextStyle hintStyle;
+  final TextStyle displayStyle;
   final TextStyle errorStyle;
   final TextStyle inputStyle;
   final TextStyle suffixStyle;
@@ -37,6 +40,12 @@ class FieldWidgetTheme {
   final Color suffixIconDangerColor;
   final Color suffixIconSuccessColor;
   final Color suffixIconFocusedColor;
+  final double iconSize;
+  final double fontSize;
+  final double labelSize;
+  final bool borderless;
+  final bool fixedLabel;
+  final BorderRadius borderRadius;
 
   FieldWidgetTheme({
     this.isDense,
@@ -45,9 +54,10 @@ class FieldWidgetTheme {
     this.border,
     this.prefixIconColor,
     this.iconColor,
-    this.hintStyle,
     this.prefixIconSize,
     this.hoverColor,
+    this.hintStyle,
+    this.displayStyle,
     this.errorStyle,
     this.inputStyle,
     this.suffixStyle,
@@ -72,6 +82,12 @@ class FieldWidgetTheme {
     this.suffixIconDangerColor,
     this.suffixIconSuccessColor,
     this.suffixIconFocusedColor,
+    this.iconSize,
+    this.fontSize,
+    this.labelSize,
+    this.borderless,
+    this.fixedLabel,
+    this.borderRadius,
   });
 }
 
@@ -82,9 +98,7 @@ class FieldWidget<V> extends StatefulWidget {
   final String group;
   final String label;
   final IconData icon;
-  final double iconSize;
-  final double fontSize;
-  final double labelSize;
+  final IconData sufixIcon;
   final EdgeInsets margin;
   final EdgeInsets padding;
   final bool readonly;
@@ -102,8 +116,6 @@ class FieldWidget<V> extends StatefulWidget {
   final V Function() fetcher;
   final Function(V value) applier;
   final bool initialSelected;
-  final BorderRadius borderRadius;
-  final bool isDense;
   final FieldWidgetTheme theme;
 
   FieldWidget({
@@ -113,9 +125,6 @@ class FieldWidget<V> extends StatefulWidget {
     this.group,
     this.label,
     this.icon,
-    this.iconSize,
-    this.fontSize,
-    this.labelSize,
     this.margin,
     this.padding,
     this.readonly,
@@ -133,9 +142,8 @@ class FieldWidget<V> extends StatefulWidget {
     @required this.fetcher,
     @required this.applier,
     this.initialSelected,
-    this.borderRadius,
-    this.isDense,
     this.theme,
+    this.sufixIcon,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.key, name));
 
@@ -148,6 +156,7 @@ abstract class FieldState<V, F extends FieldWidget<V>> extends State<F> {
   V value;
   bool focused;
   bool isEmpty;
+  bool busy;
 
   void focus({String warning});
 
@@ -179,6 +188,30 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   @protected
   dynamic data() {
     return value;
+  }
+
+  @protected
+  void present() {}
+
+  @protected
+  Future<V> lookup() => null;
+
+  @protected
+  String label() => null;
+
+  @protected
+  Widget display([String text]) {
+    return Padding(
+      padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
+      child: Text(
+        text ?? value?.toString() ?? widget.label,
+        style: widget?.theme?.displayStyle ??
+            TextStyle(
+              fontSize: widget.theme?.fontSize != null ? (widget.theme.fontSize * 0.9) : 16,
+              color: value != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
+            ),
+      ),
+    );
   }
 
   void rasterize([VoidCallback fn]) {
@@ -250,7 +283,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   void apply() {
     if (widget.applier != null) {
-      value = widget.applier(value);
+      widget.applier(value);
     }
   }
 
@@ -305,9 +338,6 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       widget.onSubmitted(value);
     }
   }
-
-  @protected
-  void present() {}
 
   @override
   initState() {
@@ -392,7 +422,141 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   void onBlur() {}
 
   @protected
-  Widget field() => Container();
+  String hint() => null;
+
+  bool _hovering;
+
+  @protected
+  Widget field() {
+    return MouseRegion(
+      cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      onHover: (event) {
+        setState(() {
+          _hovering = true;
+        });
+      },
+      onExit: (event) {
+        setState(() {
+          _hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          if (widget.readonly == true) {
+            return;
+          }
+          focus();
+          _beginLookup();
+        },
+        child: new FormField(
+          builder: (FormFieldState state) {
+            return InputDecorator(
+              isFocused: focused,
+              decoration: InputDecoration(
+                filled: true,
+                contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+                prefixIcon: widget.icon != null
+                    ? Icon(
+                        widget.icon,
+                        size: widget.theme?.prefixIconSize,
+                        color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
+                      )
+                    : null,
+                labelText: label?.call() ?? (value != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null),
+                labelStyle: widget.theme?.labelSize != null
+                    ? TextStyle(
+                        fontWeight: widget.theme?.labelFontWeight,
+                        color: widget.theme?.labelColor,
+                        letterSpacing: widget.theme?.labelLetterSpacing,
+                        fontSize: widget.theme?.labelSize,
+                      )
+                    : widget.theme?.labelStyle,
+                floatingLabelBehavior: widget.theme?.fixedLabel == true ? FloatingLabelBehavior.always : null,
+                hintText: hint(),
+                hintStyle: widget.theme?.hintStyle ?? widget.scope.application.settings.fields.hintStyle,
+                iconColor: widget.theme?.iconColor ?? widget.scope.application.settings.fields.iconColor,
+                suffixIconColor: widget.theme?.suffixIconColor ?? widget.scope.application.settings.fields.suffixIconColor,
+                prefixStyle: widget.theme?.prefixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+                suffixStyle: widget.theme?.suffixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+                errorText: warning,
+                border: widget.theme?.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.theme?.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+                disabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
+                enabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
+                focusedBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
+                errorBorder: widget.theme?.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
+                focusedErrorBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
+                fillColor: _hovering == true ? (widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor) : (focused ? (widget.theme?.focusColor ?? widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.theme?.fillColor ?? widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input)),
+                hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
+                errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
+                isDense: widget.theme?.isDense != null ? widget.theme?.isDense : (widget.scope.application.settings.fields.isDense != null ? widget.scope.application.settings.fields.isDense : false),
+                suffixIcon: MouseRegion(
+                  cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                  child: GestureDetector(
+                    dragStartBehavior: DragStartBehavior.down,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (widget.readonly == true) {
+                        return;
+                      }
+                      if (value != null || canClear == true) {
+                        clear();
+                      } else {
+                        _beginLookup();
+                      }
+                    },
+                    child: _getIcon(),
+                  ),
+                ),
+              ),
+              child: display(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _beginLookup() async {
+    final value$ = await lookup?.call();
+    if (value$ != null) {
+      submit(value$);
+    }
+  }
+
+  Widget _getIcon() {
+    if (busy == true) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.only(right: 10),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.primary),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (widget.readonly == true) {
+      return Icon(Icons.lock_outline, color: widget.scope.application.settings.colors.primary);
+    }
+
+    if (value != null || canClear == true) {
+      return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
+    } else {
+      return Icon(widget.sufixIcon ?? Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+    }
+  }
+
+  @protected
+  bool get canClear => false;
 
   @protected
   setValueSilent(dynamic value) {

@@ -17,7 +17,6 @@ class TextInputField<V> extends FieldWidget<V> {
   final ValueChanged<V> onActionSubmit;
   final TextCapitalization capitalization;
   final bool canSelect;
-  final bool fixedLabel;
   final String hint;
   final String prefix;
   final String suffix;
@@ -28,7 +27,6 @@ class TextInputField<V> extends FieldWidget<V> {
   final bool suffixActions;
   final int errorMaxLines;
   final bool selectOnFocus;
-  final bool borderless;
   final bool disableCounter;
 
   TextInputField({
@@ -52,12 +50,7 @@ class TextInputField<V> extends FieldWidget<V> {
     V Function(dynamic value) parser,
     bool focusNext,
     bool focusOnlyEmpty,
-    double iconSize,
-    double fontSize,
-    double labelSize,
     bool selected,
-    BorderRadius borderRadius,
-    bool isDense,
     FieldWidgetTheme theme,
     V Function() fetcher,
     Function(V value) applier,
@@ -68,7 +61,6 @@ class TextInputField<V> extends FieldWidget<V> {
     this.onActionSubmit,
     this.capitalization,
     this.canSelect,
-    this.fixedLabel,
     this.hint,
     this.prefix,
     this.suffix,
@@ -80,7 +72,6 @@ class TextInputField<V> extends FieldWidget<V> {
     this.errorMaxLines,
     this.selectOnFocus,
     this.formatter,
-    this.borderless,
     this.disableCounter,
   })  : assert(name != null),
         super(
@@ -105,11 +96,6 @@ class TextInputField<V> extends FieldWidget<V> {
           focusNext: focusNext,
           focusOnlyEmpty: focusOnlyEmpty,
           initialSelected: selected,
-          iconSize: iconSize,
-          labelSize: labelSize,
-          fontSize: fontSize,
-          borderRadius: borderRadius,
-          isDense: isDense,
           fetcher: fetcher,
           applier: applier,
           theme: theme,
@@ -305,9 +291,8 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
           widget.onChanged(_convertValue(text));
         }
       },
-
       textAlign: TextAlign.left,
-      style: widget.theme?.inputStyle ?? (widget.fontSize != null ? TextStyle(fontSize: widget.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
+      style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
       decoration: InputDecoration(
         filled: true,
         counterText: widget.disableCounter == true ? '' : null,
@@ -315,12 +300,12 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         prefixIcon: widget.icon != null
             ? Icon(
                 widget.icon,
-                size: widget.iconSize ?? widget.theme?.prefixIconSize,
+                size: widget.theme?.iconSize ?? widget.theme?.prefixIconSize,
                 color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
               )
             : null,
-        labelText: widget.label != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
-        labelStyle: widget.fixedLabel == true
+        labelText: widget.label != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
+        labelStyle: widget.theme?.fixedLabel == true
             ? TextStyle(
                 fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
                 color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
@@ -328,15 +313,15 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
                 fontSize: widget.theme?.labelFontSize ?? 15,
                 fontFamily: widget.theme?.labelFontFamily,
               )
-            : (widget.labelSize != null
+            : (widget.theme?.labelSize != null
                 ? TextStyle(
                     fontWeight: widget.theme?.labelFontWeight,
                     color: widget.theme?.labelColor,
                     letterSpacing: widget.theme?.labelLetterSpacing,
-                    fontSize: widget.labelSize,
+                    fontSize: widget.theme?.labelSize,
                   )
                 : widget.theme?.labelStyle),
-        floatingLabelBehavior: widget.fixedLabel == true ? FloatingLabelBehavior.always : null,
+        floatingLabelBehavior: widget.theme?.fixedLabel == true ? FloatingLabelBehavior.always : null,
         hintText: widget.hint,
         hintStyle: widget.theme?.hintStyle ?? widget.scope.application.settings.fields.hintStyle,
         iconColor: widget.theme?.iconColor ?? widget.scope.application.settings.fields.iconColor,
@@ -347,54 +332,57 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         suffixText: widget.suffix,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
-        border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-        disabledBorder: widget.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
-        enabledBorder: widget.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
-        focusedBorder: widget.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
-        errorBorder: widget.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
-        focusedErrorBorder: widget.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
+        border: widget.theme?.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.theme?.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+        disabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
+        enabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
+        focusedBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
+        errorBorder: widget.theme?.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
+        focusedErrorBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
         fillColor: focused ? (widget.theme?.focusColor ?? widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.theme?.fillColor ?? widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
         hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
         errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
-        isDense: widget.isDense ?? widget.theme?.isDense ?? widget.scope.application.settings.fields.isDense,
+        isDense: widget.theme?.isDense != null ? widget.theme?.isDense : (widget.scope.application.settings.fields.isDense != null ? widget.scope.application.settings.fields.isDense : false),
         suffixIcon: widget.suffixActions == false
             ? null
-            : GestureDetector(
-                dragStartBehavior: DragStartBehavior.down,
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  if (widget.readonly == true) {
-                    return;
-                  }
-                  _tabbed = true;
+            : MouseRegion(
+                cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                child: GestureDetector(
+                  dragStartBehavior: DragStartBehavior.down,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (widget.readonly == true) {
+                      return;
+                    }
+                    _tabbed = true;
 
-                  if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
-                    if (_controller.text.length == 0) {
-                      focus();
-                    } else {
-                      if (focused) {
-                        _editing = false;
-                        setState(() {
-                          _obscureText = !_obscureText;
-                        });
-                      } else {
-                        clear();
-                      }
-                    }
-                  } else {
-                    if (focused && warning == null) {
-                      _editing = false;
-                      _convertAndSubmit(_controller.text);
-                    } else {
-                      if (_controller.text.length > 0) {
-                        clear();
-                      } else {
+                    if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
+                      if (_controller.text.length == 0) {
                         focus();
+                      } else {
+                        if (focused) {
+                          _editing = false;
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        } else {
+                          clear();
+                        }
+                      }
+                    } else {
+                      if (focused && warning == null) {
+                        _editing = false;
+                        _convertAndSubmit(_controller.text);
+                      } else {
+                        if (_controller.text.length > 0) {
+                          clear();
+                        } else {
+                          focus();
+                        }
                       }
                     }
-                  }
-                },
-                child: _getIcon(),
+                  },
+                  child: _getIcon(),
+                ),
               ),
       ),
     );

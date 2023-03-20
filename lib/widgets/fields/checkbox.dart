@@ -3,7 +3,6 @@ import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 
 class CheckBoxField extends FieldWidget<bool> {
-  final String label;
   final ListTileControlAffinity controlAffinity;
 
   CheckBoxField({
@@ -11,6 +10,7 @@ class CheckBoxField extends FieldWidget<bool> {
     @required String name,
     Key key,
     String group,
+    String label,
     EdgeInsets margin,
     EdgeInsets padding,
     ValueChanged<bool> onChanged,
@@ -19,10 +19,8 @@ class CheckBoxField extends FieldWidget<bool> {
     FormFieldValidator<String> validator,
     bool focusNext,
     bool readonly,
-    BorderRadius borderRadius,
     bool Function() fetcher,
     Function(bool value) applier,
-    this.label,
     this.controlAffinity,
   })  : assert(name != null),
         super(
@@ -37,7 +35,6 @@ class CheckBoxField extends FieldWidget<bool> {
           onFocus: onFocus,
           validator: validator,
           focusNext: focusNext,
-          borderRadius: borderRadius,
           fetcher: fetcher,
           applier: applier,
         );

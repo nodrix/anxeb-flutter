@@ -12,7 +12,6 @@ class BarcodeInputField extends FieldWidget<String> {
   final bool autofocus;
   final TextInputAction action;
   final bool canSelect;
-  final bool fixedLabel;
   final String hint;
   final String prefix;
   final String suffix;
@@ -40,8 +39,6 @@ class BarcodeInputField extends FieldWidget<String> {
     String Function(dynamic value) parser,
     bool focusNext,
     bool selected,
-    BorderRadius borderRadius,
-    bool isDense,
     String Function() fetcher,
     Function(String value) applier,
     this.controller,
@@ -49,7 +46,6 @@ class BarcodeInputField extends FieldWidget<String> {
     this.autofocus,
     this.action,
     this.canSelect,
-    this.fixedLabel,
     this.hint,
     this.prefix,
     this.suffix,
@@ -77,8 +73,6 @@ class BarcodeInputField extends FieldWidget<String> {
           parser: parser,
           focusNext: focusNext,
           initialSelected: selected,
-          borderRadius: borderRadius,
-          isDense: isDense,
           fetcher: fetcher,
           applier: applier,
         );
@@ -225,35 +219,44 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
                 color: widget.scope.application.settings.colors.primary,
               )
             : null,
-        labelText: widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label,
-        labelStyle: widget.fixedLabel == true
+        labelText: value != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
+        labelStyle: widget.theme?.fixedLabel == true
             ? TextStyle(
-                fontWeight: FontWeight.w500,
-                color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-                letterSpacing: 0.8,
-                fontSize: 15,
+                fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
+                color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
+                letterSpacing: widget.theme?.labelLetterSpacing ?? 0.8,
+                fontSize: widget.theme?.labelFontSize ?? 15,
+                fontFamily: widget.theme?.labelFontFamily,
               )
-            : null,
-        floatingLabelBehavior: widget.fixedLabel == true ? FloatingLabelBehavior.always : null,
+            : (widget.theme?.labelSize != null
+                ? TextStyle(
+                    fontWeight: widget.theme?.labelFontWeight,
+                    color: widget.theme?.labelColor,
+                    letterSpacing: widget.theme?.labelLetterSpacing,
+                    fontSize: widget.theme?.labelSize,
+                  )
+                : widget.theme?.labelStyle),
+        floatingLabelBehavior: widget.theme?.fixedLabel == true ? FloatingLabelBehavior.always : null,
         hintText: widget.hint,
         hintStyle: widget.scope.application.settings.fields.hintStyle,
         iconColor: widget.scope.application.settings.fields.iconColor,
         suffixIconColor: widget.scope.application.settings.fields.suffixIconColor,
-        prefixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
-        suffixStyle: TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+        prefixStyle: widget.theme?.prefixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+        suffixStyle: widget.theme?.suffixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
         prefixText: widget.prefix,
         suffixText: widget.suffix,
         errorText: warning,
-        border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-        disabledBorder: widget.scope.application.settings.fields.disabledBorder,
-        enabledBorder: widget.scope.application.settings.fields.enabledBorder,
-        focusedBorder: widget.scope.application.settings.fields.focusedBorder,
-        errorBorder: widget.scope.application.settings.fields.errorBorder,
-        focusedErrorBorder: widget.scope.application.settings.fields.focusedErrorBorder,
-        fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
-        hoverColor: widget.scope.application.settings.fields.hoverColor,
-        errorStyle: widget.scope.application.settings.fields.errorStyle,
-        isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
+
+        border: widget.theme?.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.theme?.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
+        disabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
+        enabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
+        focusedBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
+        errorBorder: widget.theme?.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
+        focusedErrorBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
+        fillColor: focused ? (widget.theme?.focusColor ?? widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.theme?.fillColor ?? widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
+        hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
+        errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
+        isDense: widget.theme?.isDense != null ? widget.theme?.isDense : (widget.scope.application.settings.fields.isDense != null ? widget.scope.application.settings.fields.isDense : false),
         suffixIcon: GestureDetector(
           dragStartBehavior: DragStartBehavior.down,
           behavior: HitTestBehavior.opaque,
@@ -262,6 +265,7 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
               return;
             }
             _tabbed = true;
+
             if (focused && warning == null && _controller.text.length > 0) {
               _editing = false;
               super.submit(_controller.text);
@@ -282,15 +286,15 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
 
   Icon _getIcon() {
     if (widget.readonly == true) {
-      return Icon(Icons.lock_outline);
+      return Icon(Icons.lock_outline, color: widget.theme?.suffixIconReadonlyColor ?? widget.theme?.suffixIconColor, size: widget.theme?.suffixIconSize);
     }
     if (focused && warning == null && _controller.text.length > 0) {
-      return Icon(Icons.done, color: widget.scope.application.settings.colors.success);
+      return Icon(Icons.done, color: widget.theme?.suffixIconSuccessColor ?? widget.scope.application.settings.colors.success);
     } else {
       if (_controller.text.length > 0) {
-        return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
+        return Icon(Icons.clear, color: widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
       } else {
-        return Icon(Icons.filter_center_focus, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
+        return Icon(Icons.filter_center_focus, color: warning != null ? (widget.theme?.suffixIconDangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary));
       }
     }
   }

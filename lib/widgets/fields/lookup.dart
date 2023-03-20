@@ -1,15 +1,8 @@
 import 'package:anxeb_flutter/middleware/field.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
 
 class LookupInputField<V> extends FieldWidget<V> {
-  final bool autofocus;
-  final bool fixedLabel;
-  final String hint;
-  final String prefix;
-  final String suffix;
   final Future<V> Function() onLookup;
   final String Function(V value) displayText;
   final dynamic Function(V value) dataValue;
@@ -34,15 +27,8 @@ class LookupInputField<V> extends FieldWidget<V> {
     FormFieldValidator<String> validator,
     V Function(dynamic value) parser,
     bool focusNext,
-    BorderRadius borderRadius,
-    bool isDense,
     V Function() fetcher,
     Function(V value) applier,
-    this.autofocus,
-    this.fixedLabel,
-    this.hint,
-    this.prefix,
-    this.suffix,
     this.onLookup,
     this.displayText,
     this.dataValue,
@@ -67,8 +53,6 @@ class LookupInputField<V> extends FieldWidget<V> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
-          borderRadius: borderRadius,
-          isDense: isDense,
           fetcher: fetcher,
           applier: applier,
         );
@@ -79,143 +63,11 @@ class LookupInputField<V> extends FieldWidget<V> {
 
 class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
   @override
-  void init() {}
+  dynamic data() => widget.dataValue?.call(value) ?? value;
 
   @override
-  void focus({String warning}) {
-    super.focus(warning: warning);
-  }
+  Future<V> lookup() => widget.onLookup?.call() ?? null;
 
   @override
-  void setup() {}
-
-  @override
-  void prebuild() {}
-
-  @override
-  void onBlur() {
-    super.onBlur();
-  }
-
-  @override
-  void onFocus() {
-    super.onFocus();
-  }
-
-  @override
-  dynamic data() {
-    return widget.dataValue != null ? widget.dataValue(value) : value;
-  }
-
-  @override
-  void reset() {
-    super.reset();
-  }
-
-  @protected
-  String getValueString(V value) {
-    return value?.toString();
-  }
-
-  @override
-  Widget field() {
-    var result = GestureDetector(
-      onTap: () {
-        if (widget.readonly == true) {
-          return;
-        }
-        focus();
-        _beginLookup();
-      },
-      child: new FormField(
-        builder: (FormFieldState state) {
-          return InputDecorator(
-            isFocused: focused,
-            decoration: InputDecoration(
-              filled: true,
-              contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
-              prefixIcon: Icon(
-                widget.icon ?? FontAwesome5.dot_circle,
-                color: widget.scope.application.settings.colors.primary,
-              ),
-              labelText: value != null ? (widget.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
-              labelStyle: widget.fixedLabel == true
-                  ? TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-                      letterSpacing: 0.8,
-                      fontSize: 15,
-                    )
-                  : null,
-              errorText: warning,
-              border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-              disabledBorder: widget.scope.application.settings.fields.disabledBorder,
-              enabledBorder: widget.scope.application.settings.fields.enabledBorder,
-              focusedBorder: widget.scope.application.settings.fields.focusedBorder,
-              errorBorder: widget.scope.application.settings.fields.errorBorder,
-              focusedErrorBorder: widget.scope.application.settings.fields.focusedErrorBorder,
-              fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
-              hoverColor: widget.scope.application.settings.fields.hoverColor,
-              errorStyle: widget.scope.application.settings.fields.errorStyle,
-              isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
-              suffixIcon: GestureDetector(
-                dragStartBehavior: DragStartBehavior.down,
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  //TODO: Allow collapse/expando from icon
-                  if (widget.readonly == true) {
-                    return;
-                  }
-
-                  if (value != null) {
-                    clear();
-                  } else {
-                    _beginLookup();
-                  }
-                },
-                child: _getIcon(),
-              ),
-            ),
-            child: Padding(
-              padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
-              child: Container(
-                padding: EdgeInsets.only(top: 2),
-                child: Text(
-                  _displayText ?? widget.label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: _displayText != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-    return result;
-  }
-
-  void _beginLookup() async {
-    if (widget.onLookup != null) {
-      var $value = await widget.onLookup();
-      if ($value != null) {
-        super.submit($value);
-      }
-    }
-  }
-
-  Icon _getIcon() {
-    if (widget.readonly == true) {
-      return Icon(Icons.lock_outline);
-    }
-
-    if (value != null) {
-      return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
-    } else {
-      return Icon(Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
-    }
-  }
-
-  String get _displayText => widget.displayText != null ? widget.displayText(value) : value?.toString();
+  Widget display([String text]) => super.display(widget?.displayText?.call(value));
 }

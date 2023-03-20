@@ -1,18 +1,8 @@
-import 'package:flutter_translate/flutter_translate.dart';
+import 'package:anxeb_flutter/anxeb.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:anxeb_flutter/helpers/preview.dart';
-import 'package:ionicons/ionicons.dart';
-import 'package:anxeb_flutter/middleware/field.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/middleware/utils.dart';
-import 'package:anxeb_flutter/widgets/blocks/photo.dart';
-import 'package:camera/camera.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
-import '../../middleware/device.dart';
-import '../../screen/scope.dart';
 
 enum ImageInputFieldType { front, rear, local, web }
 
@@ -25,7 +15,7 @@ class ImageInputField extends FieldWidget<String> {
   final bool returnPath;
   final ResolutionPreset resolution;
   final FileSourceOption fileSourceOption;
-  final bool showTextPreview;
+  final bool showSize;
   final String url;
   final Future Function({String title, ImageProvider image, bool fullImage}) onPreview;
 
@@ -49,10 +39,6 @@ class ImageInputField extends FieldWidget<String> {
     FormFieldValidator<String> validator,
     String Function(String value) parser,
     bool focusNext,
-    double fontSize,
-    double labelSize,
-    BorderRadius borderRadius,
-    bool isDense,
     String Function() fetcher,
     Function(String value) applier,
     this.type,
@@ -63,7 +49,7 @@ class ImageInputField extends FieldWidget<String> {
     this.returnPath,
     this.resolution,
     this.fileSourceOption,
-    this.showTextPreview,
+    this.showSize,
     this.url,
     this.onPreview,
   })  : assert(name != null),
@@ -87,10 +73,6 @@ class ImageInputField extends FieldWidget<String> {
           validator: validator,
           parser: parser,
           focusNext: focusNext,
-          fontSize: fontSize,
-          labelSize: labelSize,
-          borderRadius: borderRadius,
-          isDense: isDense,
           fetcher: fetcher,
           applier: applier,
         );
@@ -100,242 +82,159 @@ class ImageInputField extends FieldWidget<String> {
 }
 
 class _ImageInputFieldState extends Field<String, ImageInputField> {
-  ImageProvider _takenPicture;
-  String _previewText;
+  ImageProvider _imageData;
+  String _imageSize;
 
   @override
-  void init() {}
+  void fetch() {
+    super.fetch();
+    _loadImage();
+  }
 
-  @override
-  void setup() {}
-
-  void _takePicture() async {
-    File result = await Device.photo(
-      scope: widget.scope,
-      title: widget.label,
-      fullImage: widget.fullImage,
-      initFaceCamera: widget.initFaceCamera,
-      allowMainCamera: widget.type == ImageInputFieldType.rear,
-      flash: widget.flash,
-      resolution: widget.resolution,
-      option: widget.fileSourceOption,
-    );
-
-    if (result != null) {
-      if (widget.returnPath == true) {
-        super.submit(result.path);
-      } else {
-        super.submit('data:image/png;base64,${base64Encode(result.readAsBytesSync())}');
-      }
+  Future _loadImage() async {
+    if (widget.url?.isEmpty == true) {
+      return;
+    }
+    try {
+      rasterize(() async {
+        busy = true;
+      });
+      final req = await widget.scope.api.request(
+        ApiMethods.GET,
+        widget.url,
+        options: Options(
+          responseType: ResponseType.bytes,
+        ),
+      );
+      _imageData = Image.memory(req.data).image;
+      _imageSize = Utils.convert.fromAnyToDataSize(req.data.length);
+      value = '';
+    } catch (err) {
+      _imageData = null;
+      _imageSize = null;
+    } finally {
+      rasterize(() async {
+        busy = false;
+      });
     }
   }
 
   @override
-  void prebuild() {}
+  Future<String> lookup() async {
+    if (Device.isWeb == true) {
+      PlatformFile dataFile = await Device.browse<PlatformFile>(
+        scope: widget.scope,
+        type: FileType.custom,
+        allowMultiple: false,
+        allowedExtensions: ['jpeg', 'jpg', 'png'],
+        showBusyOnPicking: false,
+        withData: true,
+        callback: (files) async {
+          return files.single;
+        },
+      );
 
-  @override
-  void onBlur() {
-    super.onBlur();
-  }
+      if (dataFile?.bytes?.isNotEmpty == true) {
+        return 'data:image/png;base64,${base64Encode(dataFile.bytes)}';
+      }
+    } else {
+      File result = await Device.photo(
+        scope: widget.scope,
+        title: widget.label,
+        fullImage: widget.fullImage,
+        initFaceCamera: widget.initFaceCamera,
+        allowMainCamera: widget.type == ImageInputFieldType.rear,
+        flash: widget.flash,
+        resolution: widget.resolution,
+        option: widget.fileSourceOption,
+      );
 
-  @override
-  void onFocus() {
-    super.onFocus();
-  }
-
-  @override
-  dynamic data() {
-    return super.data();
+      if (result != null) {
+        if (widget.returnPath == true) {
+          return result.path;
+        } else {
+          return 'data:image/png;base64,${base64Encode(result.readAsBytesSync())}';
+        }
+      }
+    }
+    return null;
   }
 
   @override
   void clear() {
     rasterize(() {
-      _takenPicture = null;
+      _imageData = null;
+      _imageSize = null;
     });
     return super.clear();
   }
 
   @override
-  void present() {
-    setState(() {
-      if (value != null && mounted) {
-        if (widget.returnPath == true) {
-          var file = File(value);
-          if (file.existsSync()) {
-            _takenPicture = Image.file(file).image;
-            _previewText = translate('anxeb.widgets.fields.image.file_length_prefix') + Utils.convert.fromAnyToDataSize(file.lengthSync()); //TR Archivo de
-          } else {
-            _takenPicture = null;
-            _previewText = null;
-          }
-        } else {
-          _takenPicture = Image.memory(base64Decode(value.substring(22))).image;
-          _previewText = translate('anxeb.widgets.fields.image.file_length_prefix') + Utils.convert.fromAnyToDataSize(value.length); //TR Archivo de
-        }
-      } else {
-        _takenPicture = null;
-        _previewText = null;
-      }
-    });
-  }
-
-  @override
-  Widget field() {
-    Widget previewImage;
-    if (_takenPicture != null) {
-      previewImage = GestureDetector(
-        onTap: () async {
-          _preview();
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              image: _takenPicture,
-            ),
-          ),
-        ),
-      );
-    } else if (widget.url != null) {
-      previewImage = PhotoBlock(
-        scope: widget.scope,
-        tick: widget.scope.tick,
-        url: widget.url,
-        quality: 80,
-        fill: Colors.white,
-        border: BorderRadius.all(
-          Radius.circular(10.0),
-        ),
-        failIcon: Icon(
-          Icons.photo,
-          color: Colors.black12,
-          size: 80,
-        ),
-        onTap: (isFailed) async {
-          if (isFailed != true) {
-            _preview();
-          } else if (_takenPicture == null) {
-            _takePicture();
-          }
-        },
-        fit: BoxFit.cover,
+  Widget display([String text]) {
+    if (super.busy == true || _imageData == null) {
+      return Container(
+        padding: EdgeInsets.only(top: 2),
+        child: super.display(widget.label),
       );
     }
 
-    var previewContent;
-
-    if (_takenPicture != null || widget.url != null) {
-      if (widget.showTextPreview == true && _previewText != null) {
-        previewContent = GestureDetector(
-          onTap: () async {
-            _preview();
-          },
-          child: Container(
-            padding: EdgeInsets.only(top: 2),
-            child: Text(
-              _previewText,
-              style: TextStyle(
-                fontSize: 16,
-                color: widget.scope.application.settings.colors.text,
-              ),
-            ),
-          ),
-        );
-      } else {
-        previewContent = Container(
-          child: Container(
-            padding: EdgeInsets.only(bottom: 10),
-            child: widget.height == null
-                ? AspectRatio(
-                    aspectRatio: 1,
-                    child: previewImage,
-                  )
-                : Container(
-                    height: widget.height,
-                    child: previewImage,
-                  ),
-          ),
-        );
-      }
-    } else {
-      previewContent = Container(
-        padding: EdgeInsets.only(top: 7),
-        child: Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: widget.fontSize != null ? (widget.fontSize * 0.9) : 16,
-            color: Color(0x88000000),
-          ),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (widget.readonly == true) {
-          return;
-        }
-        focus();
-        if (value == null) {
-          _takePicture();
-        }
+    Widget previewImage = GestureDetector(
+      onTap: () async {
+        _preview();
       },
-      child: new FormField(
-        builder: (FormFieldState state) {
-          return InputDecorator(
-            isFocused: focused,
-            decoration: InputDecoration(
-              filled: true,
-              contentPadding: (widget.icon != null ? widget.scope.application.settings.fields.contentPaddingWithIcon : widget.scope.application.settings.fields.contentPaddingNoIcon) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
-              prefixIcon: Icon(
-                widget.icon ?? FontAwesome5.dot_circle,
-                size: widget.iconSize,
-                color: widget.scope.application.settings.colors.primary,
-              ),
-              labelText: (_takenPicture != null || widget.url != null) ? widget.label : null,
-              labelStyle: widget.labelSize != null ? TextStyle(fontSize: widget.labelSize) : null,
-              errorText: warning,
-              border: widget.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.borderRadius) : (widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-              disabledBorder: widget.scope.application.settings.fields.disabledBorder,
-              enabledBorder: widget.scope.application.settings.fields.enabledBorder,
-              focusedBorder: widget.scope.application.settings.fields.focusedBorder,
-              errorBorder: widget.scope.application.settings.fields.errorBorder,
-              focusedErrorBorder: widget.scope.application.settings.fields.focusedErrorBorder,
-              fillColor: focused ? (widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
-              hoverColor: widget.scope.application.settings.fields.hoverColor,
-              errorStyle: widget.scope.application.settings.fields.errorStyle,
-              isDense: widget.isDense ?? widget.scope.application.settings.fields.isDense,
-              suffixIcon: GestureDetector(
-                dragStartBehavior: DragStartBehavior.down,
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  if (widget.readonly == true) {
-                    return;
-                  }
-                  if (value != null && _takenPicture != null) {
-                    clear();
-                  } else {
-                    _takePicture();
-                  }
-                },
-                child: _getIcon(),
-              ),
-            ),
-            child: previewContent,
-          );
-        },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
+            Radius.circular(6.0),
+          ),
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            image: _imageData,
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      child: Container(
+        padding: EdgeInsets.only(bottom: 10, top: 6),
+        child: widget.height == null ? AspectRatio(aspectRatio: 1, child: previewImage) : SizedBox(height: widget.height, child: previewImage),
       ),
     );
   }
 
+  @override
+  String label() => widget.showSize == true && _imageSize != null ? '${widget.label} - $_imageSize' : null;
+
+  @override
+  void present() {
+    if (value?.isNotEmpty == true && mounted) {
+      if (value != null) {
+        if (Device.isWeb == false && widget.returnPath == true) {
+          var file = File(value);
+          if (file.existsSync()) {
+            _imageData = Image.file(file).image;
+            _imageSize = Utils.convert.fromAnyToDataSize(file.lengthSync());
+          } else {
+            _imageData = null;
+            _imageSize = null;
+          }
+        } else {
+          _imageData = Image.memory(base64Decode(value.substring(22))).image;
+          _imageSize = Utils.convert.fromAnyToDataSize(value.length);
+        }
+      } else {
+        _imageData = null;
+        _imageSize = null;
+      }
+      setState(() {});
+    }
+  }
+
   Future _preview() async {
-    var image = _takenPicture ?? (widget.url != null ? NetworkImage(widget.url) : null);
+    var image = _imageData; // ?? (widget.url != null ? NetworkImage(widget.url) : null);
     if (image != null) {
       var result;
       if (widget.onPreview != null) {
@@ -351,6 +250,11 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
           canRemove: true,
           fullImage: widget.fullImage,
         ));
+      } else {
+        final $value = await lookup();
+        if ($value != null) {
+          submit($value);
+        }
       }
       if (result == false) {
         clear();
@@ -358,15 +262,6 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
     }
   }
 
-  Icon _getIcon() {
-    if (widget.readonly == true) {
-      return Icon(Icons.lock_outline);
-    }
-
-    if (value != null && _takenPicture != null) {
-      return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
-    } else {
-      return Icon(widget.fileSourceOption == FileSourceOption.browse ? Icons.search : Ionicons.camera, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
-    }
-  }
+  @override
+  bool get canClear => _imageData != null;
 }
