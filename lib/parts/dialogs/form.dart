@@ -1,11 +1,6 @@
-import 'package:anxeb_flutter/middleware/dialog.dart';
-import 'package:anxeb_flutter/middleware/scope.dart';
-import 'package:anxeb_flutter/widgets/buttons/text.dart';
-import 'package:dotted_line/dotted_line.dart';
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
 import 'package:flutter/services.dart';
-import '../../middleware/application.dart';
-import '../../middleware/tabs.dart';
 
 class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   final V model;
@@ -27,8 +22,8 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Color _headerFillColor;
   Color _footerFillColor;
   EdgeInsets _headerPadding;
-  BuildContext _context;
   FocusNode _focusNode = FocusNode();
+  GlobalKey _tabsKey = GlobalKey();
 
   FormDialog(
     Scope scope, {
@@ -67,7 +62,6 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   @override
   Widget build(BuildContext context) {
     final GlobalKey dialogKey = GlobalKey();
-    _context = context;
 
     return StatefulBuilder(
       key: dialogKey,
@@ -120,6 +114,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
     if ($tabs == null || $tabs.isEmpty == true) {
       return null;
     }
+
     _headerFillColor = scope.application.settings.dialogs.headerColor ?? Color(0xfff0f0f0);
     _footerFillColor = scope.application.settings.dialogs.footerColor;
     _headerPadding = EdgeInsets.only(left: 18, top: 18, right: 18, bottom: 6);
@@ -134,6 +129,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
           margin: EdgeInsets.only(bottom: 1),
           color: Colors.white,
           child: DefaultTabController(
+            key: _tabsKey,
             length: $tabs.length,
             child: Column(
               children: [
@@ -149,7 +145,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                               child: Container(
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Container(
                                       child: $tab.icon == null ? null : Icon($tab.icon(), color: scope.application.settings.colors.primary, size: 18),
@@ -161,7 +157,6 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                                     ),
                                   ],
                                 ),
-                                padding: EdgeInsets.only(left: 18),
                               ),
                               height: 28,
                             ))
@@ -241,12 +236,10 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                 final result = await $button?.onTap?.call(_scope);
                 if (result == false) {
                   Navigator.of(_context).pop(null);
-                  _context = null;
                 } else if (result == null) {
                   //ignore
                 } else {
                   Navigator.of(_context).pop(result is V ? result : model);
-                  _context = null;
                 }
               },
               type: ButtonType.primary,
@@ -361,12 +354,10 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                         final result = await close?.call(_scope);
                         if (result == false) {
                           Navigator.of(_context).pop(null);
-                          _context = null;
                         } else if (result == null) {
                           //ignore
                         } else {
                           Navigator.of(_context).pop(result is V ? result : model);
-                          _context = null;
                         }
                       },
                       borderRadius: BorderRadius.circular(100),
@@ -384,6 +375,8 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   }
 
   bool get exists => model != null;
+
+  BuildContext get _context => _scope.context;
 
   @protected
   void pop([dynamic result]) {
@@ -446,6 +439,8 @@ class FormRowContainer extends StatelessWidget {
   final IconData icon;
   final List<Widget> fields;
   final Widget child;
+  final bool latest;
+  final double height;
 
   FormRowContainer({
     @required this.scope,
@@ -454,6 +449,8 @@ class FormRowContainer extends StatelessWidget {
     this.icon,
     this.fields,
     this.child,
+    this.latest,
+    this.height,
   });
 
   @override
@@ -504,7 +501,7 @@ class FormRowContainer extends StatelessWidget {
         child != null
             ? child
             : Container(
-                height: 64,
+                height: height ??  (latest == true ? null : 64),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: fields ?? [],
