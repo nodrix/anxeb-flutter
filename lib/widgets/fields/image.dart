@@ -185,9 +185,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(
-            Radius.circular(6.0),
-          ),
+          borderRadius: BorderRadius.circular(widget.scope.application.settings.dialogs.dialogRadius),
           image: DecorationImage(
             fit: BoxFit.cover,
             alignment: Alignment.center,
