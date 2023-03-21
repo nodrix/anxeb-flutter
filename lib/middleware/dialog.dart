@@ -392,6 +392,7 @@ class ScopeDialogs {
     int lines,
     String group,
     FieldWidgetTheme theme,
+    double width,
   }) {
     T _value = value;
     var cancel = (BuildContext context) {
@@ -428,6 +429,7 @@ class ScopeDialogs {
       message: message,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.info,
+      width: width,
       body: (context) => TextInputField<T>(
         scope: _scope,
         name: 'prompt',
