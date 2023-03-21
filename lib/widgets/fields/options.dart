@@ -36,6 +36,7 @@ class OptionsInputField<V> extends FieldWidget<V> {
     V Function() fetcher,
     Function(V value) applier,
     @required this.options,
+    FieldWidgetTheme theme,
     this.type,
     this.displayText,
     this.displayIcon,
@@ -65,6 +66,7 @@ class OptionsInputField<V> extends FieldWidget<V> {
           fetcher: fetcher,
           applier: applier,
           sufixIcon: Icons.keyboard_arrow_down_sharp,
+          theme: theme,
         );
 
   @override

@@ -32,6 +32,7 @@ class DateInputField extends FieldWidget<DateTime> {
     bool focusNext,
     DateTime Function() fetcher,
     Function(DateTime value) applier,
+    FieldWidgetTheme theme,
     this.displayFormat,
     this.displayText,
     this.dataValue,
@@ -60,6 +61,7 @@ class DateInputField extends FieldWidget<DateTime> {
           focusNext: focusNext,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
           sufixIcon: Icons.keyboard_arrow_down_sharp,
         );
 

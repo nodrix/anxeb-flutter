@@ -41,6 +41,7 @@ class ImageInputField extends FieldWidget<String> {
     bool focusNext,
     String Function() fetcher,
     Function(String value) applier,
+    FieldWidgetTheme theme,
     this.type,
     this.fullImage,
     this.initFaceCamera,
@@ -75,6 +76,7 @@ class ImageInputField extends FieldWidget<String> {
           focusNext: focusNext,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override

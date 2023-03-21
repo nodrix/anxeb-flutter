@@ -21,6 +21,7 @@ class CheckBoxField extends FieldWidget<bool> {
     bool readonly,
     bool Function() fetcher,
     Function(bool value) applier,
+    FieldWidgetTheme theme,
     this.controlAffinity,
   })  : assert(name != null),
         super(
@@ -37,6 +38,7 @@ class CheckBoxField extends FieldWidget<bool> {
           focusNext: focusNext,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override

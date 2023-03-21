@@ -41,6 +41,7 @@ class BarcodeInputField extends FieldWidget<String> {
     bool selected,
     String Function() fetcher,
     Function(String value) applier,
+    FieldWidgetTheme theme,
     this.controller,
     this.type,
     this.autofocus,
@@ -75,6 +76,7 @@ class BarcodeInputField extends FieldWidget<String> {
           initialSelected: selected,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override
@@ -246,7 +248,6 @@ class _BarcodeInputFieldState extends Field<String, BarcodeInputField> {
         prefixText: widget.prefix,
         suffixText: widget.suffix,
         errorText: warning,
-
         border: widget.theme?.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.theme?.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
         disabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
         enabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),

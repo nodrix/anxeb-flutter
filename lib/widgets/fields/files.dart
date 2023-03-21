@@ -41,6 +41,7 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
     bool focusNext,
     List<FileInputValue> Function() fetcher,
     Function(List<FileInputValue> value) applier,
+    FieldWidgetTheme theme,
     this.allowMultiples = false,
     this.allowedExtensions,
     this.launchUrlPrefix,
@@ -68,6 +69,7 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
           focusNext: focusNext,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override

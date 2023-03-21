@@ -29,6 +29,7 @@ class LookupInputField<V> extends FieldWidget<V> {
     bool focusNext,
     V Function() fetcher,
     Function(V value) applier,
+    FieldWidgetTheme theme,
     this.onLookup,
     this.displayText,
     this.dataValue,
@@ -55,6 +56,7 @@ class LookupInputField<V> extends FieldWidget<V> {
           focusNext: focusNext,
           fetcher: fetcher,
           applier: applier,
+          theme: theme,
         );
 
   @override

@@ -66,31 +66,32 @@ class MapField extends FieldWidget<MapFieldValue> {
     this.initialQuery,
     this.queryLanguage,
     Function(MapFieldValue value) applier,
-  })
-      : assert(name != null),
+    FieldWidgetTheme theme,
+  })  : assert(name != null),
         super(
-        scope: scope,
-        key: key,
-        name: name,
-        group: group,
-        label: label,
-        icon: icon,
-        margin: margin,
-        padding: padding,
-        readonly: readonly,
-        visible: visible,
-        onSubmitted: onSubmitted,
-        onValidSubmit: onValidSubmit,
-        onChanged: onChanged,
-        onTab: onTab,
-        onBlur: onBlur,
-        onFocus: onFocus,
-        validator: validator,
-        parser: parser,
-        focusNext: focusNext,
-        fetcher: fetcher,
-        applier: applier,
-      );
+          scope: scope,
+          key: key,
+          name: name,
+          group: group,
+          label: label,
+          icon: icon,
+          margin: margin,
+          padding: padding,
+          readonly: readonly,
+          visible: visible,
+          onSubmitted: onSubmitted,
+          onValidSubmit: onValidSubmit,
+          onChanged: onChanged,
+          onTab: onTab,
+          onBlur: onBlur,
+          onFocus: onFocus,
+          validator: validator,
+          parser: parser,
+          focusNext: focusNext,
+          fetcher: fetcher,
+          applier: applier,
+          theme: theme,
+        );
 
   @override
   _MapFieldState createState() => _MapFieldState();
@@ -127,14 +128,14 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
   Future<MapFieldValue> lookup() async {
     final String text = await widget.scope.dialogs
         .prompt(
-      'Búsqueda\nPersonalizada',
-      hint: '',
-      label: 'Dirección',
-      type: TextInputFieldType.text,
-      acceptLabel: 'Buscar',
-      width: Device.isWeb == true ? 500 : null,
-      icon: Icons.search,
-    )
+          'Búsqueda\nPersonalizada',
+          hint: '',
+          label: 'Dirección',
+          type: TextInputFieldType.text,
+          acceptLabel: 'Buscar',
+          width: Device.isWeb == true ? 500 : null,
+          icon: Icons.search,
+        )
         .show();
 
     if (text?.isNotEmpty == true) {
@@ -180,47 +181,47 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
         child: _location == null
             ? Container()
             : GoogleMap(
-          mapType: MapType.normal,
-          initialCameraPosition: CameraPosition(
-            zoom: _zoom ?? widget.zoom ?? 1,
-            target: _location,
-          ),
-          compassEnabled: false,
-          zoomControlsEnabled: true,
-          zoomGesturesEnabled: true,
-          scrollGesturesEnabled: true,
-          mapToolbarEnabled: true,
-          myLocationButtonEnabled: false,
-          tiltGesturesEnabled: false,
-          trafficEnabled: false,
-          buildingsEnabled: false,
-          indoorViewEnabled: false,
-          circles: _circles,
-          markers: _markers,
-          rotateGesturesEnabled: false,
-          myLocationEnabled: false,
-          onCameraMove: (position) {
-            _controller.getZoomLevel().then((value) {
-              _update(zoom: value);
-            });
-          },
-          onTap: (location) {
-            _location = location;
-            _updateMarker();
-          },
-          onMapCreated: (GoogleMapController controller) {
-            BitmapDescriptor.fromAssetImage(
-              createLocalImageConfiguration(context, size: Size.square(48)),
-              widget.marketImageAsset,
-            ).then((BitmapDescriptor bitmap) {
-              rasterize(() {
-                _poiner = bitmap;
-                _updateMarker();
-              });
-            });
-            _controller = controller;
-          },
-        ),
+                mapType: MapType.normal,
+                initialCameraPosition: CameraPosition(
+                  zoom: _zoom ?? widget.zoom ?? 1,
+                  target: _location,
+                ),
+                compassEnabled: false,
+                zoomControlsEnabled: true,
+                zoomGesturesEnabled: true,
+                scrollGesturesEnabled: true,
+                mapToolbarEnabled: true,
+                myLocationButtonEnabled: false,
+                tiltGesturesEnabled: false,
+                trafficEnabled: false,
+                buildingsEnabled: false,
+                indoorViewEnabled: false,
+                circles: _circles,
+                markers: _markers,
+                rotateGesturesEnabled: false,
+                myLocationEnabled: false,
+                onCameraMove: (position) {
+                  _controller.getZoomLevel().then((value) {
+                    _update(zoom: value);
+                  });
+                },
+                onTap: (location) {
+                  _location = location;
+                  _updateMarker();
+                },
+                onMapCreated: (GoogleMapController controller) {
+                  BitmapDescriptor.fromAssetImage(
+                    createLocalImageConfiguration(context, size: Size.square(48)),
+                    widget.marketImageAsset,
+                  ).then((BitmapDescriptor bitmap) {
+                    rasterize(() {
+                      _poiner = bitmap;
+                      _updateMarker();
+                    });
+                  });
+                  _controller = controller;
+                },
+              ),
       ),
     );
 
