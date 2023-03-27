@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/form.dart';
+import '../parts/dialogs/lookup.dart';
 import '../parts/dialogs/slider.dart';
 import 'application.dart';
 import 'field.dart';
@@ -498,6 +499,18 @@ class ScopeDialogs {
     }, iconColor: _scope.application.settings.colors.info, buttons: [
       DialogButton(cancelLabel ?? translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
     ]);
+  }
+
+  LookupDialog lookup<V>({String title, IconData icon, String listing, Future<List<V>> Function(String text) list, String Function(V value) displayText, String label, FieldWidgetTheme theme}) {
+    return LookupDialog<V>(
+      _scope,
+      title: title,
+      icon: icon,
+      list: list,
+      displayText: displayText,
+      label: label,
+      theme: theme,
+    );
   }
 
   SelectorsDialog selector({List<SelectorBlock> Function(BuildContext) selectors}) {
