@@ -39,6 +39,7 @@ class CheckBoxField extends FieldWidget<bool> {
           fetcher: fetcher,
           applier: applier,
           theme: theme,
+          label: label,
         );
 
   @override
@@ -57,7 +58,7 @@ class _CheckBoxFieldState extends Field<bool, CheckBoxField> {
           activeColor: widget.scope.application.settings.colors.primary,
           tileColor: widget.scope.application.settings.colors.primary,
           title: Text(
-            widget.label,
+            widget.label ?? '',
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
