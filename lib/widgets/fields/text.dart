@@ -255,7 +255,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       autocorrect: false,
       inputFormatters: _formatters,
       maxLength: focused ? widget.maxLength : null,
-      maxLines: widget.maxLines ?? 1,
+      maxLines: widget.maxLines == 0 ? null : (widget.maxLines ?? 1),
       keyboardType: _keyboardType,
       onEditingComplete: () {},
       onSubmitted: (text) {
