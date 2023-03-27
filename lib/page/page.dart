@@ -45,11 +45,11 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
   Future init(PageMiddleware<A, M> middleware, {BuildContext context, GoRouterState state, PageInfo<A, M> parent}) async {
     _inmeta.middleware = middleware;
     if (context != null) {
-      await prepare(context, state, parent: parent);
+      prepare(context, state, parent: parent);
     }
   }
 
-  Future prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, PageInfo<A, M> parent}) async {
+  void prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, PageInfo<A, M> parent}) {
     _inmeta.info = PageInfo<A, M>(
       name: state.name,
       title: title(state: state),
@@ -72,7 +72,7 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
     return await middleware?.redirect?.call(context, state, info?.scope ?? middleware.scope, info);
   }
 
-  List<RouteBase> getRoutes() {
+  List<RouteBase> getRoutes([String prefix]) {
     final items = childs();
     var routes = <RouteBase>[];
 
@@ -81,8 +81,10 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
       final page = getPage();
       page.init(middleware);
 
+      final $name = page.name.startsWith('_') ? '${prefix ?? name}${page.name}' : page.name;
+
       routes.add(GoRoute(
-        name: page.name.startsWith('_') ? '$name${page.name}' : page.name,
+        name: $name,
         path: page.path,
         pageBuilder: (context, state) {
           page.prepare(context, state, parent: info);
@@ -91,7 +93,7 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
         redirect: (context, GoRouterState state) async {
           return await page.redirect(context, state);
         },
-        routes: page.getRoutes(),
+        routes: page.getRoutes($name),
       ));
     }
     return routes;
@@ -289,7 +291,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
     }
   }
 
-  void push(String route, {bool force, Map<String, String> params, Map<String, dynamic> query}) async {
+  Future push(String route, {bool force, Map<String, String> params, Map<String, dynamic> query}) async {
     await scope.idle();
 
     var value = force == true ? true : await beforePop();
