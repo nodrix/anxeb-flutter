@@ -14,6 +14,7 @@ class EmptyBlock extends StatelessWidget {
     this.fawIcon,
     this.tight,
     this.margin,
+    this.fillColor,
   });
 
   final Scope scope;
@@ -26,6 +27,7 @@ class EmptyBlock extends StatelessWidget {
   final bool fawIcon;
   final bool tight;
   final EdgeInsets margin;
+  final Color fillColor;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +44,7 @@ class EmptyBlock extends StatelessWidget {
       child: Icon(
         icon,
         size: 110 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
-        color: scope.application.settings.colors.navigation.withOpacity(0.1),
+        color: fillColor ?? scope.application.settings.colors.navigation.withOpacity(0.1),
       ),
     );
 
