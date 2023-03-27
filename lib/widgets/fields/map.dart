@@ -108,6 +108,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
   CircleId _mainCircleId;
   double _radius;
   double _zoom;
+  bool _isDefault;
 
   @override
   void init() {
@@ -120,9 +121,6 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
 
     _sync();
   }
-
-  @override
-  dynamic data() => value;
 
   @override
   Future<MapFieldValue> lookup() async {
@@ -147,8 +145,9 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
         if (searchResults.results.isNotEmpty) {
           rasterize(() {
             busy = false;
-            _location = LatLng(searchResults.results.first.geometry.location.lat, searchResults.results.first.geometry.location.lng);
-            _updateMarker();
+            _updateMarker(
+              location: LatLng(searchResults.results.first.geometry.location.lat, searchResults.results.first.geometry.location.lng),
+            );
           });
         }
       }
@@ -200,26 +199,30 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
                 markers: _markers,
                 rotateGesturesEnabled: false,
                 myLocationEnabled: false,
-                onCameraMove: (position) {
-                  _controller.getZoomLevel().then((value) {
-                    _update(zoom: value);
+                onCameraMove: (position) {},
+                onCameraIdle: () {
+                  _controller.getZoomLevel().then((zoomValue) {
+                    _update(zoom: zoomValue, location: false, avoidSubmit: _isDefault == true);
                   });
                 },
                 onTap: (location) {
-                  _location = location;
-                  _updateMarker();
+                  _updateMarker(
+                    location: location,
+                  );
                 },
-                onMapCreated: (GoogleMapController controller) {
-                  BitmapDescriptor.fromAssetImage(
-                    createLocalImageConfiguration(context, size: Size.square(48)),
-                    widget.marketImageAsset,
-                  ).then((BitmapDescriptor bitmap) {
-                    rasterize(() {
-                      _poiner = bitmap;
-                      _updateMarker();
-                    });
+                onMapCreated: (GoogleMapController controller) async {
+                  if (mounted != true) {
+                    return;
+                  }
+                  final bitmap = await BitmapDescriptor.fromAssetImage(createLocalImageConfiguration(context, size: Size.square(48)), widget.marketImageAsset);
+
+                  rasterize(() {
+                    _poiner = bitmap;
+                    _updateMarker(
+                      location: _location,
+                    );
+                    _controller = controller;
                   });
-                  _controller = controller;
                 },
               ),
       ),
@@ -237,15 +240,15 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
     if (value != null && value.latitude != null && value.longitude != null) {
       _zoom = value.zoom;
       _radius = value.radius;
-      _location = LatLng(value.latitude, value.longitude);
-      _updateMarker();
+      await _updateMarker(
+        location: LatLng(value.latitude, value.longitude),
+      );
     } else {
       busy = true;
       try {
-        final value = await _api.search(widget.initialQuery ?? 'Oceano Atlántico', language: widget.queryLanguage ?? 'es');
-        _location = LatLng(value.results.first.geometry.location.lat, value.results.first.geometry.location.lng);
-        _zoom = 13;
-        _updateMarker();
+        await _updateMarker(
+          location: null,
+        );
         rasterize(() {
           busy = false;
         });
@@ -259,8 +262,18 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
     }
   }
 
-  void _updateMarker() {
-    if (_poiner == null) {
+  Future _updateMarker({LatLng location}) async {
+    if (location == null) {
+      final defaultLocation = await _api.search(widget.initialQuery ?? 'Oceano Atlántico', language: widget.queryLanguage ?? 'es');
+      _location = LatLng(defaultLocation.results.first.geometry.location.lat, defaultLocation.results.first.geometry.location.lng);
+      _zoom = 13;
+      _isDefault = true;
+    } else {
+      _location = location;
+      _isDefault = false;
+    }
+
+    if (_poiner == null || _location == null) {
       return;
     }
     _markers = {};
@@ -274,8 +287,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
           draggable: true,
           icon: _poiner,
           onDragEnd: (location) {
-            _location = location;
-            _updateMarker();
+            _updateMarker(location: location);
           },
         )
       };
@@ -292,33 +304,36 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
   }
 
   void _updateCircle({bool calculateZoom}) async {
+    await Future.delayed(Duration(milliseconds: 0));
     if (_radius != null && _radius > 0) {
-      Future.delayed(Duration(milliseconds: 0)).then((value) {
-        _circles = {
-          Circle(
-            circleId: _mainCircleId,
-            center: _location,
-            radius: _radius,
-            strokeWidth: 0,
-            fillColor: widget.scope.application.settings.colors.navigation.withOpacity(0.3),
-          )
-        };
-        rasterize();
-      });
+      _circles = {
+        Circle(
+          circleId: _mainCircleId,
+          center: _location,
+          radius: _radius,
+          strokeWidth: 0,
+          fillColor: widget.scope.application.settings.colors.navigation.withOpacity(0.3),
+        )
+      };
+    } else {
+      _circles = {};
     }
+
+    rasterize();
 
     if (calculateZoom == true) {
-      _zoom = ((15 - log(_radius / 400) / log(2)));
+      if (_radius != null && _radius > 0) {
+        _zoom = ((15 - log(_radius / 400) / log(2)));
+      }
     }
-
     if (_controller != null) {
-      _controller.animateCamera(
+      _controller.moveCamera(
         CameraUpdate.newCameraPosition(CameraPosition(target: _location, zoom: _zoom ?? 1)),
       );
     }
   }
 
-  void _update({double zoom, double radius}) {
+  void _update({double zoom, double radius, bool location, bool avoidSubmit}) {
     var $update = false;
 
     if (zoom != null && zoom != _zoom) {
@@ -331,18 +346,17 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
       $update = true;
     }
 
-    if (value == null) {
-      return;
-    }
-
-    if (value.latitude != _location.latitude || value.longitude != _location.longitude) {
+    if (value?.latitude != _location.latitude || value?.longitude != _location.longitude) {
       $update = true;
     }
 
-    if ($update) {
+    final latitude = location == false && value != null ? value.latitude : _location.latitude;
+    final longitude = location == false && value != null ? value.longitude : _location.longitude;
+
+    if ($update && avoidSubmit != true && latitude != null && longitude != null) {
       submit(MapFieldValue(
-        latitude: _location.latitude,
-        longitude: _location.longitude,
+        latitude: latitude,
+        longitude: longitude,
         zoom: _zoom,
         radius: _radius,
       ));
@@ -352,6 +366,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
   @override
   void clear() {
     super.clear();
+    _isDefault = true;
 
     Future.delayed(Duration(milliseconds: 0)).then((value) {
       _zoom = 1;
