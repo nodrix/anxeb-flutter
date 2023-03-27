@@ -18,6 +18,7 @@ class ImageInputField extends FieldWidget<String> {
   final bool showSize;
   final String url;
   final Future Function({String title, ImageProvider image, bool fullImage}) onPreview;
+  final BoxFit fit;
 
   ImageInputField({
     @required Scope scope,
@@ -53,6 +54,7 @@ class ImageInputField extends FieldWidget<String> {
     this.showSize,
     this.url,
     this.onPreview,
+    this.fit,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -189,7 +191,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(widget.scope.application.settings.dialogs.dialogRadius),
           image: DecorationImage(
-            fit: BoxFit.cover,
+            fit: widget.fit ?? BoxFit.cover,
             alignment: Alignment.center,
             image: _imageData,
           ),
