@@ -1,7 +1,7 @@
 name: anxeb_flutter
 description: Highly scalable mobile Flutter cross-platform library
 publish_to: 'none'
-version: 2.10.4
+version: 2.11.4
 homepage: https://github.com/nodrix/anxeb-flutter
 
 environment:
@@ -64,6 +64,7 @@ dependencies:
   google_maps_flutter_web: ^0.4.0+7
   google_maps_flutter: ^2.2.5
   google_geocoding_api: ^1.2.0
+  just_the_tooltip: ^0.0.12
 
 flutter:
   uses-material-design: true
