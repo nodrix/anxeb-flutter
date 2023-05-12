@@ -84,7 +84,7 @@ class _DialogProgressState extends State<DialogProgress> {
     }
 
     if (_percent == 0 || (widget.controller.isCompleted && !widget.controller.isDone)) {
-      var size = widget.scope.window.horizontal(0.32) - 6;
+      var size = widget.scope.window.horizontal(0.29) - 6;
       return Container(
         padding: EdgeInsets.all(10),
         child: Column(
@@ -110,17 +110,17 @@ class _DialogProgressState extends State<DialogProgress> {
       margin: EdgeInsets.only(top: 4),
       padding: EdgeInsets.all(5),
       child: CircularPercentIndicator(
-        radius: widget.scope.window.horizontal(0.32),
-        lineWidth: 5.0,
+        radius: widget.scope.window.horizontal(0.20) - 6,
+        lineWidth: 10.0,
         animation: true,
         backgroundColor: widget.scope.application.settings.colors.separator,
         animationDuration: 0,
         percent: _percent,
         progressColor: widget.scope.application.settings.colors.primary,
         center: Text(
-          Utils.convert.fromAnyToNumber((_percent * 100), comma: false, decimals: 2),
+          '${Utils.convert.fromAnyToNumber((_percent * 100), comma: false, decimals: 1)}%',
           style: TextStyle(
-            fontSize: 25,
+            fontSize: 22,
             letterSpacing: 0.5,
             fontWeight: FontWeight.w300,
             color: widget.scope.application.settings.colors.primary,
@@ -140,7 +140,7 @@ class DialogProcessController {
   double value;
   DialogProcessState _state;
   bool Function() _refreshHandler;
-  Function() _completeHandler;
+  Function(dynamic result) _completeHandler;
   Function() _cancelHandler;
   String _failedMessage;
 
@@ -148,7 +148,7 @@ class DialogProcessController {
     _refreshHandler = refresher;
   }
 
-  void onCompleted(Function() completer) {
+  void onCompleted(Function(dynamic result) completer) {
     _completeHandler = completer;
   }
 
@@ -194,14 +194,14 @@ class DialogProcessController {
     _refreshHandler?.call();
   }
 
-  Future _pop({bool quick, int delay}) async {
+  Future _pop({dynamic result, bool quick, int delay}) async {
     try {
       if (_refreshHandler?.call() == true) {
         if (quick == true) {
-          _completeHandler?.call();
+          _completeHandler?.call(result);
         } else {
           await Future.delayed(Duration(milliseconds: delay ?? 1000));
-          _completeHandler?.call();
+          _completeHandler?.call(result);
           await Future.delayed(Duration(milliseconds: 200));
         }
       }
@@ -212,16 +212,16 @@ class DialogProcessController {
     _pop(quick: true);
   }
 
-  Future success({bool silent}) async {
+  Future success({dynamic result, bool silent}) async {
     if (silent == true) {
       _state = DialogProcessState.done;
       if (!isCanceled) {
-        _pop(quick: true);
+        _pop(quick: true, result: result);
       }
     } else {
       _state = DialogProcessState.success;
       if (!isCanceled) {
-        await _pop();
+        await _pop(result: result);
       }
     }
   }
