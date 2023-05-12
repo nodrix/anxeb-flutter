@@ -29,30 +29,26 @@ class Model<T> {
   void assign() {}
 
   Future _init({ModelLoadedCallback<T> callback, bool forcePush}) async {
-    try {
-      bool mustPush = false;
-      if (_diskKey != null) {
-        await _checkShared();
-        var $data = _shared?.get(_diskKey);
-        if ($data != null) {
-          _data = Data($data);
-          mustPush = true;
-        }
+    bool mustPush = false;
+    if (_diskKey != null) {
+      await _checkShared();
+      var $data = _shared?.get(_diskKey);
+      if ($data != null) {
+        _data = Data($data);
+        mustPush = true;
       }
-      _data = _data ?? Data();
-      _fields = <_ModelField>[];
-      init();
+    }
+    _data = _data ?? Data();
+    _fields = <_ModelField>[];
+    init();
 
-      _initializeFields();
-      if (forcePush == true || mustPush == true) {
-        _pushDataToFields();
-      }
-      assign();
-      if (callback != null) {
-        callback(this as T);
-      }
-    } catch (err) {
-      print(err);
+    _initializeFields();
+    if (forcePush == true || mustPush == true) {
+      _pushDataToFields();
+    }
+    assign();
+    if (callback != null) {
+      callback(this as T);
     }
   }
 
@@ -165,7 +161,7 @@ class Model<T> {
 
   dynamic get $pk => _primaryField != null ? toValue() : null;
 
-  bool get $exists => _pk != null;
+  bool get $exists => $pk != null;
 
   @protected
   Data get data {
