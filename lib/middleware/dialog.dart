@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
@@ -12,8 +15,10 @@ import 'package:anxeb_flutter/widgets/components/dialog_progress.dart';
 import 'package:anxeb_flutter/widgets/fields/barcode.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:community_material_icon/community_material_icon.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/form.dart';
 import '../parts/dialogs/lookup.dart';
@@ -471,6 +476,74 @@ class ScopeDialogs {
     );
   }
 
+  MessageDialog download(String title, {String name, String url, IconData icon, String cancelLabel, String successMessage, String failedMessage, String busyMessage, bool silent}) {
+    final DialogProcessController controller = DialogProcessController();
+    final CancelToken cancelToken = CancelToken();
+
+    controller.onCanceled(() {
+      if (controller.isProcess) {
+        cancelToken.cancel();
+      }
+    });
+
+    getTemporaryDirectory().then((value) {
+      final filePath = '${value.path}/${name ?? url.split('/').last}';
+      _scope.api.download(
+        url,
+        progress: (count, total) {
+          controller.update(total: total.toDouble(), value: count.toDouble());
+        },
+        location: filePath,
+        cancelToken: cancelToken,
+      ).then((value) {
+        controller.success(result: File(filePath), silent: silent);
+      }).onError((err, stackTrace) {
+        controller.failed(message: err.toString());
+      });
+    }).catchError((err) {
+      controller.failed(message: err.toString());
+    });
+
+    return progress(title, icon: icon ?? Icons.file_download, controller: controller, cancelLabel: cancelLabel, successMessage: successMessage, failedMessage: failedMessage, busyMessage: busyMessage);
+  }
+
+  MessageDialog upload(String title, {List<File> files, dynamic data, Map<String, dynamic> form, String url, IconData icon, String cancelLabel, String successMessage, String failedMessage, String busyMessage, bool silent}) {
+    final DialogProcessController controller = DialogProcessController();
+    final CancelToken cancelToken = CancelToken();
+
+    controller.onCanceled(() {
+      if (controller.isProcess) {
+        cancelToken.cancel();
+      }
+    });
+
+    Map<String, File> $files = {};
+    for (var i = 0; i < files.length; i++) {
+      $files['file_$i'] = files[i];
+    }
+
+    Map<String, dynamic> $form = form ?? {};
+    if (data != null) {
+      $form['data'] = jsonEncode(data);
+    }
+
+    _scope.api.upload(
+      url,
+      progress: (count, total) {
+        controller.update(total: total.toDouble(), value: count.toDouble());
+      },
+      files: $files,
+      form: $form,
+      cancelToken: cancelToken,
+    ).then((value) {
+      controller.success(result: value, silent: silent);
+    }).onError((err, stackTrace) {
+      controller.failed(message: err.toString());
+    });
+
+    return progress(title, icon: icon ?? Icons.file_upload, controller: controller, cancelLabel: cancelLabel, successMessage: successMessage, failedMessage: failedMessage, busyMessage: busyMessage);
+  }
+
   MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessage, String busyMessage}) {
     var cancel = (BuildContext context) {
       controller.cancel();
@@ -481,11 +554,11 @@ class ScopeDialogs {
     };
 
     return MessageDialog(_scope, title: title, icon: icon ?? Icons.edit, iconSize: 48, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.info, body: (context) {
-      controller.onCompleted(() {
+      controller.onCompleted((result) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
           _scope.unfocus();
         });
-        Navigator.of(context).pop(null);
+        Navigator.of(context).pop(result);
       });
 
       return DialogProgress(
@@ -501,7 +574,7 @@ class ScopeDialogs {
     ]);
   }
 
-  LookupDialog lookup<V>({String title, IconData icon, String listing, Future<List<V>> Function(String text) list, String Function(V value) displayText, String label, FieldWidgetTheme theme}) {
+  LookupDialog lookup<V>({String title, IconData icon, String listing, Future<List<V>> Function(String text) list, String Function(V value) displayText, String Function(V value) subtitleText, String label, FieldWidgetTheme theme, String initialLookup}) {
     return LookupDialog<V>(
       _scope,
       title: title,
@@ -510,6 +583,8 @@ class ScopeDialogs {
       displayText: displayText,
       label: label,
       theme: theme,
+      initialLookup: initialLookup,
+      subtitleText: subtitleText,
     );
   }
 
