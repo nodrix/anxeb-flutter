@@ -305,7 +305,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
 
   void _updateCircle({bool calculateZoom}) async {
     await Future.delayed(Duration(milliseconds: 0));
-    if (_radius != null && _radius > 0) {
+    if (_radius != null && _radius > 0 && _location != null && _location.longitude > 0) {
       _circles = {
         Circle(
           circleId: _mainCircleId,
