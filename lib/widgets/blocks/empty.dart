@@ -6,7 +6,8 @@ class EmptyBlock extends StatelessWidget {
   const EmptyBlock({
     @required this.scope,
     @required this.message,
-    @required this.icon,
+    this.icon,
+    this.loading,
     this.actionCallback,
     this.actionText,
     this.visible,
@@ -20,6 +21,7 @@ class EmptyBlock extends StatelessWidget {
   final Scope scope;
   final String message;
   final IconData icon;
+  final bool loading;
   final VoidCallback actionCallback;
   final String actionText;
   final bool visible;
@@ -35,11 +37,13 @@ class EmptyBlock extends StatelessWidget {
       return Container();
     }
 
-    var size = MediaQuery.of(context).size;
+    var size = MediaQuery
+        .of(context)
+        .size;
 
     var $message = Container();
     var $action = Container();
-    var $icon = Container(
+    Widget $icon = Container(
       height: 110,
       child: Icon(
         icon,
@@ -47,6 +51,18 @@ class EmptyBlock extends StatelessWidget {
         color: fillColor ?? scope.application.settings.colors.navigation.withOpacity(0.1),
       ),
     );
+
+    if (loading == true) {
+      $icon = Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        height: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
+        width: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
+        child: CircularProgressIndicator(
+          strokeWidth: 4,
+          valueColor: AlwaysStoppedAnimation<Color>(fillColor ?? scope.application.settings.colors.primary.withOpacity(0.8)),
+        ),
+      );
+    }
 
     if (message?.isNotEmpty == true) {
       $message = Container(

@@ -9,6 +9,7 @@ class ListTitleBlock extends StatelessWidget {
   final bool busy;
   final IconData icon;
   final EdgeInsets iconPadding;
+  final EdgeInsets iconTrailPadding;
   final Color iconColor;
   final double iconScale;
   final IconData iconAlt;
@@ -52,6 +53,7 @@ class ListTitleBlock extends StatelessWidget {
     this.busy,
     this.icon,
     this.iconPadding,
+    this.iconTrailPadding,
     this.iconColor,
     this.iconScale,
     this.iconAlt,
@@ -163,11 +165,12 @@ class ListTitleBlock extends StatelessWidget {
                             titleTrail != null
                                 ? Text(titleTrail,
                                     textAlign: TextAlign.right,
-                                    style: titleTrailStyle ?? TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: titleTrailColor ?? scope.application.settings.colors.primary,
-                                    ))
+                                    style: titleTrailStyle ??
+                                        TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: titleTrailColor ?? scope.application.settings.colors.primary,
+                                        ))
                                 : titleTrailBody ?? Container(),
                           ],
                         ),
@@ -231,7 +234,12 @@ class ListTitleBlock extends StatelessWidget {
                     ),
                   ),
                 ),
-                iconTrail != null ? ((busy == true && icon == null) ? _getBusyIcon(iconTrailScale, iconTrailColor) : Icon(iconTrail, size: 43.0 * (iconTrailScale ?? 1.0), color: iconTrailColor ?? scope.application.settings.colors.primary)) : Container(),
+                iconTrail != null
+                    ? Padding(
+                        padding: iconTrailPadding ?? EdgeInsets.zero,
+                        child: ((busy == true && icon == null) ? _getBusyIcon(iconTrailScale, iconTrailColor) : Icon(iconTrail, size: 43.0 * (iconTrailScale ?? 1.0), color: iconTrailColor ?? scope.application.settings.colors.primary)),
+                      )
+                    : Container(),
               ],
             ),
           ),

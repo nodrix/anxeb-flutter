@@ -36,7 +36,7 @@ class ContextMenuBlock extends StatelessWidget {
 
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
-          if (item.onTap == null) {
+          if (item.onTap == null || item.visible == false) {
             continue;
           }
 
@@ -74,6 +74,7 @@ class ContextMenuItem {
   final String label;
   final Function onTap;
   final bool divided;
+  final bool visible;
 
-  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.color});
+  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.color, this.visible});
 }
