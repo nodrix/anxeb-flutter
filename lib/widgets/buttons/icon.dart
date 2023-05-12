@@ -115,7 +115,7 @@ class _IconButtonState extends State<IconButton> {
 
           for (var i = 0; i < widget.contextMenuItems.length; i++) {
             var item = widget.contextMenuItems[i];
-            if (item.onTap == null) {
+            if (item.onTap == null || item.visible == false) {
               continue;
             }
 
