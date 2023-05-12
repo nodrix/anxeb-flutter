@@ -6,11 +6,22 @@ class ScreenFooter {
   final Scope scope;
   final Widget child;
   final bool Function() isVisible;
+  final Color color;
+  final double elevation;
+  final double height;
+  final double divisionBorderWidth;
+  final bool rebuild;
+
 
   ScreenFooter({
     @required this.scope,
     this.isVisible,
     this.child,
+    this.color,
+    this.elevation,
+    this.height,
+    this.divisionBorderWidth,
+    this.rebuild = false,
   });
 
   @protected
@@ -21,15 +32,16 @@ class ScreenFooter {
       return null;
     }
     return BottomAppBar(
-      color: scope.application.settings.colors.primary,
+      color: color ?? scope.application.settings.colors.primary,
       notchMargin: 8,
-      elevation: 20,
+      height: height ?? 60,
+      elevation: elevation ?? 20,
       clipBehavior: Clip.hardEdge,
       child: Container(
         decoration: Device.isAndroid
             ? BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(width: 1.0, color: Colors.white),
+                  bottom: BorderSide(width: divisionBorderWidth ?? 1.0, color: Colors.white),
                 ),
               )
             : null,
@@ -38,6 +50,4 @@ class ScreenFooter {
       shape: CircularNotchedRectangle(),
     );
   }
-
-  bool get rebuild => false;
 }
