@@ -16,6 +16,8 @@ class LookupDialog<V> extends ScopeDialog {
   final String Function(V value) displayText;
   final String label;
   final FieldWidgetTheme theme;
+  final String initialLookup;
+  final String Function(V value) subtitleText;
 
   LookupDialog(
     Scope scope, {
@@ -25,6 +27,8 @@ class LookupDialog<V> extends ScopeDialog {
     this.displayText,
     this.label,
     this.theme,
+    this.initialLookup,
+    this.subtitleText,
   })  : assert(title != null),
         super(scope) {
     super.dismissible = true;
@@ -83,8 +87,10 @@ class LookupDialog<V> extends ScopeDialog {
             scope: scope,
             list: list,
             displayText: displayText,
+            subtitleText: subtitleText,
             label: label,
             theme: theme,
+            initialLookup: initialLookup,
             onSelect: (V item) {
               Future.delayed(Duration(milliseconds: 0)).then((value) {
                 scope.unfocus();
@@ -114,6 +120,8 @@ class LookupListBlock<V> extends StatefulWidget {
   final String label;
   final FieldWidgetTheme theme;
   final Function(V item) onSelect;
+  final String Function(V value) subtitleText;
+  final String initialLookup;
 
   const LookupListBlock({
     @required this.scope,
@@ -122,6 +130,8 @@ class LookupListBlock<V> extends StatefulWidget {
     @required this.label,
     @required this.theme,
     @required this.onSelect,
+    this.subtitleText,
+    this.initialLookup,
   });
 
   @override
@@ -131,15 +141,80 @@ class LookupListBlock<V> extends StatefulWidget {
 class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
   List<V> _items;
   final _formName = '_lookup_form';
+  bool _busy;
 
   @override
   void initState() {
     form.clear();
+
+    if (_items == null && widget.initialLookup != null) {
+      setState(() {
+        _busy = true;
+      });
+      try {
+        widget.list(widget.initialLookup).then((value) {
+          setState(() {
+            _items = value;
+          });
+        });
+        form.focus('lookup', force: true);
+        setState(() {});
+      } catch (err) {
+        _items = null;
+      } finally {
+        setState(() {
+          _busy = false;
+        });
+      }
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    var body = _busy == true
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 80,
+                width: 80,
+                child: CircularProgressIndicator(
+                  strokeWidth: 5,
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.primary),
+                ),
+              ),
+            ],
+          )
+        : SingleChildScrollView(
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _items?.isNotEmpty == true
+                    ? _items
+                        .map((e) => ListTitleBlock(
+                              scope: widget.scope,
+                              iconTrail: Icons.chevron_right,
+                              iconTrailPadding: widget.subtitleText != null ? const EdgeInsets.only(top: 10) : null,
+                              iconTrailScale: 0.4,
+                              busy: false,
+                              iconScale: 0.6,
+                              margin: const EdgeInsets.symmetric(vertical: 3),
+                              iconColor: widget.scope.application.settings.colors.secudary,
+                              title: widget.displayText(e),
+                              subtitle: widget.subtitleText?.call(e),
+                              onTap: () async {
+                                widget.onSelect?.call(e);
+                              },
+                              padding: EdgeInsets.only(left: 12, top: 5, bottom: widget.subtitleText != null ? 6 : 5, right: 5),
+                              borderRadius: BorderRadius.all(Radius.circular(widget.scope.application.settings.dialogs.buttonRadius)),
+                            ))
+                        .toList()
+                    : []),
+          );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -157,38 +232,26 @@ class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
           focusNext: false,
           onChanged: (newValue) {},
           onActionSubmit: (text) async {
-            _items = await widget.list(text);
-            form.focus('lookup', force: true);
-            setState(() {});
+            setState(() {
+              _busy = true;
+            });
+            try {
+              _items = await widget.list(text);
+              form.focus('lookup', force: true);
+              setState(() {});
+            } catch (err) {
+              _items = null;
+            } finally {
+              setState(() {
+                _busy = false;
+              });
+            }
           },
         ),
         Container(
           height: 200,
           width: 400,
-          child: SingleChildScrollView(
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _items?.isNotEmpty == true
-                    ? _items
-                        .map((e) => ListTitleBlock(
-                              scope: widget.scope,
-                              iconTrail: Icons.chevron_right,
-                              iconTrailScale: 0.4,
-                              busy: false,
-                              iconScale: 0.6,
-                              margin: const EdgeInsets.symmetric(vertical: 3),
-                              iconColor: widget.scope.application.settings.colors.secudary,
-                              title: widget.displayText(e),
-                              onTap: () async {
-                                widget.onSelect?.call(e);
-                              },
-                              padding: const EdgeInsets.only(left: 12, top: 5, bottom: 5, right: 5),
-                              borderRadius: BorderRadius.all(Radius.circular(widget.scope.application.settings.dialogs.buttonRadius)),
-                            ))
-                        .toList()
-                    : []),
-          ),
+          child: body,
         ),
       ],
     );
