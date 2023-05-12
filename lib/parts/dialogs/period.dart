@@ -18,6 +18,10 @@ class PeriodDialog extends ScopeDialog {
     super.dismissible = true;
   }
 
+  bool notEqual(PeriodValue value) {
+    return value == null || selectedValue == null || value.year != selectedValue.year || value.month != selectedValue.month;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
