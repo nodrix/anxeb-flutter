@@ -154,6 +154,17 @@ class Converters {
     return value != null ? value.trim() : null;
   }
 
+  String fromDurationToDetail(Duration duration, {bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, bool showZeros = false}) {
+    if (duration == null) {
+      return null;
+    }
+    int days = duration.inDays;
+    int hours = duration.inHours - (days * 24);
+    int minutes = duration.inMinutes - (duration.inHours * 60);
+    int seconds = duration.inSeconds - (duration.inMinutes * 60);
+    return '${showDays && (showZeros || days > 0) ? '${days}d ' : ''}${showHours && (showZeros || hours > 0) ? '${hours}h ' : ''}${showMinutes && (showZeros || minutes > 0) ? '${minutes}m ' : ''}${showSeconds && (showZeros || seconds > 0) ? '${seconds}s' : ''}';
+  }
+
   String fromSecondsToDurationCaption(int seconds) {
     if (seconds == null) {
       return null;
