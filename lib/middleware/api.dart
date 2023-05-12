@@ -113,7 +113,7 @@ class Api {
     try {
       Response response = await _dio.get(
         route,
-        onReceiveProgress: (count, total) => progress(count, total),
+        onReceiveProgress: (count, total) => progress(count, count > total ? count : total),
         cancelToken: cancelToken,
         queryParameters: query,
         options: Options(
@@ -138,7 +138,7 @@ class Api {
     }
   }
 
-  Future<Data> upload(String route, {form, Map<String, File> files, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+  Future<Data> upload(String route, {Map<String, dynamic> form, Map<String, File> files, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
       for (var i = 0; i < files.entries.length; i++) {
         var element = files.entries.elementAt(i);
