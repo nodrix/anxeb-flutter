@@ -339,6 +339,8 @@ class _ModelField {
       for (var item in propertyValue) {
         if (usePrimaryKeys == true) {
           items.add(item.toValue());
+        } else if (item is String) {
+          items.add(item);
         } else {
           items.add(item.toObjects());
         }
