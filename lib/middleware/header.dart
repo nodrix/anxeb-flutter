@@ -6,7 +6,7 @@ class ScreenHeader {
   final List<Widget> childs;
   final VoidCallback dismiss;
   final VoidCallback back;
-  final String Function() title;
+  final Widget Function() title;
   final double Function() elevation;
   final double Function() height;
   final Widget Function() bottom;
@@ -36,7 +36,7 @@ class ScreenHeader {
 
   PreferredSizeWidget build() {
     return AppBar(
-      title: body?.call() ?? (this.title?.call() ?? scope.view.title != null ? Text(this.title?.call() ?? scope.view.title) : null),
+      title: body?.call() ?? this.title?.call() ?? (scope.view.title != null ? Text(scope.view.title) : null),
       elevation: elevation?.call(),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),

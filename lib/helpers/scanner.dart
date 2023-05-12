@@ -94,7 +94,7 @@ class _ScannerHelperState extends ScreenView<ScannerHelper, Application> {
   @override
   ActionsHeader header() {
     return ActionsHeader(
-      title: () => widget.title ?? translate('anxeb.helpers.scanner.default_title'), //TR Enfoque el Código
+      title: () => Text(widget.title ?? translate('anxeb.helpers.scanner.default_title')), //TR Enfoque el Código
       scope: scope,
     );
   }

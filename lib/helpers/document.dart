@@ -73,7 +73,7 @@ class _DocumentState extends ScreenView<DocumentView, Application> {
     return ActionsHeader(
       scope: scope,
       title: () {
-        return widget.file?.title ?? translate('anxeb.helpers.document.title'); //TR Vista Archivo
+        return Text(widget.file?.title ?? translate('anxeb.helpers.document.title')); //TR Vista Archivo
       },
       actions: <ActionMenu>[
         ActionMenu(

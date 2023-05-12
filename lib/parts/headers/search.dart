@@ -21,7 +21,7 @@ class SearchHeader extends ActionsHeader {
 
   SearchHeader({
     Scope scope,
-    String Function() title,
+    Widget Function() title,
     List<ActionItem> actions,
     VoidCallback dismiss,
     VoidCallback back,

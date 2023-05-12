@@ -8,7 +8,7 @@ class ActionsHeader extends ScreenHeader {
 
   ActionsHeader({
     Scope scope,
-    String Function() title,
+    Widget Function() title,
     Widget Function() body,
     Widget Function() bottom,
     double Function() elevation,
