@@ -50,9 +50,11 @@ class Device {
 
   static Future launchUrl({@required Scope scope, @required String url}) async {
     if (await UL.canLaunchUrl(Uri.parse(url))) {
-      await scope.busy();
-      await UL.launchUrl(Uri.parse(url));
-      await scope.idle();
+      try {
+        await UL.launchUrl(Uri.parse(url));
+      } catch (err) {
+        scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
+      }
     } else {
       scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
     }
