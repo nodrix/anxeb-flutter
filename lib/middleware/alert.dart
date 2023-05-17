@@ -1,9 +1,6 @@
-import 'package:anxeb_flutter/middleware/application.dart';
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:anxeb_flutter/parts/alerts/snack.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_translate/flutter_translate.dart';
-import 'package:community_material_icon/community_material_icon.dart';
-import 'scope.dart';
 
 class ScopeAlert {
   final Scope scope;
@@ -132,6 +129,8 @@ class ScopeAlerts {
 
   SnackAlert error(err, {String title, int delay}) {
     String message;
+    dynamic meta;
+
     if (err is AssertionError) {
       message = err.message;
 
@@ -154,18 +153,23 @@ class ScopeAlerts {
     } else if (err is NetworkImageLoadException) {
       message = err.toString();
     } else {
-      try {
-        if (err.message != null) {
-          message = err.message;
-        }
-      } catch (ig) {
+      if (err is ApiException) {
+        message = err.message;
+        meta = err.meta;
+      } else {
         try {
-          if (err.data != null && err.data.message != null) {
-            message = err.data.message;
+          if (err.message != null) {
+            message = err.message;
           }
         } catch (ig) {
-          if (err != null) {
-            message = err.toString();
+          try {
+            if (err.data != null && err.data.message != null) {
+              message = err.data.message;
+            }
+          } catch (ig) {
+            if (err != null) {
+              message = err.toString();
+            }
           }
         }
       }
@@ -178,6 +182,7 @@ class ScopeAlerts {
       title: title ?? translate('anxeb.common.error'),
       //TR 'Error',
       message: message,
+      meta: meta,
       icon: Icons.warning,
       fillColor: _scope.application.settings.colors.danger,
       delay: delay,

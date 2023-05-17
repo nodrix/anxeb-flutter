@@ -1,5 +1,6 @@
 import 'package:anxeb_flutter/anxeb.dart';
-import 'package:flutter/material.dart' hide Dialog, TextButton;
+import 'package:anxeb_flutter/misc/icons.dart' as AnxebIcons;
+import 'package:flutter/material.dart' hide Dialog, IconButton, TextButton;
 import 'package:flutter/services.dart';
 
 class FormDialog<V, A extends Application> extends ScopeDialog<V> {
@@ -210,6 +211,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
     final formButtons = buttons(_scope);
 
     return Container(
+      width: width,
       decoration: BoxDecoration(
         color: _footerFillColor,
         borderRadius: BorderRadius.only(bottomLeft: _cornerRadius, bottomRight: _cornerRadius),
@@ -217,80 +219,128 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
       padding: EdgeInsets.only(left: footerPadding?.left ?? 16, right: footerPadding?.right ?? 16),
       child: Container(
         padding: EdgeInsets.only(top: footerPadding?.top ?? 16, bottom: footerPadding?.bottom ?? 16),
-        child: Row(
-          mainAxisAlignment: buttonAlignment ?? MainAxisAlignment.end,
-          children: formButtons.where(($button) => $button.visible != false).map(($button) {
-            var button = TextButton(
-              caption: $button.caption,
-              padding: $button.icon != null ? (scope.application.settings.dialogs.buttonPaddingWithIcon ?? EdgeInsets.only(left: 14, right: 18, top: 6, bottom: 6)) : (scope.application.settings.dialogs.buttonPaddingWithoutIcon ?? EdgeInsets.only(left: 14, right: 14, top: 6, bottom: 6)),
-              radius: scope.application.settings.dialogs.buttonRadius,
-              icon: $button.icon,
-              swapIcon: $button.swapIcon,
-              color: $button.fillColor ?? scope.application.settings.colors.primary,
-              textColor: $button.textColor ?? Colors.white,
-              margin: EdgeInsets.only(left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
-              onPressed: () async {
-                if (_context == null) {
-                  return null;
-                }
-                final result = await $button?.onTap?.call(_scope);
-                if (result == false) {
-                  Navigator.of(_context).pop(null);
-                } else if (result == null) {
-                  //ignore
-                } else {
-                  Navigator.of(_context).pop(result is V ? result : model);
-                }
-              },
-              type: ButtonType.primary,
-              size: ButtonSize.small,
-              textStyle: scope.application.settings.dialogs.buttonTextStyle,
-            );
+        child: Column(
+          children: [
+            AnimatedSize(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.fastOutSlowIn,
+              child: _scope.warning == null
+                  ? Container()
+                  : Container(
+                      padding: const EdgeInsets.only(left: 4, right: 4, top: 4, bottom: 6),
+                      margin: EdgeInsets.only(bottom: 18),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            child: Icon(_scope.warning?.icon ?? AnxebIcons.Typicons.warning, color: Colors.white, size: 16),
+                            padding: EdgeInsets.only(left: 13, right: 13),
+                          ),
+                          Expanded(
+                            child: _scope.warning?.body ??
+                                Text(
+                                  _scope.warning?.message ?? '',
+                                  softWrap: true,
+                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
+                          ),
+                          Container(
+                            child: IconButton(
+                              padding: EdgeInsets.only(left: 12),
+                              iconSize: 18,
+                              fillColor: Colors.transparent,
+                              innerColor: Colors.white,
+                              size: 24,
+                              icon: Icons.close,
+                              action: () async {
+                                _scope.warning = null;
+                              },
+                            ),
+                            padding: EdgeInsets.only(left: 10, right: 8),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+            Row(
+              mainAxisAlignment: buttonAlignment ?? MainAxisAlignment.end,
+              children: formButtons.where(($button) => $button.visible != false).map(($button) {
+                var button = TextButton(
+                  caption: $button.caption,
+                  padding: $button.icon != null ? (scope.application.settings.dialogs.buttonPaddingWithIcon ?? EdgeInsets.only(left: 14, right: 18, top: 6, bottom: 6)) : (scope.application.settings.dialogs.buttonPaddingWithoutIcon ?? EdgeInsets.only(left: 14, right: 14, top: 6, bottom: 6)),
+                  radius: scope.application.settings.dialogs.buttonRadius,
+                  icon: $button.icon,
+                  swapIcon: $button.swapIcon,
+                  color: $button.fillColor ?? scope.application.settings.colors.primary,
+                  textColor: $button.textColor ?? Colors.white,
+                  margin: EdgeInsets.only(left: formButtons.first == $button ? 0 : 4, right: formButtons.last == $button ? 0 : 4),
+                  onPressed: () async {
+                    if (_context == null) {
+                      return null;
+                    }
+                    final result = await $button?.onTap?.call(_scope);
+                    if (result == false) {
+                      Navigator.of(_context).pop(null);
+                    } else if (result == null) {
+                      //ignore
+                    } else {
+                      Navigator.of(_context).pop(result is V ? result : model);
+                    }
+                  },
+                  type: ButtonType.primary,
+                  size: ButtonSize.small,
+                  textStyle: scope.application.settings.dialogs.buttonTextStyle,
+                );
 
-            var isLast = formButtons.last == $button;
+                var isLast = formButtons.last == $button;
 
-            return Row(
-              children: [
-                $button.leftDivisor == true
-                    ? Container(
-                        height: 32,
-                        padding: EdgeInsets.only(right: 10),
-                        child: DottedLine(
-                          direction: Axis.vertical,
-                          lineLength: double.infinity,
-                          lineThickness: 1,
-                          dashLength: 2,
-                          dashColor: scope.application.settings.colors.primary,
-                          dashRadius: 0.0,
-                          dashGapLength: 4.0,
-                          dashGapColor: Colors.transparent,
-                        ),
-                      )
-                    : Container(),
-                Container(
-                  child: button,
-                  width: button.width,
-                  padding: EdgeInsets.only(right: isLast ? 0 : 10),
-                ),
-                $button.rightDivisor == true
-                    ? Container(
-                        height: 32,
-                        padding: EdgeInsets.only(right: 10),
-                        child: DottedLine(
-                          direction: Axis.vertical,
-                          lineLength: double.infinity,
-                          lineThickness: 1,
-                          dashLength: 2,
-                          dashColor: scope.application.settings.colors.primary,
-                          dashRadius: 0.0,
-                          dashGapLength: 4.0,
-                          dashGapColor: Colors.transparent,
-                        ),
-                      )
-                    : Container(),
-              ],
-            );
-          }).toList(),
+                return Row(
+                  children: [
+                    $button.leftDivisor == true
+                        ? Container(
+                            height: 32,
+                            padding: EdgeInsets.only(right: 10),
+                            child: DottedLine(
+                              direction: Axis.vertical,
+                              lineLength: double.infinity,
+                              lineThickness: 1,
+                              dashLength: 2,
+                              dashColor: scope.application.settings.colors.primary,
+                              dashRadius: 0.0,
+                              dashGapLength: 4.0,
+                              dashGapColor: Colors.transparent,
+                            ),
+                          )
+                        : Container(),
+                    Container(
+                      child: button,
+                      width: button.width,
+                      padding: EdgeInsets.only(right: isLast ? 0 : 10),
+                    ),
+                    $button.rightDivisor == true
+                        ? Container(
+                            height: 32,
+                            padding: EdgeInsets.only(right: 10),
+                            child: DottedLine(
+                              direction: Axis.vertical,
+                              lineLength: double.infinity,
+                              lineThickness: 1,
+                              dashLength: 2,
+                              dashColor: scope.application.settings.colors.primary,
+                              dashRadius: 0.0,
+                              dashGapLength: 4.0,
+                              dashGapColor: Colors.transparent,
+                            ),
+                          )
+                        : Container(),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );
@@ -390,10 +440,23 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   Future Function(FormScope<A> scope) get close => null;
 }
 
+class FormWarning {
+  final Widget body;
+  final String message;
+  final Color fillColor;
+  final Color textColor;
+  final IconData icon;
+  final Color iconColor;
+  final dynamic meta;
+
+  FormWarning({this.body, this.message, this.fillColor, this.textColor, this.icon, this.iconColor, this.meta});
+}
+
 class FormScope<A extends Application> extends Scope implements IScope {
   GlobalKey _key;
   Scope parent;
   StateSetter _setState;
+  FormWarning _warning;
 
   FormScope(BuildContext context, {@required this.parent, @required StateSetter setState, @required GlobalKey key}) : super(context) {
     _setState = setState;
@@ -415,6 +478,32 @@ class FormScope<A extends Application> extends Scope implements IScope {
   @override
   void rasterize([VoidCallback fn]) {
     _setState(fn ?? () {});
+  }
+
+  FormWarning get warning => _warning;
+
+  set warning(FormWarning value) {
+    var setWarning = true;
+
+    if (value?.meta != null) {
+      if (value.meta != null && value.meta['fields'] != null) {
+        for (var item in value.meta['fields']) {
+          String fieldName = item['name'];
+          var form = fieldName.contains('.') == true ? forms[fieldName.split('.').first] : forms.current;
+          var field = fieldName.contains('.') == true ? form.fields[fieldName.split('.').last] : form.fields[fieldName];
+          field.focus(warning: value.message);
+          setWarning = false;
+        }
+      }
+    }
+
+    if (setWarning == true) {
+      rasterize(() {
+        _warning = value;
+      });
+    } else {
+      _warning = null;
+    }
   }
 }
 
@@ -501,7 +590,7 @@ class FormRowContainer extends StatelessWidget {
         child != null
             ? child
             : Container(
-                height: height ??  (latest == true ? null : 64),
+                height: height ?? (latest == true ? null : 64),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: fields ?? [],

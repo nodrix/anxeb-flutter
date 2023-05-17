@@ -2,11 +2,13 @@ import 'package:anxeb_flutter/middleware/alert.dart';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart' hide Dialog;
+import '../dialogs/form.dart';
 
 class SnackAlert extends ScopeAlert {
   Flushbar _bar;
   final String title;
   final String message;
+  final dynamic meta;
   final TextStyle titleStyle;
   final TextStyle messageStyle;
   final IconData icon;
@@ -19,6 +21,7 @@ class SnackAlert extends ScopeAlert {
     Scope scope, {
     this.title,
     this.message,
+    this.meta,
     this.titleStyle,
     this.messageStyle,
     this.icon,
@@ -51,6 +54,19 @@ class SnackAlert extends ScopeAlert {
     var $message = message != null ? Text(message, style: messageStyle ?? TextStyle(fontSize: 17, fontWeight: FontWeight.w300, color: textColor ?? Colors.white)) : null;
     var $title = title != null ? Text(title, style: titleStyle ?? TextStyle(fontSize: $message == null ? 17 : 19, fontWeight: FontWeight.w400, color: textColor ?? Colors.white)) : null;
     var $fill = fillColor ?? scope.application.settings.colors.navigation;
+
+    if (scope is FormScope) {
+      (scope as FormScope).warning = FormWarning(
+        message: message,
+        body: $message,
+        icon: icon,
+        iconColor: iconColor,
+        textColor: textColor,
+        fillColor: fillColor,
+        meta: meta,
+      );
+      return;
+    }
 
     _bar = Flushbar(
       titleText: $message != null ? $title : null,

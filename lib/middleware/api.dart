@@ -258,7 +258,13 @@ class ApiException implements Exception {
     return null;
   }
 
-  dynamic get meta => raw != null ? raw['meta'] : null;
+  dynamic get meta {
+    if (raw is DioError) {
+      return (raw as DioError).response.data['meta'];
+    } else {
+      return raw['meta'];
+    }
+  }
 
   String toString() {
     return message;
