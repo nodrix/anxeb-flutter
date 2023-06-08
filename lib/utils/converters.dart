@@ -485,6 +485,11 @@ class Converters {
     return await MultipartFile.fromFile(path, filename: Path.basename(path), contentType: MediaType.parse(contentType));
   }
 
+  MultipartFile fromBytesToMultipartFile(String fileName, data) {
+    var contentType = lookupMimeType(fileName);
+    return MultipartFile.fromBytes(data, filename: Path.basename(fileName), contentType: MediaType.parse(contentType));
+  }
+
   FormData fromMapToFormData(map) {
     return FormData.fromMap(map);
   }
