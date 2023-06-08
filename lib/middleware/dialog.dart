@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
+import 'package:anxeb_flutter/parts/dialogs/multi.dart';
 import 'package:anxeb_flutter/parts/dialogs/panel.dart';
 import 'package:anxeb_flutter/parts/dialogs/period.dart';
 import 'package:anxeb_flutter/parts/dialogs/referencer.dart';
@@ -143,6 +144,32 @@ class ScopeDialogs {
       selectedValue: selectedValue,
       allowAllMonths: allowAllMonths,
     );
+  }
+
+  MultiOptionsDialog multi<V>(String title,
+      {IconData icon, List<DialogButton<V>> options, List<V> selectedValues, bool swap}) {
+    Function cancel = (context) {
+      Navigator.of(context).pop();
+    };
+
+    Function accept = (context) {
+      Navigator.of(context).pop(selectedValues);
+    };
+
+    return MultiOptionsDialog<V>(_scope,
+        title: title,
+        icon: icon,
+        options: options,
+        selectedValues: selectedValues,
+        buttons: swap == true
+            ? [
+          DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+          DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
+        ]
+            : [
+          DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
+          DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+        ]);
   }
 
   MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {

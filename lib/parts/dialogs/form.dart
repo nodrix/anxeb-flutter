@@ -427,6 +427,8 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   bool get exists => model != null;
 
   BuildContext get _context => _scope.context;
+  
+  FormScope<A> get formScope => _scope;
 
   @protected
   void pop([dynamic result]) {

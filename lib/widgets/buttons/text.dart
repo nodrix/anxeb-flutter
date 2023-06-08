@@ -96,6 +96,21 @@ class TextButton extends StatefulWidget {
     }).toList();
   }
 
+  static List<Widget> createMultiOptions<V>(BuildContext context, List<DialogButton<V>> options,
+      {List<V> selectedValues, Function(DialogButton<V>, bool) onChanged}) {
+    return options.where(($option) => $option.visible != false).map(($option) {
+      return CheckboxListTile(
+        controlAffinity: ListTileControlAffinity.leading,
+        contentPadding: EdgeInsets.only(left: 4, right: 0),
+        visualDensity: VisualDensity.standard,
+        dense: false,
+        title: Text($option.caption),
+        value: selectedValues?.contains($option.value) ?? false,
+        onChanged: (newValue) => onChanged($option, newValue),
+      );
+    }).toList();
+  }
+
   static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings}) {
     var $settings = settings ?? Settings();
     return buttons.where(($button) => $button.visible != false).map(($button) {

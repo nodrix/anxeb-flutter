@@ -205,16 +205,18 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
 
   @override
   void present() {
-    setState(() {
-      if (value?.title != null) {
-        _previewText = value.title;
-      } else if (value?.path != null) {
-        var file = File(value.path);
-        _previewText = basename(file.path);
-      } else {
-        _previewText = null;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (value?.title != null) {
+          _previewText = value.title;
+        } else if (value?.path != null) {
+          var file = File(value.path);
+          _previewText = basename(file.path);
+        } else {
+          _previewText = null;
+        }
+      });
+    }
   }
 
   Future _preview() async {

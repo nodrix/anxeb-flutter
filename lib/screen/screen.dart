@@ -16,6 +16,7 @@ import '../middleware/scope.dart';
 import '../middleware/tabs.dart';
 import '../middleware/view.dart';
 import 'scope.dart';
+import 'navigator.dart';
 
 enum ScreenPushAction { replace, push }
 
@@ -143,7 +144,7 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
     var scaffoldContent = Scaffold(
       key: _scaffold,
       appBar: _header?.build(),
-      drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer ? $drawer : null),
+      drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer || $drawer is ScreenNavigator ? $drawer : null),
       resizeToAvoidBottomInset: resizeToAvoidBottomInset ?? true,
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
