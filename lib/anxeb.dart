@@ -21,6 +21,7 @@ export 'widgets/fields/image.dart';
 export 'widgets/fields/file.dart';
 export 'widgets/fields/files.dart';
 export 'widgets/fields/options.dart';
+export 'widgets/fields/multi.dart';
 export 'helpers/camera.dart';
 export 'widgets/actions/float.dart';
 export 'widgets/fields/lookup.dart';
