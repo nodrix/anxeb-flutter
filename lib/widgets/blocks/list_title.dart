@@ -38,6 +38,7 @@ class ListTitleBlock extends StatelessWidget {
   final Color subtitleTrailColor;
   final Widget subtitleTrailBody;
   final GestureTapCallback onTap;
+  final GestureTapCallback onLongPress;
   final Color splashColor;
   final Color splashHihglight;
   final Widget body;
@@ -82,6 +83,7 @@ class ListTitleBlock extends StatelessWidget {
     this.subtitleTrailColor,
     this.subtitleTrailBody,
     this.onTap,
+    this.onLongPress,
     this.splashColor,
     this.splashHihglight,
     this.body,
@@ -131,6 +133,7 @@ class ListTitleBlock extends StatelessWidget {
         borderRadius: borderRadius,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           splashColor: splashColor,
           highlightColor: splashHihglight,
           borderRadius: borderRadius,
