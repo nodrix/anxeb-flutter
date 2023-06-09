@@ -26,6 +26,22 @@ class MapFieldValue {
   }
 }
 
+class MapFieldController {
+  String _query;
+  Function() _update;
+
+  MapFieldController();
+
+  void query(String value) {
+    _query = value;
+    _update?.call();
+  }
+
+  void addListener(Function() update) {
+    _update = update;
+  }
+}
+
 class MapField extends FieldWidget<MapFieldValue> {
   final double height;
   final String marketImageAsset;
@@ -35,6 +51,8 @@ class MapField extends FieldWidget<MapFieldValue> {
   final double zoom;
   final String initialQuery;
   final String queryLanguage;
+  final Color circleFillColor;
+  final MapFieldController controller;
 
   MapField({
     @required Scope scope,
@@ -65,6 +83,8 @@ class MapField extends FieldWidget<MapFieldValue> {
     this.zoom,
     this.initialQuery,
     this.queryLanguage,
+    this.circleFillColor,
+    this.controller,
     Function(MapFieldValue value) applier,
     FieldWidgetTheme theme,
   })  : assert(name != null),
@@ -118,6 +138,25 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
     _circles = <Circle>{};
     _mainMarkerId = MarkerId('main');
     _mainCircleId = CircleId('main');
+
+    if (widget.controller != null) {
+      widget.controller.addListener(() {
+        if (widget.controller._query?.isNotEmpty == true) {
+          setState(() {
+            _api.search(widget.controller._query, language: 'es').then((searchResults) {
+              if (searchResults.results.isNotEmpty) {
+                rasterize(() {
+                  busy = false;
+                  _updateMarker(
+                    location: LatLng(searchResults.results.first.geometry.location.lat, searchResults.results.first.geometry.location.lng),
+                  );
+                });
+              }
+            });
+          });
+        }
+      });
+    }
 
     _sync();
   }
@@ -202,7 +241,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
                 onCameraMove: (position) {},
                 onCameraIdle: () {
                   _controller.getZoomLevel().then((zoomValue) {
-                    _update(zoom: zoomValue, location: false, avoidSubmit: _isDefault == true);
+                    _update(zoom: zoomValue, location: true, avoidSubmit: _isDefault == true);
                   });
                 },
                 onTap: (location) {
@@ -305,14 +344,15 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
 
   void _updateCircle({bool calculateZoom}) async {
     await Future.delayed(Duration(milliseconds: 0));
-    if (_radius != null && _radius > 0 && _location != null && _location.longitude > 0) {
+
+    if (_radius != null && _radius > 0 && _location != null && _location.longitude != null) {
       _circles = {
         Circle(
           circleId: _mainCircleId,
           center: _location,
           radius: _radius,
           strokeWidth: 0,
-          fillColor: widget.scope.application.settings.colors.navigation.withOpacity(0.3),
+          fillColor: widget.circleFillColor ?? widget.scope.application.settings.colors.navigation.withOpacity(0.3),
         )
       };
     } else {
@@ -354,6 +394,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
     final longitude = location == false && value != null ? value.longitude : _location.longitude;
 
     if ($update && avoidSubmit != true && latitude != null && longitude != null) {
+
       submit(MapFieldValue(
         latitude: latitude,
         longitude: longitude,
