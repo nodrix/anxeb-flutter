@@ -11,6 +11,9 @@ typedef PageRedirectHandler<M> = Future<String> Function(BuildContext context, G
 class PageMiddleware<A extends Application, M> {
   final A application;
   final PageRedirectHandler redirect;
+
+  dynamic _storage = {};
+
   PageInfo<A, M> info;
 
   PageScope<A> get scope => info?.scope;
@@ -57,8 +60,10 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
       state: state,
       container: container,
       parent: parent,
-      meta: meta?.call(),
+      meta: middleware._storage[state.name] ?? meta?.call(),
     );
+
+    middleware._storage[state.name] = _inmeta.info.meta;
     middleware.info = info;
   }
 
