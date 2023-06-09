@@ -12,6 +12,7 @@ class ListTitleBlock extends StatelessWidget {
   final EdgeInsets iconTrailPadding;
   final Color iconColor;
   final double iconScale;
+  final double iconSize;
   final IconData iconAlt;
   final EdgeInsets iconAltPadding;
   final Color iconAltColor;
@@ -45,6 +46,7 @@ class ListTitleBlock extends StatelessWidget {
   final Color fillColor;
   final Decoration decoration;
   final Color chipColor;
+  final Widget prefix;
 
   ListTitleBlock({
     @required this.scope,
@@ -57,6 +59,7 @@ class ListTitleBlock extends StatelessWidget {
     this.iconTrailPadding,
     this.iconColor,
     this.iconScale,
+    this.iconSize,
     this.iconAlt,
     this.iconAltPadding,
     this.iconAltColor,
@@ -90,6 +93,7 @@ class ListTitleBlock extends StatelessWidget {
     this.fillColor,
     this.decoration,
     this.chipColor,
+    this.prefix,
   });
 
   Widget _getMainIcons() {
@@ -97,8 +101,8 @@ class ListTitleBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          icon != null ? Padding(padding: iconPadding ?? EdgeInsets.zero, child: Icon(icon, size: 43.0 * (iconScale ?? 1.0), color: iconColor ?? scope.application.settings.colors.primary)) : Container(),
-          iconAlt != null ? Padding(padding: iconAltPadding ?? EdgeInsets.zero, child: Icon(iconAlt, size: 43.0 * (iconAltScale ?? 1.0), color: iconAltColor ?? scope.application.settings.colors.primary)) : Container(),
+          icon != null ? Padding(padding: iconPadding ?? EdgeInsets.zero, child: Icon(icon, size: (iconSize ?? 43.0) * (iconScale ?? 1.0), color: iconColor ?? scope.application.settings.colors.primary)) : Container(),
+          iconAlt != null ? Padding(padding: iconAltPadding ?? EdgeInsets.zero, child: Icon(iconAlt, size: (iconSize ?? 43.0) * (iconAltScale ?? 1.0), color: iconAltColor ?? scope.application.settings.colors.primary)) : Container(),
         ],
       ),
     );
@@ -113,12 +117,12 @@ class ListTitleBlock extends StatelessWidget {
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(color ?? scope.application.settings.colors.primary),
             ),
-            height: (43.0 * (scale ?? 1.0)) * 0.7,
-            width: 43.0 * (scale ?? 1.0) * 0.7,
+            height: ((iconSize ?? 43.0) * (scale ?? 1.0)) * 0.7,
+            width: (iconSize ?? 43.0) * (scale ?? 1.0) * 0.7,
           ),
         ),
-        height: (43.0 * (scale ?? 1.0)),
-        width: 43.0 * (scale ?? 1.0),
+        height: ((iconSize ?? 43.0) * (scale ?? 1.0)),
+        width: (iconSize ?? 43.0) * (scale ?? 1.0),
       ),
     );
   }
@@ -144,6 +148,7 @@ class ListTitleBlock extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                prefix ?? Container(),
                 busy == true && icon != null ? _getBusyIcon(iconScale, iconColor) : _getMainIcons(),
                 Expanded(
                   child: Padding(
@@ -240,7 +245,7 @@ class ListTitleBlock extends StatelessWidget {
                 iconTrail != null
                     ? Padding(
                         padding: iconTrailPadding ?? EdgeInsets.zero,
-                        child: ((busy == true && icon == null) ? _getBusyIcon(iconTrailScale, iconTrailColor) : Icon(iconTrail, size: 43.0 * (iconTrailScale ?? 1.0), color: iconTrailColor ?? scope.application.settings.colors.primary)),
+                        child: ((busy == true && icon == null) ? _getBusyIcon(iconTrailScale, iconTrailColor) : Icon(iconTrail, size: (iconSize ?? 43.0) * (iconTrailScale ?? 1.0), color: iconTrailColor ?? scope.application.settings.colors.primary)),
                       )
                     : Container(),
               ],
