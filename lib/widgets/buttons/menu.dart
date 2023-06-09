@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../middleware/application.dart';
 import '../../page/scope.dart';
+import '../blocks/menu.dart';
 
 class MenuButton extends StatelessWidget {
   final PageScope<Application> scope;
@@ -11,6 +12,7 @@ class MenuButton extends StatelessWidget {
   final Color color;
   final GestureTapCallback onTap;
   final EdgeInsets margin;
+  final ContextMenu contextMenu;
 
   MenuButton({
     @required this.scope,
@@ -20,44 +22,68 @@ class MenuButton extends StatelessWidget {
     this.color,
     this.onTap,
     this.margin,
+    this.contextMenu,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (visible == false){
+    if (visible == false) {
       return Container();
     }
+
+
+    Widget button = Container(
+      padding: EdgeInsets.only(left: icon != null ? 6 : 12, right: 12, top: 6, bottom: 6),
+      child: Row(
+        children: [
+          icon != null
+              ? Container(
+            margin: EdgeInsets.only(right: 4),
+            child: Icon(icon, color: color ?? scope.application.settings.colors.primary),
+          )
+              : Container(),
+          Text(
+            caption,
+            style: TextStyle(
+              fontSize: 15,
+              letterSpacing: 0.15,
+              fontWeight: FontWeight.w300,
+              color: color ?? scope.application.settings.colors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (contextMenu?.items?.isNotEmpty == true ) {
+      return Container(
+        margin: margin,
+        child: ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
+            child: ContextMenuBlock(
+              scope: scope,
+              offset: contextMenu.offset,
+              child: button,
+              items: contextMenu.items,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: margin,
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.all(Radius.circular(30)),
+        borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
         child: InkWell(
           onTap: onTap,
           enableFeedback: true,
           borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
-          child: Container(
-            padding: EdgeInsets.only(left: icon != null ? 6 : 12, right: 12, top: 6, bottom: 6),
-            child: Row(
-              children: [
-                icon != null
-                    ? Container(
-                        margin: EdgeInsets.only(right: 4),
-                        child: Icon(icon, color: color ?? scope.application.settings.colors.primary),
-                      )
-                    : Container(),
-                Text(
-                  caption,
-                  style: TextStyle(
-                    fontSize: 15,
-                    letterSpacing: 0.15,
-                    fontWeight: FontWeight.w300,
-                    color: color ?? scope.application.settings.colors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: button,
         ),
       ),
     );
