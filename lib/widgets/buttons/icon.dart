@@ -41,6 +41,7 @@ class IconButton extends StatefulWidget {
   final Duration tooltipFadeDuration;
   final Color splashColor;
   final Color hoverColor;
+  final bool visible;
 
   IconButton({
     this.keyless,
@@ -79,7 +80,8 @@ class IconButton extends StatefulWidget {
     this.tooltipTailLength,
     this.tooltipFadeDuration,
     this.splashColor,
-    this.hoverColor
+    this.hoverColor,
+    this.visible,
   });
 
   @override
@@ -92,6 +94,10 @@ class _IconButtonState extends State<IconButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.visible == false) {
+      return Container();
+    }
+
     var $fill = widget.fillColor ?? Colors.green;
     var $fore = widget.innerColor ?? Colors.white;
     PopupMenuButton<Function> contextMenu;
@@ -101,7 +107,7 @@ class _IconButtonState extends State<IconButton> {
         icon: Icon(
           widget.icon ?? Icons.more_vert,
           size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
-          color: widget.opaque == true ? $fore.withOpacity(0.7) : $fore,
+          color: $fore,
         ),
         offset: widget.contextMenuOffset ?? Offset(10, 50),
         tooltip: '',
@@ -125,7 +131,7 @@ class _IconButtonState extends State<IconButton> {
 
             result.add(PopupMenuItem<Function>(
               height: widget.contextMenuItemHeight ?? 35,
-              value: item.onTap ?? () {},
+              onTap: item.onTap ?? () {},
               child: Row(
                 children: [
                   Container(
@@ -145,78 +151,82 @@ class _IconButtonState extends State<IconButton> {
       );
     }
 
+    final iconBody = SizedBox(
+      width: widget.size ?? 42,
+      height: widget.size ?? 42,
+      child: Container(
+        padding: widget.iconPadding,
+        child: widget.busy == true || _busy == true
+            ? Container(
+                padding: EdgeInsets.all(5),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>($fore ?? Color(0xf0ffffff)),
+                ),
+              )
+            : AnimatedOpacity(
+                opacity: _enableAction == true ? 1 : 0,
+                duration: Duration(milliseconds: 300),
+                child: contextMenu ??
+                    Icon(
+                      widget.icon,
+                      size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
+                      color: $fore,
+                    ),
+              ),
+      ),
+    );
+
     final body = ClipOval(
       child: Material(
         key: widget.keyless == true ? null : GlobalKey(),
-        color: widget.opaque == true ? Colors.black.withOpacity(0.2) : $fill,
-        child: InkWell(
-          splashColor: widget.splashColor ?? Colors.white,
-          hoverColor: widget.hoverColor,
-          onTap: widget.enabled != false || _enableAction == true
-              ? () async {
-                  if (mounted) {
-                    setState(() {
-                      _busy = true;
-                      _enableAction = false;
-                    });
-                  } else {
-                    _busy = true;
-                    _enableAction = false;
-                  }
-                  try {
-                    await widget.action?.call();
-                  } finally {
-                    if (mounted) {
-                      setState(() {
-                        _busy = false;
-                      });
-
-                      Future.delayed(Duration(milliseconds: 50), () {
+        color: $fill,
+        child: widget.enabled != false
+            ? InkWell(
+                splashColor: widget.splashColor ?? Colors.white,
+                hoverColor: widget.hoverColor,
+                onTap: _enableAction == true
+                    ? () async {
                         if (mounted) {
                           setState(() {
-                            _enableAction = true;
+                            _busy = true;
+                            _enableAction = false;
                           });
                         } else {
-                          _enableAction = true;
+                          _busy = true;
+                          _enableAction = false;
                         }
-                      });
-                    } else {
-                      _busy = false;
-                      _enableAction = true;
-                    }
-                  }
-                }
-              : () async {
-                  if (widget.cancel != null) {
-                    await widget.cancel();
-                  }
-                },
-          child: SizedBox(
-            width: widget.size ?? 42,
-            height: widget.size ?? 42,
-            child: Container(
-              padding: widget.iconPadding,
-              child: widget.busy == true || _busy == true
-                  ? Container(
-                      padding: EdgeInsets.all(5),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>($fore ?? Color(0xf0ffffff)),
-                      ),
-                    )
-                  : AnimatedOpacity(
-                      opacity: _enableAction == true ? 1 : 0,
-                      duration: Duration(milliseconds: 300),
-                      child: contextMenu ??
-                          Icon(
-                            widget.icon,
-                            size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
-                            color: widget.opaque == true ? $fore.withOpacity(0.7) : $fore,
-                          ),
-                    ),
-            ),
-          ),
-        ),
+                        try {
+                          await widget.action?.call();
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _busy = false;
+                            });
+
+                            Future.delayed(Duration(milliseconds: 50), () {
+                              if (mounted) {
+                                setState(() {
+                                  _enableAction = true;
+                                });
+                              } else {
+                                _enableAction = true;
+                              }
+                            });
+                          } else {
+                            _busy = false;
+                            _enableAction = true;
+                          }
+                        }
+                      }
+                    : () async {
+                        if (widget.cancel != null) {
+                          await widget.cancel();
+                        }
+                      },
+                child: iconBody,
+              )
+            : iconBody,
       ),
     );
 
@@ -251,9 +261,9 @@ class _IconButtonState extends State<IconButton> {
                     hoverShowDuration: Duration.zero,
                     fadeOutDuration: widget.tooltipFadeDuration ?? Duration(milliseconds: 500),
                     enableFeedback: false,
-                    child: body,
+                    child: Opacity(opacity: widget.opaque == true ? 0.6 : 1.0, child: body),
                   )
-                : body,
+                : Opacity(opacity: widget.opaque == true ? 0.6 : 1.0, child: body),
           ),
         ],
       ),
