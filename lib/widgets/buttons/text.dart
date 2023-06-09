@@ -35,6 +35,7 @@ class TextButton extends StatefulWidget {
   final bool subtitleUppercase;
   final double width;
   final TextStyle textStyle;
+  final bool visible;
 
   const TextButton({
     this.padding,
@@ -58,6 +59,7 @@ class TextButton extends StatefulWidget {
     this.subtitleUppercase,
     this.width,
     this.textStyle,
+    this.visible,
   });
 
   @override
@@ -111,7 +113,7 @@ class TextButton extends StatefulWidget {
     }).toList();
   }
 
-  static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings}) {
+  static List<Widget> createList(BuildContext context, List<DialogButton> buttons, {Settings settings, double width}) {
     var $settings = settings ?? Settings();
     return buttons.where(($button) => $button.visible != false).map(($button) {
       var button = TextButton(
@@ -121,6 +123,7 @@ class TextButton extends StatefulWidget {
         swapIcon: $button.swapIcon,
         color: $button.fillColor ?? $settings.colors.primary,
         textColor: $button.textColor ?? Colors.white,
+        width: width,
         margin: EdgeInsets.only(top: 10, left: buttons.first == $button ? 0 : 4, right: buttons.last == $button ? 0 : 4),
         onPressed: () {
           if ($button.onTap != null) {
@@ -138,12 +141,20 @@ class TextButton extends StatefulWidget {
 
       var isLast = buttons.last.value == $button.value;
 
-      return Expanded(
-        child: Container(
+
+      if (width == null) {
+        return Expanded(
+          child: Container(
+            child: button,
+            padding: EdgeInsets.only(right: isLast ? 0 : 10),
+          ),
+        );
+      } else {
+        return Container(
           child: button,
           padding: EdgeInsets.only(right: isLast ? 0 : 10),
-        ),
-      );
+        );
+      }
     }).toList();
   }
 }
@@ -151,6 +162,10 @@ class TextButton extends StatefulWidget {
 class _TextButtonState extends State<TextButton> {
   @override
   Widget build(BuildContext context) {
+    if (widget.visible == false) {
+      return Container();
+    }
+
     var $padding = EdgeInsets.all(12);
     var fontSize = widget.fontSize ?? _NORMAL_SIZE;
     var $borderRadius = widget.borderRadius ?? BorderRadius.circular(widget.radius ?? 30.0);
