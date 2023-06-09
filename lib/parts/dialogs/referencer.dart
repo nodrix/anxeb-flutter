@@ -12,8 +12,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
   final Referencer<V> referencer;
   final ReferenceItemWidget<V> itemWidget;
   final ReferenceHeaderWidget<V> headerWidget;
-  final ReferenceCreateWidget<V> createWidget;
+  final ReferenceCreateWidget<V> footerWidget;
   final ReferenceEmptyWidget<V> emptyWidget;
+  final ReferenceFilterHandler<V> filter;
+  final double buttonsWidth;
   final double width;
   final double height;
 
@@ -24,8 +26,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
     this.referencer,
     this.itemWidget,
     this.headerWidget,
-    this.createWidget,
+    this.footerWidget,
     this.emptyWidget,
+    this.filter,
+    this.buttonsWidth,
     this.width,
     this.height,
   })  : assert(title != null),
@@ -91,7 +95,7 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 referencer: referencer,
                 itemWidget: itemWidget,
                 headerWidget: headerWidget,
-                createWidget: createWidget,
+                footerWidget: footerWidget,
                 emptyWidget: emptyWidget,
               ),
             ),
@@ -99,6 +103,7 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
               padding: EdgeInsets.only(top: 10, left: 4, right: 4),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: buttonsWidth == null ? null : MainAxisAlignment.end,
                 children: TextButton.createList(
                   context,
                   [
@@ -110,6 +115,7 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                     })
                   ],
                   settings: scope.application.settings,
+                  width: buttonsWidth,
                 ),
               ),
             )
