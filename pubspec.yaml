@@ -38,7 +38,7 @@ dependencies:
   mime: ^1.0.3
   qr_flutter: ^4.0.0
   photo_view: ^0.14.0
-  credit_card_validator: ^2.0.1
+  credit_card_validator: ^2.1.0
   file_picker: ^5.2.3
   sign_in_with_apple: ^4.2.0
   firebase_core: ^2.6.0

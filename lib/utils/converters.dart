@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as Path;
+import 'package:credit_card_type_detector/constants.dart' as CCTypes;
 
 class Converters {
   List<String> _digits;
@@ -44,26 +45,42 @@ class Converters {
   CreditCardType fromCreditCardNumberToType(String value) {
     final validator = CreditCardValidator();
     final valres = value != null ? validator.validateCCNum(value.toString()) : null;
-    return valres?.ccType;
+    if (valres?.isValid == true) {
+      switch (valres.ccType.type) {
+        case CCTypes.TYPE_VISA:
+          return CreditCardType.visa;
+        case CCTypes.TYPE_AMEX:
+          return CreditCardType.amex;
+        case CCTypes.TYPE_DISCOVER:
+          return CreditCardType.discover;
+        case CCTypes.TYPE_MAESTRO:
+          return CreditCardType.maestro;
+        case CCTypes.TYPE_MASTERCARD:
+          return CreditCardType.mastercard;
+      }
+    }
+
+    return null;
   }
 
   String fromCreditCardNumberToBrand(String value) {
-    final validator = CreditCardValidator();
-    final valres = value != null ? validator.validateCCNum(value.toString()) : null;
+    CreditCardType type = fromCreditCardNumberToType(value);
 
-    if (valres?.isValid == true) {
-      if (valres.ccType == CreditCardType.visa) {
-        return 'visa';
-      } else if (valres.ccType == CreditCardType.mastercard) {
-        return 'master_card';
-      } else if (valres.ccType == CreditCardType.amex) {
-        return 'american_express';
-      } else if (valres.ccType == CreditCardType.discover) {
-        return 'discover';
-      } else {
-        return valres.ccType.name;
+    if (type != null) {
+      switch (type) {
+        case CreditCardType.visa:
+          return 'visa';
+        case CreditCardType.amex:
+          return 'american_express';
+        case CreditCardType.mastercard:
+          return 'master_card';
+        case CreditCardType.discover:
+          return 'discover';
+        case CreditCardType.maestro:
+          return 'maestro';
       }
     }
+
     return null;
   }
 
@@ -539,3 +556,5 @@ class Converters {
     return null;
   }
 }
+
+enum CreditCardType { visa, amex, mastercard, discover, maestro }
