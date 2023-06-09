@@ -7,7 +7,7 @@ class ReferencerBlock<V> extends StatefulWidget {
   final Anxeb.Referencer<V> referencer;
   final Anxeb.ReferenceItemWidget<V> itemWidget;
   final Anxeb.ReferenceHeaderWidget<V> headerWidget;
-  final Anxeb.ReferenceCreateWidget<V> createWidget;
+  final Anxeb.ReferenceCreateWidget<V> footerWidget;
   final Anxeb.ReferenceEmptyWidget<V> emptyWidget;
   final EdgeInsets padding;
 
@@ -17,7 +17,7 @@ class ReferencerBlock<V> extends StatefulWidget {
     this.itemWidget,
     this.headerWidget,
     this.emptyWidget,
-    this.createWidget,
+    this.footerWidget,
     this.padding,
   }) : assert(referencer != null);
 
@@ -36,8 +36,8 @@ class _ReferencerBlockState<V> extends State<ReferencerBlock<V>> {
     super.initState();
   }
 
-  List<Widget> _getNewButton(page) {
-    if (widget.createWidget != null) {
+  List<Widget> _getFooterWidget(page) {
+    if (widget.footerWidget != null) {
       return [
         Container(
           margin: EdgeInsets.only(top: 14, bottom: 13),
@@ -52,7 +52,7 @@ class _ReferencerBlockState<V> extends State<ReferencerBlock<V>> {
             dashGapColor: Colors.transparent,
           ),
         ),
-        widget.createWidget(page),
+        widget.footerWidget(page),
       ];
     }
     return [];
@@ -83,7 +83,7 @@ class _ReferencerBlockState<V> extends State<ReferencerBlock<V>> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 ...$page.items.map(($item) => widget.itemWidget($page, $item)).toList(),
-                                ..._getNewButton($page),
+                                ..._getFooterWidget($page),
                               ],
                             ),
                           ),
