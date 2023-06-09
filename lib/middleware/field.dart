@@ -11,7 +11,7 @@ class FieldWidgetTheme {
   final InputBorder border;
   final Color prefixIconColor;
   final Color iconColor;
-
+  final bool minimal;
   final double prefixIconSize;
   final Color hoverColor;
   final TextStyle hintStyle;
@@ -55,6 +55,7 @@ class FieldWidgetTheme {
     this.prefixIconColor,
     this.iconColor,
     this.prefixIconSize,
+    this.minimal,
     this.hoverColor,
     this.hintStyle,
     this.displayStyle,
@@ -455,13 +456,15 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
               decoration: InputDecoration(
                 filled: true,
                 contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
-                prefixIcon: widget.icon != null
-                    ? Icon(
-                        widget.icon,
-                        size: widget.theme?.prefixIconSize,
-                        color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
-                      )
-                    : null,
+                prefixIcon: widget.theme?.minimal == true
+                    ? null
+                    : (widget.icon != null
+                        ? Icon(
+                            widget.icon,
+                            size: widget.theme?.prefixIconSize,
+                            color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
+                          )
+                        : null),
                 labelText: label?.call() ?? (value != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null),
                 labelStyle: widget.theme?.labelSize != null
                     ? TextStyle(
@@ -489,24 +492,26 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
                 hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
                 errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
                 isDense: widget.theme?.isDense != null ? widget.theme?.isDense : (widget.scope.application.settings.fields.isDense != null ? widget.scope.application.settings.fields.isDense : false),
-                suffixIcon: MouseRegion(
-                  cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
-                  child: GestureDetector(
-                    dragStartBehavior: DragStartBehavior.down,
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      if (widget.readonly == true) {
-                        return;
-                      }
-                      if (value != null || canClear == true) {
-                        clear();
-                      } else {
-                        _beginLookup();
-                      }
-                    },
-                    child: _getIcon(),
-                  ),
-                ),
+                suffixIcon: widget.theme?.minimal == true
+                    ? null
+                    : MouseRegion(
+                        cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                        child: GestureDetector(
+                          dragStartBehavior: DragStartBehavior.down,
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            if (widget.readonly == true) {
+                              return;
+                            }
+                            if (value != null || canClear == true) {
+                              clear();
+                            } else {
+                              _beginLookup();
+                            }
+                          },
+                          child: _getIcon(),
+                        ),
+                      ),
               ),
               child: display(),
             );
