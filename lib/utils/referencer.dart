@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 typedef ReferenceLoaderHandler<T> = Future<List<T>> Function(ReferencerPage<T> page, [T value]);
 typedef ReferenceComparerHandler<T> = bool Function(T a, T b);
+typedef ReferenceFilterHandler<T> = bool Function(T item, String lookup);
 typedef ReferenceItemWidget<T> = Widget Function(ReferencerPage<T> page, T item);
 typedef ReferenceHeaderWidget<T> = Widget Function(ReferencerPage<T> page);
 typedef ReferenceCreateWidget<T> = Widget Function(ReferencerPage<T> page);
@@ -10,13 +11,14 @@ typedef ReferenceEmptyWidget<T> = Widget Function(ReferencerPage<T> page);
 class Referencer<V> {
   final ReferenceLoaderHandler<V> loader;
   final ReferenceComparerHandler<V> comparer;
+  final ReferenceFilterHandler<V> filter;
   Function() updater;
   int currentPage;
   PageController _pagesController;
   ReferencerPage<V> _root;
   Function(List<V> result) _onSubmit;
 
-  Referencer({this.loader, this.comparer, this.updater}) {
+  Referencer({this.loader, this.comparer, this.updater, this.filter}) {
     _pagesController = PageController(initialPage: 0);
   }
 
@@ -63,6 +65,7 @@ class ReferencerPage<V> {
   V _selected;
   Referencer<V> _manager;
   bool _busy;
+  String lookup;
 
   ReferencerPage({Referencer<V> referencer, ReferencerPage<V> parent}) {
     _manager = referencer;
@@ -100,6 +103,11 @@ class ReferencerPage<V> {
       _manager?.updater?.call();
     }
     return false;
+  }
+
+  void filter(String lookup) {
+    this.lookup = lookup;
+    _manager?.updater?.call();
   }
 
   Future show() async {
@@ -154,7 +162,9 @@ class ReferencerPage<V> {
 
   V get selected => _selected;
 
-  List<V> get items => _items ?? [];
+  Referencer<V> get referencer => _manager;
+
+  List<V> get items => _items != null ? (lookup == null || _manager.filter == null ? _items : _items.where((element) => _manager.filter(element, lookup) == true)).toList() : [];
 
   bool get busy => _busy != null ? _busy : false;
 
