@@ -6,6 +6,7 @@ export 'widgets/containers/slider.dart';
 export 'widgets/buttons/text.dart';
 export 'widgets/buttons/link.dart';
 export 'misc/common.dart';
+export 'misc/icons.dart';
 export 'widgets/fields/text.dart';
 export 'widgets/fields/barcode.dart';
 export 'middleware/form.dart';
