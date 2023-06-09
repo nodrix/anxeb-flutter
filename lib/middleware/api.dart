@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path/path.dart' as Path;
 import 'data.dart';
@@ -17,13 +17,13 @@ class Api {
   Dio _dio;
   String token;
 
-  Api(String uri, {this.token, int connectTimeout, int receiveTimeout}) {
+  Api(String uri, {this.token, Duration connectTimeout, Duration receiveTimeout}) {
     _uri = uri;
 
     _dio = Dio(BaseOptions(
       baseUrl: _uri,
-      connectTimeout: connectTimeout ?? 7000,
-      receiveTimeout: receiveTimeout ?? 7000,
+      connectTimeout: connectTimeout ?? const Duration(seconds: 7),
+      receiveTimeout: receiveTimeout ?? const Duration(seconds: 7),
     ));
 
     _dio.interceptors.add(InterceptorsWrapper(
@@ -33,23 +33,20 @@ class Api {
         }
 
         options.headers['content-type'] = options.headers['content-type'] ?? 'application/json';
+        options.headers['source'] = 'Anxeb';
         return handler.next(options);
       },
       onResponse: (Response response, ResponseInterceptorHandler handler) {
         return handler.next(response);
       },
-      onError: (DioError e, ErrorInterceptorHandler handler) {
+      onError: (DioException e, ErrorInterceptorHandler handler) {
         return handler.next(e);
       },
     ));
 
     if (kIsWeb != true) {
-      (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
-        client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-          //TODO: Validate PEM Certificate
-          return true;
-        };
-        return client;
+      (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        return HttpClient()..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
       };
     }
   }
@@ -109,7 +106,7 @@ class Api {
 
   Future<Data> get(String route, [query]) => _process(ApiMethods.GET, route, query: query);
 
-  Future<File> download(String route, {String location, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+  Future<List<int>> download(String route, {Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
       Response response = await _dio.get(
         route,
@@ -122,12 +119,7 @@ class Api {
           validateStatus: (status) => status < 500,
         ),
       );
-
-      File file = File(location);
-      var raf = file.openSync(mode: FileMode.write);
-      raf.writeFromSync(response.data);
-      await raf.close();
-      return file;
+      return response.data;
     } catch (err) {
       var apiException = ApiException.fromErr(err);
       if (apiException != null) {
@@ -188,14 +180,14 @@ class ApiException implements Exception {
   }
 
   factory ApiException.fromErr(err) {
-    if (err is DioError) {
-      if (err.type == DioErrorType.connectTimeout) {
+    if (err is DioException) {
+      if (err.type == DioExceptionType.connectionTimeout) {
         return ApiException(translate('anxeb.middleware.api.exception.connect_timeout'), 0, err); //TR Error de comunicación, favor revisar su conexión a la red
-      } else if (err.type == DioErrorType.receiveTimeout) {
+      } else if (err.type == DioExceptionType.receiveTimeout) {
         return ApiException(translate('anxeb.middleware.api.exception.receive_timeout'), 408, err); //TR Tiempo de respuesta prolongado
-      } else if (err.type == DioErrorType.sendTimeout) {
+      } else if (err.type == DioExceptionType.sendTimeout) {
         return ApiException(translate('anxeb.middleware.api.exception.send_timeout'), 408, err); //TR Tiempo de petición prolongado
-      } else if (err.type == DioErrorType.cancel) {
+      } else if (err.type == DioExceptionType.cancel) {
         return ApiException(translate('anxeb.middleware.api.exception.user_cancelled'), 408, err); //TR Conexión desestimada por usuario o administrador
       } else if (err.error is SocketException) {
         return ApiException(translate('anxeb.middleware.api.exception.socket_exception'), 0, err); //TR Error de comunicación, favor revisar su conexión al Internet
@@ -259,8 +251,12 @@ class ApiException implements Exception {
   }
 
   dynamic get meta {
-    if (raw is DioError) {
-      return (raw as DioError).response.data['meta'];
+    if (raw is DioException) {
+      try {
+        return (raw as DioException).response.data['meta'];
+      } catch (err) {
+        return null;
+      }
     } else {
       return raw['meta'];
     }

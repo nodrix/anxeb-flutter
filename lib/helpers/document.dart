@@ -308,14 +308,19 @@ class _DocumentState extends ScreenView<DocumentView, Application> {
     var $url = widget.file.useFullUrl ? '${widget.file.url}' : '${widget.file.url}/open';
 
     try {
-      await scope.api.download(
+      var data = await scope.api.download(
         $url,
-        location: $filePath,
         progress: (count, total) {
           controller.update(total: total.toDouble(), value: count.toDouble());
         },
         cancelToken: cancelToken,
       );
+
+      File file = File($filePath);
+      var raf = file.openSync(mode: FileMode.write);
+      raf.writeFromSync(data);
+      await raf.close();
+
       if (silent == true) {
         controller.success(silent: true);
       } else {
