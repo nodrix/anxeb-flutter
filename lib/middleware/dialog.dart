@@ -20,6 +20,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/form.dart';
 import '../parts/dialogs/lookup.dart';
@@ -55,7 +56,9 @@ class ScopeDialog<V> {
         context: scope.context,
         barrierDismissible: dismissible,
         builder: (BuildContext context) {
-          return build(context);
+          return PointerInterceptor(
+            child: build(context),
+          );
         },
       );
     } catch (err) {
@@ -77,11 +80,13 @@ class ScopeDialogs {
     IconData icon,
     ReferenceLoaderHandler<V> loader,
     ReferenceComparerHandler<V> comparer,
+    ReferenceFilterHandler<V> filter,
     Function() updater,
     ReferenceItemWidget<V> itemWidget,
     ReferenceHeaderWidget<V> headerWidget,
-    ReferenceCreateWidget<V> createWidget,
+    ReferenceCreateWidget<V> footerWidget,
     ReferenceEmptyWidget<V> emptyWidget,
+    double buttonsWidth,
     double width,
     double height,
   }) {
@@ -89,11 +94,13 @@ class ScopeDialogs {
       _scope,
       title: title,
       icon: icon,
-      referencer: Referencer<V>(loader: loader, comparer: comparer, updater: updater),
+      referencer: Referencer<V>(loader: loader, comparer: comparer, updater: updater, filter: filter),
       itemWidget: itemWidget,
       headerWidget: headerWidget,
-      createWidget: createWidget,
+      footerWidget: footerWidget,
       emptyWidget: emptyWidget,
+      buttonsWidth: buttonsWidth,
+      filter: filter,
       width: width,
       height: height,
     );
@@ -514,16 +521,14 @@ class ScopeDialogs {
     });
 
     getTemporaryDirectory().then((value) {
-      final filePath = '${value.path}/${name ?? url.split('/').last}';
       _scope.api.download(
         url,
         progress: (count, total) {
           controller.update(total: total.toDouble(), value: count.toDouble());
         },
-        location: filePath,
         cancelToken: cancelToken,
       ).then((value) {
-        controller.success(result: File(filePath), silent: silent);
+        controller.success(result: value, silent: silent);
       }).onError((err, stackTrace) {
         controller.failed(message: err.toString());
       });
