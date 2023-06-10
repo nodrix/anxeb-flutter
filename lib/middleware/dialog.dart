@@ -22,6 +22,7 @@ import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../parts/dialogs/color.dart';
 import '../parts/dialogs/form.dart';
 import '../parts/dialogs/lookup.dart';
 import '../parts/dialogs/slider.dart';
@@ -661,6 +662,10 @@ class ScopeDialogs {
       _scope,
       slides: slides,
     );
+  }
+
+  ColorDialog color({Color value, IconData icon, String title}) {
+    return ColorDialog(_scope, value: value, icon: icon, title: title);
   }
 }
 
