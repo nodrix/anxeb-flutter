@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../middleware/device.dart';
+import '../../middleware/utils.dart';
 import 'text.dart';
 
 class MapFieldValue {
@@ -13,8 +14,9 @@ class MapFieldValue {
   double longitude;
   double radius;
   double zoom;
+  Color color;
 
-  MapFieldValue({this.latitude, this.longitude, this.radius, this.zoom});
+  MapFieldValue({this.latitude, this.longitude, this.radius, this.zoom, this.color});
 
   Map toJson() {
     return {
@@ -22,6 +24,7 @@ class MapFieldValue {
       'longitude': longitude,
       'radius': radius,
       'zoom': zoom,
+      'color': Utils.convert.fromColorToHex(color),
     };
   }
 }
@@ -47,11 +50,11 @@ class MapField extends FieldWidget<MapFieldValue> {
   final String marketImageAsset;
   final Future<MapFieldValue> Function(String text) onLookup;
   final String apiKey;
-  final double radius;
+  final double Function() radius;
+  final Color Function() color;
   final double zoom;
   final String initialQuery;
   final String queryLanguage;
-  final Color circleFillColor;
   final MapFieldController controller;
 
   MapField({
@@ -73,17 +76,17 @@ class MapField extends FieldWidget<MapFieldValue> {
     GestureTapCallback onFocus,
     FormFieldValidator<String> validator,
     MapFieldValue Function(dynamic value) parser,
-    bool focusNext,
+    bool refocus,
     MapFieldValue Function() fetcher,
     this.onLookup,
     this.height,
     this.marketImageAsset,
     this.apiKey,
     this.radius,
+    this.color,
     this.zoom,
     this.initialQuery,
     this.queryLanguage,
-    this.circleFillColor,
     this.controller,
     Function(MapFieldValue value) applier,
     FieldWidgetTheme theme,
@@ -107,7 +110,7 @@ class MapField extends FieldWidget<MapFieldValue> {
           onFocus: onFocus,
           validator: validator,
           parser: parser,
-          focusNext: focusNext,
+          refocus: refocus,
           fetcher: fetcher,
           applier: applier,
           theme: theme,
@@ -127,12 +130,14 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
   MarkerId _mainMarkerId;
   CircleId _mainCircleId;
   double _radius;
+  Color _color;
   double _zoom;
   bool _isDefault;
 
   @override
   void init() {
-    _radius = widget.radius;
+    _radius = widget.radius?.call();
+    _color = widget.color?.call();
     _api = GoogleGeocodingApi(widget.apiKey, isLogged: false);
     _markers = <Marker>{};
     _circles = <Circle>{};
@@ -200,8 +205,16 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
 
   @override
   Widget display([String text]) {
-    if (widget.radius != _radius) {
-      _radius = widget.radius;
+    var fetchedColor = widget.color?.call();
+    var fetchedRadius = widget.radius?.call();
+
+    if (fetchedRadius != _radius || fetchedColor != _color) {
+      if (fetchedRadius != null) {
+        _radius = fetchedRadius;
+      }
+      if (fetchedColor != null) {
+        _color = widget.color();
+      }
       _updateCircle(calculateZoom: true);
     }
 
@@ -352,7 +365,7 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
           center: _location,
           radius: _radius,
           strokeWidth: 0,
-          fillColor: widget.circleFillColor ?? widget.scope.application.settings.colors.navigation.withOpacity(0.3),
+          fillColor: _color ?? widget.scope.application.settings.colors.navigation.withOpacity(0.3),
         )
       };
     } else {
@@ -394,12 +407,12 @@ class _MapFieldState extends Field<MapFieldValue, MapField> {
     final longitude = location == false && value != null ? value.longitude : _location.longitude;
 
     if ($update && avoidSubmit != true && latitude != null && longitude != null) {
-
       submit(MapFieldValue(
         latitude: latitude,
         longitude: longitude,
-        zoom: _zoom,
-        radius: _radius,
+        zoom: _zoom ?? value?.zoom,
+        radius: _radius ?? value?.radius,
+        color: _color ?? value?.color,
       ));
     }
   }

@@ -112,7 +112,7 @@ class FieldWidget<V> extends StatefulWidget {
   final GestureTapCallback onFocus;
   final FormFieldValidator<String> validator;
   final V Function(dynamic value) parser;
-  final bool focusNext;
+  final bool refocus;
   final bool focusOnlyEmpty;
   final V Function() fetcher;
   final Function(V value) applier;
@@ -138,7 +138,7 @@ class FieldWidget<V> extends StatefulWidget {
     this.onFocus,
     this.validator,
     this.parser,
-    this.focusNext,
+    this.refocus,
     this.focusOnlyEmpty,
     @required this.fetcher,
     @required this.applier,
@@ -259,9 +259,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   void select() {}
 
   void unfocus() {
-    if (mounted == true && focusNode?.context != null && focusNode.hasFocus == true) {
-      FocusScope.of(this.context).requestFocus(new FocusNode());
-    }
+    widget.scope.unfocus();
   }
 
   void reset() {
@@ -285,6 +283,15 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   void apply() {
     if (widget.applier != null) {
       widget.applier(value);
+    }
+
+    if (widget.onValidSubmit != null) {
+      Future.delayed(new Duration(milliseconds: 150), () {
+        widget.onValidSubmit(value);
+        widget.scope.rasterize();
+      });
+    } else {
+      widget.scope.rasterize();
     }
   }
 
@@ -322,16 +329,14 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     if ($warning == null) {
       warning = null;
       if (focusNode.hasFocus == true) {
-        if (widget.focusNext == false || !form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty)) {
+        if (widget.refocus == true) {
+          focus();
+        } else {
           unfocus();
+          form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty);
         }
       }
       apply();
-      if (widget.onValidSubmit != null) {
-        Future.delayed(new Duration(milliseconds: 150), () {
-          widget.onValidSubmit(value);
-        });
-      }
     } else {
       focus(warning: $warning);
     }
@@ -405,11 +410,6 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
         widget.onChanged(null);
       }
       apply();
-      if (widget.onValidSubmit != null) {
-        Future.delayed(new Duration(milliseconds: 150), () {
-          widget.onValidSubmit(value);
-        });
-      }
     });
   }
 

@@ -393,7 +393,6 @@ class ScopeDialogs {
         hint: hint,
         autofocus: true,
         selected: true,
-        focusNext: false,
         onValidSubmit: (value) {
           var data = accept();
           if (data != null) {
@@ -486,7 +485,6 @@ class ScopeDialogs {
         hint: hint,
         autofocus: true,
         selected: true,
-        focusNext: false,
         onChanged: (newValue) {
           _value = newValue;
         },

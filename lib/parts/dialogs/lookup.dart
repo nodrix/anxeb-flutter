@@ -229,7 +229,6 @@ class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
           type: TextInputFieldType.text,
           autofocus: true,
           selected: true,
-          focusNext: false,
           onChanged: (newValue) {},
           onActionSubmit: (text) async {
             setState(() {
