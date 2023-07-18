@@ -85,6 +85,7 @@ class Model<T> {
       _data = Data();
       _pk = data;
     } else if (data is Model) {
+      data._pushFieldsToData();
       _data = data.data;
       _pk = _primaryField != null ? _data[_primaryField] : null;
     } else {
@@ -156,6 +157,7 @@ class Model<T> {
   }
 
   Data toData() {
+    _pushFieldsToData();
     return Data(_data);
   }
 
