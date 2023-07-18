@@ -8,34 +8,20 @@ import 'package:credit_card_type_detector/constants.dart' as CCTypes;
 class Converters {
   List<String> _digits;
   RegExp _commaRegex;
-  DateFormat _fullDateFormat;
-  DateFormat _dateFormat;
-  DateFormat _normalDateFormat;
-  DateFormat _fileDateFormat;
-  DateFormat _humanDateFormat;
-  DateFormat _humanFullDateFormat;
-  DateFormat _timeFormat;
+  String _fullDateFormat;
+  String _dateFormat;
+  String _normalDateFormat;
+  String _fileDateFormat;
+  String _timeFormat;
 
   Converters() {
     _digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
     _commaRegex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-    try {
-      _setDateFormats();
-    } catch (err) {
-      Future.delayed(Duration(milliseconds: 800)).then((value) {
-        _setDateFormats();
-      });
-    }
-  }
-
-  void _setDateFormats() {
-    _fullDateFormat = DateFormat('dd/MM/yyyy h:mm:ss a');
-    _dateFormat = DateFormat('dd/MM/yyyy');
-    _normalDateFormat = DateFormat('dd/MM/yyyy h:mm a');
-    _fileDateFormat = DateFormat('dd_MM_yyyy_h_mm_a');
-    _timeFormat = DateFormat('h:mm aa');
-    _humanDateFormat = DateFormat.yMMMd('es_DO');
-    _humanFullDateFormat = DateFormat.yMMMMd('es_DO');
+    _fullDateFormat = 'dd/MM/yyyy h:mm:ss a';
+    _dateFormat = 'dd/MM/yyyy';
+    _normalDateFormat = 'dd/MM/yyyy h:mm a';
+    _fileDateFormat = 'dd_MM_yyyy_h_mm_a';
+    _timeFormat = 'h:mm aa';
   }
 
   String fromCreditCardTypeToString(CreditCardType type) {
@@ -150,6 +136,13 @@ class Converters {
       }
     }
     return result;
+  }
+
+  String fromPathToFilename(String value) {
+    if (value == null) {
+      return null;
+    }
+    return Path.basename(value);
   }
 
   String fromStringToPhoneDigits(String value) {
@@ -311,16 +304,16 @@ class Converters {
   }
 
   String fromDateToFullDateString(DateTime date, {bool seconds, bool time}) {
-    if (date == null || _fullDateFormat == null || _dateFormat == null || _normalDateFormat == null) {
+    if (date == null) {
       return null;
     }
 
     if (time == false) {
-      return _dateFormat.format(date);
+      return DateFormat(_dateFormat).format(date);
     } else if (seconds == true) {
-      return _fullDateFormat.format(date);
+      return DateFormat(_fullDateFormat).format(date);
     } else {
-      return _normalDateFormat.format(date);
+      return DateFormat(_normalDateFormat).format(date);
     }
   }
 
@@ -354,20 +347,21 @@ class Converters {
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {
-    if (date == null || _timeFormat == null || _humanDateFormat == null || _humanFullDateFormat == null) {
+    if (date == null) {
       return null;
     }
+
     if (withTime == true) {
       if (complete == true) {
-        return '${_humanFullDateFormat.format(date)}${timeSeparator ?? ' '}${_timeFormat.format(date)}'.replaceAll('.', '').toLowerCase();
+        return '${DateFormat.yMMMMd('es_DO').format(date)}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date)}'.replaceAll('.', '').toLowerCase();
       } else {
-        return '${_humanDateFormat.format(date)}${timeSeparator ?? ' '}${_timeFormat.format(date)}'.replaceAll('.', '').toLowerCase();
+        return '${DateFormat.yMMMd('es_DO').format(date)}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date)}'.replaceAll('.', '').toLowerCase();
       }
     } else {
       if (complete == true) {
-        return _humanFullDateFormat.format(date);
+        return DateFormat.yMMMMd('es_DO').format(date);
       } else {
-        return _humanDateFormat.format(date);
+        return DateFormat.yMMMd('es_DO').format(date);
       }
     }
   }
@@ -405,10 +399,10 @@ class Converters {
   }
 
   String fromDateToFileDateString(DateTime date) {
-    if (date == null || _fileDateFormat == null) {
+    if (date == null) {
       return null;
     }
-    return _fileDateFormat.format(date);
+    return DateFormat(_fileDateFormat).format(date);
   }
 
   DateTime fromTickToDate(int timestamp) {
