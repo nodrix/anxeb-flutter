@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:anxeb_flutter/anxeb.dart' as Anxeb;
 import 'package:anxeb_flutter/misc/icons.dart';
@@ -10,7 +10,7 @@ class ThumbnailButton extends StatefulWidget {
   final Anxeb.Scope scope;
   final GestureTapCallback onTap;
   final GestureTapCallback onDeleteTap;
-  final File file;
+  final Uint8List bytes;
   final String previewUrl;
   final String title;
   final String subtitle;
@@ -28,7 +28,7 @@ class ThumbnailButton extends StatefulWidget {
     @required this.scope,
     this.onTap,
     this.onDeleteTap,
-    this.file,
+    this.bytes,
     this.previewUrl,
     this.title,
     this.subtitle,
@@ -101,10 +101,10 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
               borderRadius: borderRadius,
               image: _netImage != null
                   ? DecorationImage(
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                image: _netImage,
-              )
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                      image: _netImage,
+                    )
                   : null,
             ),
           ),
@@ -112,38 +112,38 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
         Container(
           decoration: _netImage == null
               ? BoxDecoration(
-            color: meta?.color?.withOpacity(0.1) ?? widget.scope.application.settings.colors.primary.withOpacity(0.1),
-            borderRadius: borderRadius,
-          )
+                  color: meta?.color?.withOpacity(0.1) ?? widget.scope.application.settings.colors.primary.withOpacity(0.1),
+                  borderRadius: borderRadius,
+                )
               : BoxDecoration(
-            borderRadius: borderRadius,
-            backgroundBlendMode: BlendMode.darken,
-            gradient: LinearGradient(
-              begin: FractionalOffset.topCenter,
-              end: FractionalOffset.bottomCenter,
-              stops: const [0, 0.5, 1],
-              colors: [
-                const Color(0xff000000).withOpacity(0.0),
-                const Color(0xff000000).withOpacity(0.0),
-                const Color(0xff000000).withOpacity(0.8),
-              ],
-            ),
-          ),
+                  borderRadius: borderRadius,
+                  backgroundBlendMode: BlendMode.darken,
+                  gradient: LinearGradient(
+                    begin: FractionalOffset.topCenter,
+                    end: FractionalOffset.bottomCenter,
+                    stops: const [0, 0.5, 1],
+                    colors: [
+                      const Color(0xff000000).withOpacity(0.0),
+                      const Color(0xff000000).withOpacity(0.0),
+                      const Color(0xff000000).withOpacity(0.8),
+                    ],
+                  ),
+                ),
           child: defailtIcon != null
               ? Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(left: 8, top: 10),
-                    child: defailtIcon,
-                  ),
-                ],
-              )
-            ],
-          )
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.only(left: 8, top: 10),
+                          child: defailtIcon,
+                        ),
+                      ],
+                    )
+                  ],
+                )
               : Container(),
         ),
         Material(
@@ -183,42 +183,41 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
                                       widget.toolTipTag == null
                                           ? Container()
                                           : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Anxeb.CommunityMaterialIcons.tag, size: 9, color: Colors.white),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            widget.toolTipTag,
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
-                                          ),
-                                        ],
-                                      ),
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Anxeb.CommunityMaterialIcons.tag, size: 9, color: Colors.white),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  widget.toolTipTag,
+                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
                                       widget.subtitle == null
                                           ? Container()
                                           : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Anxeb.CommunityMaterialIcons.database, size: 9, color: Colors.white),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            widget.subtitle,
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
-                                          ),
-                                        ],
-                                      ),
-                                      widget?.file?.lastModifiedSync?.call() == null
-                                          ? Container()
-                                          : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.access_time_filled_outlined, size: 9, color: Colors.white),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            Anxeb.Utils.convert.fromDateToHumanString(widget.modifiedDate ?? widget.file.lastModifiedSync(), complete: true),
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
-                                          ),
-                                        ],
-                                      ),
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Anxeb.CommunityMaterialIcons.database, size: 9, color: Colors.white),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  widget.subtitle,
+                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                      if (widget.modifiedDate != null)
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.access_time_filled_outlined, size: 9, color: Colors.white),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              Anxeb.Utils.convert.fromDateToHumanString(widget.modifiedDate, complete: true),
+                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: Colors.white),
+                                            ),
+                                          ],
+                                        ),
                                     ],
                                   ),
                                 ],
@@ -249,14 +248,14 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
                                 widget.subtitle == null
                                     ? Container()
                                     : Text(
-                                  widget.subtitle,
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.15,
-                                    color: meta?.image == true && _imageLoaded == true ? Colors.white : widget.scope.application.settings.colors.primary,
-                                  ),
-                                ),
+                                        widget.subtitle,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.15,
+                                          color: meta?.image == true && _imageLoaded == true ? Colors.white : widget.scope.application.settings.colors.primary,
+                                        ),
+                                      ),
                               ],
                             ),
                           ),
@@ -264,17 +263,17 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
                         widget.onDeleteTap == null
                             ? Container()
                             : Anxeb.IconButton(
-                          icon: Icons.delete,
-                          iconSize: 18,
-                          innerColor: application.settings.colors.danger,
-                          fillColor: Colors.transparent,
-                          borderWidth: 0,
-                          borderPadding: 0,
-                          size: 20,
-                          action: () async {
-                            widget.onDeleteTap();
-                          },
-                        ),
+                                icon: Icons.delete,
+                                iconSize: 18,
+                                innerColor: application.settings.colors.danger,
+                                fillColor: Colors.transparent,
+                                borderWidth: 0,
+                                borderPadding: 0,
+                                size: 20,
+                                action: () async {
+                                  widget.onDeleteTap();
+                                },
+                              ),
                       ],
                     ),
                   ],
@@ -296,10 +295,8 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
   }
 
   void _setupImage() async {
-    if (widget.file != null) {
-      _netImage = meta.image == true ? Image
-          .file(widget.file)
-          .image : null;
+    if (widget.bytes != null) {
+      _netImage = meta.image == true ? Image.memory(widget.bytes).image : null;
       _imageLoaded = _netImage != null;
       return;
     }
@@ -314,29 +311,26 @@ class _ThumbnailButtonState extends State<ThumbnailButton> {
       _imageLoaded = null;
 
       _netImage.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener((ImageInfo image, bool synchronousCall) {
-          if (mounted) {
-            setState(() {
-              _imageLoaded = true;
-            });
-          }
-        }, onError: (exception, StackTrace stackTrace) {
-          _imageLoaded = false;
-          if (mounted) {
-            setState(() {});
-          }
-        }),
-      );
+            ImageStreamListener((ImageInfo image, bool synchronousCall) {
+              if (mounted) {
+                setState(() {
+                  _imageLoaded = true;
+                });
+              }
+            }, onError: (exception, StackTrace stackTrace) {
+              _imageLoaded = false;
+              if (mounted) {
+                setState(() {});
+              }
+            }),
+          );
     } else {
       _netImage = null;
       _imageLoaded = null;
     }
   }
 
-  IconFileMeta get meta =>
-      _icons.getFileMeta(widget.file?.path
-          ?.split('.')
-          ?.last ?? widget.extension);
+  IconFileMeta get meta => _icons.getFileMeta(widget.extension);
 
   Settings get settings => widget.scope.application.settings;
 
