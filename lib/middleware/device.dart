@@ -49,13 +49,9 @@ class Device {
   }
 
   static Future launchUrl({@required Scope scope, @required String url, UL.LaunchMode mode = UL.LaunchMode.platformDefault}) async {
-    if (await UL.canLaunchUrl(Uri.parse(url))) {
-      try {
-        await UL.launchUrl(Uri.parse(url), mode: mode);
-      } catch (err) {
-        scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
-      }
-    } else {
+    try {
+      await UL.launchUrl(Uri.parse(url), mode: mode);
+    } catch (err) {
       scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
     }
   }
@@ -206,10 +202,16 @@ class Device {
         }
       } else if (err.code == 'already_active') {
         //THIS IS A LIBRARY ISSUE
-        await scope?.alerts?.error?.call(err)?.show?.call();
+        await scope?.alerts?.error
+            ?.call(err)
+            ?.show
+            ?.call();
       } else {
         print('Not registered file browser code: ${err.code}');
-        await scope?.alerts?.error?.call(err)?.show?.call();
+        await scope?.alerts?.error
+            ?.call(err)
+            ?.show
+            ?.call();
       }
     } catch (err) {
       await Future.delayed(Duration(milliseconds: 500));
@@ -218,7 +220,10 @@ class Device {
         await scope?.idle?.call();
         _isBusy = false;
       }
-      await scope?.alerts?.error?.call(err)?.show?.call();
+      await scope?.alerts?.error
+          ?.call(err)
+          ?.show
+          ?.call();
     }
 
     if (picker?.files?.isNotEmpty == true) {
