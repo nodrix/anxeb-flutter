@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:dio/dio.dart';
+import 'dart:typed_data';
+import 'package:anxeb_flutter/anxeb.dart';
 import 'package:dio/io.dart';
-import 'package:flutter_translate/flutter_translate.dart';
-import 'package:path/path.dart' as Path;
-import 'data.dart';
-import 'model.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -106,7 +103,7 @@ class Api {
 
   Future<Data> get(String route, [query]) => _process(ApiMethods.GET, route, query: query);
 
-  Future<List<int>> download(String route, {Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+  Future<Uint8List> download(String route, {Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
       Response response = await _dio.get(
         route,
@@ -130,7 +127,7 @@ class Api {
     }
   }
 
-  Future<Data> upload(String route, {Map<String, dynamic> form, Map<String, File> files, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
+  Future<Data> upload(String route, {Map<String, dynamic> form, Map<String, PlatformFile> files, Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {
       for (var i = 0; i < files.entries.length; i++) {
         var element = files.entries.elementAt(i);
@@ -138,8 +135,8 @@ class Api {
         var $key = element.key ?? 'file';
 
         if (file != null) {
-          var contentType = lookupMimeType(file.path);
-          form[$key] = await MultipartFile.fromFile(file.path, filename: Path.basename(file.path), contentType: MediaType.parse(contentType));
+          var contentType = lookupMimeType(file.name);
+          form[$key] = MultipartFile.fromBytes(file.bytes, filename: file.name, contentType: MediaType.parse(contentType));
         }
       }
 
