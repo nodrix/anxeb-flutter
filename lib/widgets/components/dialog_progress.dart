@@ -2,7 +2,7 @@ import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
-import 'package:percent_indicator/percent_indicator.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
 
 class DialogProgress extends StatefulWidget {
   final DialogProcessController controller;
@@ -41,17 +41,37 @@ class _DialogProgressState extends State<DialogProgress> {
 
   @override
   Widget build(BuildContext context) {
+    var size = widget.scope.window.horizontal(0.28);
+    if (size > 140) {
+      size = 140;
+    }
+
     if (widget.controller.isFailed) {
       return Container(
+        padding: EdgeInsets.all(10),
         child: Column(
           children: <Widget>[
-            Icon(
-              Icons.error_outline,
-              size: widget.scope.window.horizontal(0.32),
-              color: widget.scope.application.settings.colors.danger,
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  child: CircularProgressIndicator(
+                    value: 1.0,
+                    strokeWidth: 10.0,
+                    valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.danger),
+                  ),
+                  height: size,
+                  width: size,
+                ),
+                Icon(
+                  FontAwesome5.exclamation,
+                  size: size - 40,
+                  color: widget.scope.application.settings.colors.danger,
+                ),
+              ],
             ),
             Container(
-              margin: EdgeInsets.only(top: 1),
+              margin: EdgeInsets.only(top: 12),
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 widget.controller.failedMessage ?? widget.failedMessage ?? (widget.isDownload == true ? translate('anxeb.widgets.components.dialog_progress.download_failed') : translate('anxeb.widgets.components.dialog_progress.upload_failed')),
@@ -66,17 +86,36 @@ class _DialogProgressState extends State<DialogProgress> {
 
     if (widget.controller.isSuccess) {
       return Container(
+        padding: EdgeInsets.all(10),
         child: Column(
           children: <Widget>[
-            Icon(
-              Icons.check_circle_outline,
-              size: widget.scope.window.horizontal(0.32),
-              color: widget.scope.application.settings.colors.success,
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  child: CircularProgressIndicator(
+                    value: 1.0,
+                    strokeWidth: 10.0,
+                    valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.success),
+                  ),
+                  height: size,
+                  width: size,
+                ),
+                Icon(
+                  Icons.check,
+                  size: size - 40,
+                  color: widget.scope.application.settings.colors.success,
+                ),
+              ],
             ),
             Container(
-              margin: EdgeInsets.only(top: 1),
+              margin: EdgeInsets.only(top: 12),
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(widget.successMessage ?? (widget.isDownload == true ? translate('anxeb.widgets.components.dialog_progress.download_success') : translate('anxeb.widgets.components.dialog_progress.upload_success')), textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.success)),
+              child: Text(
+                widget.successMessage ?? (widget.isDownload == true ? translate('anxeb.widgets.components.dialog_progress.download_success') : translate('anxeb.widgets.components.dialog_progress.upload_success')),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.success),
+              ),
             )
           ],
         ),
@@ -84,22 +123,30 @@ class _DialogProgressState extends State<DialogProgress> {
     }
 
     if (_percent == 0 || (widget.controller.isCompleted && !widget.controller.isDone)) {
-      var size = widget.scope.window.horizontal(0.29) - 6;
       return Container(
         padding: EdgeInsets.all(10),
         child: Column(
           children: <Widget>[
-            SizedBox(
-              child: CircularProgressIndicator(
-                strokeWidth: 5.0,
-                valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.success),
-              ),
-              height: size,
-              width: size,
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 10.0,
+                    valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.success),
+                  ),
+                  height: size,
+                  width: size,
+                ),
+              ],
             ),
             Container(
               margin: EdgeInsets.only(top: 12),
-              child: Text(_percent == 0 ? translate('anxeb.widgets.components.dialog_progress.init_label') : (widget.busyMessage ?? translate('anxeb.widgets.components.dialog_progress.processing_label')), style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.primary)),
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                _percent == 0 ? translate('anxeb.widgets.components.dialog_progress.init_label') : (widget.busyMessage ?? translate('anxeb.widgets.components.dialog_progress.processing_label')),
+                style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.primary),
+              ),
             )
           ],
         ),
@@ -107,25 +154,42 @@ class _DialogProgressState extends State<DialogProgress> {
     }
 
     return Container(
-      margin: EdgeInsets.only(top: 4),
-      padding: EdgeInsets.all(5),
-      child: CircularPercentIndicator(
-        radius: widget.scope.window.horizontal(0.20) - 6,
-        lineWidth: 10.0,
-        animation: true,
-        backgroundColor: widget.scope.application.settings.colors.separator,
-        animationDuration: 0,
-        percent: _percent,
-        progressColor: widget.scope.application.settings.colors.primary,
-        center: Text(
-          '${Utils.convert.fromAnyToNumber((_percent * 100), comma: false, decimals: 1)}%',
-          style: TextStyle(
-            fontSize: 22,
-            letterSpacing: 0.5,
-            fontWeight: FontWeight.w300,
-            color: widget.scope.application.settings.colors.primary,
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: <Widget>[
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                child: CircularProgressIndicator(
+                  value: _percent,
+                  strokeWidth: 10.0,
+                  backgroundColor: widget.scope.application.settings.colors.separator,
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.scope.application.settings.colors.primary),
+                ),
+                height: size,
+                width: size,
+              ),
+              Text(
+                '${Utils.convert.fromAnyToNumber((_percent * 100), comma: false, decimals: 1)}%',
+                style: TextStyle(
+                  fontSize: 22,
+                  letterSpacing: 0.5,
+                  fontWeight: FontWeight.w300,
+                  color: widget.scope.application.settings.colors.primary,
+                ),
+              ),
+            ],
           ),
-        ),
+          Container(
+            margin: EdgeInsets.only(top: 12),
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              widget.busyMessage ?? translate('anxeb.widgets.components.dialog_progress.processing_label'),
+              style: TextStyle(fontSize: 16, color: widget.scope.application.settings.colors.primary),
+            ),
+          )
+        ],
       ),
     );
   }
