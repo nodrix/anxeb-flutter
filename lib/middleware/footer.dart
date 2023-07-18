@@ -34,7 +34,7 @@ class ScreenFooter {
     return BottomAppBar(
       color: color ?? scope.application.settings.colors.primary,
       notchMargin: 8,
-      height: height ?? 60,
+      height: height ?? null,
       elevation: elevation ?? 20,
       clipBehavior: Clip.hardEdge,
       child: Container(
