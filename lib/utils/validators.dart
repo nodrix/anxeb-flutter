@@ -143,8 +143,8 @@ class Validators {
     return translate('anxeb.utils.validators.credit_card.mmyy_date_error'); // TR 'Usar formato válido MMYY';
   }
 
-  String required(String value) {
-    if (value == null || value.length == 0) {
+  String required(value) {
+    if (value == null || value.toString().length == 0) {
       return translate('anxeb.utils.validators.required.default_error'); // TR 'Campo requirido';
     } else {
       return null;
