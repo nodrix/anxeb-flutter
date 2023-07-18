@@ -5,6 +5,36 @@ import '../middleware/menu.dart';
 import 'scope.dart';
 import 'screen.dart';
 
+class ScreenNavigatorController {
+  Function() _collapse;
+  Function() _home;
+  Function() _exit;
+  Function() _lobby;
+
+  void collapse() {
+    _collapse?.call();
+  }
+
+  void home() {
+    _home?.call();
+  }
+
+  void exit() {
+    _exit?.call();
+  }
+
+  void lobby() {
+    _lobby?.call();
+  }
+
+  void _init({Function() collapse, Function() home, Function() exit, Function() lobby}) {
+    _collapse = collapse;
+    _home = home;
+    _exit = exit;
+    _lobby = lobby;
+  }
+}
+
 class ScreenNavigator extends StatefulWidget {
   final ScreenScope scope;
   final bool Function(Anxeb.MenuItem item) isActive;
@@ -15,6 +45,7 @@ class ScreenNavigator extends StatefulWidget {
   final Widget Function() header;
   final Widget Function() footer;
   final Color backgroundColor;
+  final ScreenNavigatorController controller;
 
   ScreenNavigator({
     Key key,
@@ -27,6 +58,7 @@ class ScreenNavigator extends StatefulWidget {
     this.header,
     this.footer,
     this.backgroundColor,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -43,6 +75,13 @@ class _ScreenNavigatorState extends State<ScreenNavigator> {
 
   @override
   void initState() {
+    widget.controller?._init(collapse: () {
+      collapse();
+    }, home: () {
+      home();
+    }, exit: () {
+      exit();
+    });
     super.initState();
   }
 
@@ -242,7 +281,9 @@ class _ScreenNavigatorState extends State<ScreenNavigator> {
   }
 
   Future<T> push<T>(Future<ScreenWidget> Function(Key key) getScreen) async {
-    if (_currentScreen != null ? await _currentScreen.dismiss() : true) {
+    var dismissed = _currentScreen != null ? await _currentScreen.dismiss() : true;
+
+    if (dismissed == false) {
       return null;
     }
 
@@ -295,6 +336,8 @@ class _ScreenNavigatorState extends State<ScreenNavigator> {
     }
     return result;
   }
+
+  void lobby() => Navigator.of(context).popUntil((route) => route.isFirst);
 
   Future<bool> exit([result]) async => _parentScreen != null ? await _parentScreen.pop(result: result) : false;
 
