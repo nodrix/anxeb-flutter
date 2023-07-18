@@ -59,7 +59,7 @@ class MenuItem {
 }
 
 class MenuGroup extends MenuItem {
-  List<MenuItem> _items;
+  List<MenuItem> items = <MenuItem>[];
 
   MenuGroup({
     @required String Function() caption,
@@ -84,6 +84,7 @@ class MenuGroup extends MenuItem {
     MenuCallback onTab,
     List<String> roles,
     bool home,
+    this.items = const <MenuItem>[],
   }) : super(
           caption: caption,
           hint: hint,
@@ -107,9 +108,7 @@ class MenuGroup extends MenuItem {
           onTab: onTab,
           roles: roles,
           home: home,
-        ) {
-    _items = <MenuItem>[];
-  }
+        );
 
   MenuItem add(MenuItem item) {
     items.add(item);
@@ -117,8 +116,6 @@ class MenuGroup extends MenuItem {
   }
 
   void setup(List<MenuItem> items) {
-    _items = items;
+    this.items = items;
   }
-
-  List<MenuItem> get items => _items;
 }
