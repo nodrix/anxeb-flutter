@@ -52,6 +52,7 @@ class ImageButton extends StatefulWidget {
     this.tooltipOffset,
     this.tooltipFillColor,
     this.tooltipTextColor,
+    this.replaceFailedWidget,
     GlobalKey key,
   }) : super(key: key);
 
@@ -103,6 +104,7 @@ class ImageButton extends StatefulWidget {
   final Widget tooltipContent;
   final AxisDirection tooltipDirection;
   final double tooltipOffset;
+  final bool replaceFailedWidget;
 
   @override
   _ImageButtonState createState() => _ImageButtonState();
@@ -385,7 +387,7 @@ class _ImageButtonState extends State<ImageButton> {
       padding: widget.padding,
       margin: widget.margin,
       height: widget.outerHeight,
-      child: Stack(
+      child: failedWidget != null && widget.replaceFailedWidget == true ? failedWidget : Stack(
         alignment: Alignment.center,
         children: <Widget>[
           Column(
