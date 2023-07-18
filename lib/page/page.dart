@@ -6,26 +6,22 @@ import '../misc/after_init.dart';
 
 enum PagePushAction { replace, push }
 
-typedef PageRedirectHandler<M> = Future<String> Function(BuildContext context, GoRouterState state, PageScope<Application> scope, [PageInfo<Application, M> info]);
-
-class PageMiddleware<A extends Application, M> {
+class PageMiddleware<A extends Application, M extends PageInfo> {
   final A application;
-  final PageRedirectHandler redirect;
+  final Future<String> Function(BuildContext context, GoRouterState state, PageScope<A, M> scope, [M info]) redirect;
 
-  dynamic _storage = {};
+  M info;
 
-  PageInfo<A, M> info;
-
-  PageScope<A> get scope => info?.scope;
+  PageScope<A, M> get scope => info?.scope;
 
   PageMiddleware({@required this.application, this.redirect});
 }
 
-class PageWidget<A extends Application, M> extends StatefulWidget implements IView {
+class PageWidget<A extends Application, M extends PageInfo> extends StatefulWidget implements IView {
   final String name;
   final String path;
   final Key key;
-  final _PageArgs _inmeta = _PageArgs();
+  final _PageArgs _inmeta = _PageArgs<A, M>();
 
   PageWidget(
     this.name, {
@@ -33,9 +29,6 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
     this.key,
   })  : assert(path != null),
         super(key: key);
-
-  @protected
-  String title({GoRouterState state}) => null;
 
   @override
   PageView createState() => PageView();
@@ -45,30 +38,36 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
     return [];
   }
 
-  Future init(PageMiddleware<A, M> middleware, {BuildContext context, GoRouterState state, PageInfo<A, M> parent}) async {
+  Future init(PageMiddleware<A, M> middleware, {BuildContext context, GoRouterState state, M parent}) async {
     _inmeta.middleware = middleware;
     if (context != null) {
       prepare(context, state, parent: parent);
     }
   }
 
-  void prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, PageInfo<A, M> parent}) {
-    _inmeta.info = PageInfo<A, M>(
-      name: state.name,
-      title: title(state: state),
-      context: context,
-      state: state,
-      container: container,
-      parent: parent,
-      meta: middleware._storage[state.name] ?? meta?.call(),
-    );
+  void prepare(BuildContext context, GoRouterState state, {PageContainer<A, M> container, M parent}) {
+    _inmeta.info = _inmeta.info ?? this.setup?.call(state) ?? PageInfo();
 
-    middleware._storage[state.name] = _inmeta.info.meta;
-    middleware.info = info;
+    _inmeta.info._name = state.name;
+    _inmeta.info._context = context;
+    _inmeta.info._state = state;
+    _inmeta.info._container = container;
+    _inmeta.info._parent = parent;
+    middleware.info = _inmeta.info;
+
+    if (state.extra != null && (state.extra as dynamic)['preload'] != null) {
+      if (state.matchedLocation == state.location) {
+        var obj = (state.extra as dynamic);
+        if (obj['preload'] is Function) {
+          obj['preload'](_inmeta.info);
+          obj['preload'] = null;
+        }
+      }
+    }
   }
 
   @protected
-  M meta() => null;
+  M setup(GoRouterState state) => null;
 
   Future<String> redirect(BuildContext context, GoRouterState state) async {
     if (info == null) {
@@ -113,17 +112,17 @@ class PageWidget<A extends Application, M> extends StatefulWidget implements IVi
     );
   }
 
-  PageInfo<A, M> get info => _inmeta.info;
+  M get info => _inmeta.info;
 
   PageMiddleware<A, M> get middleware => _inmeta.middleware;
 
   A get application => middleware.application;
 }
 
-abstract class PageState<T extends PageWidget> extends State<T> {
+abstract class PageState<T extends PageWidget, A extends Application, M extends PageInfo> extends State<T> {
   String path;
 
-  PageScope scope;
+  PageScope<A, M> scope;
 
   Future<bool> dismiss();
 
@@ -132,9 +131,9 @@ abstract class PageState<T extends PageWidget> extends State<T> {
   Future<bool> pop({dynamic result, bool force});
 }
 
-class PageView<T extends PageWidget, A extends Application, M> extends PageState<T> with AfterInitMixin<T> {
+class PageView<T extends PageWidget, A extends Application, M extends PageInfo> extends PageState<T, A, M> with AfterInitMixin<T> {
   GlobalKey<ScaffoldState> _scaffold;
-  PageScope<A> _scope;
+  PageScope<A, M> _scope;
   bool _initialized;
   bool _initializing;
   bool _postinitialized;
@@ -156,8 +155,13 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   @protected
   Future init() async {}
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @protected
-  void setup() => null;
+  Future setup([dynamic value]) => null;
 
   @override
   void didInitState() {
@@ -165,11 +169,27 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   }
 
   Future _init() async {
-    _scope = PageScope<A>(context, this);
+    _scope = PageScope(context, this);
+    widget.info._scope = _scope;
     await _scope.setup();
-    if (widget.info.scope != _scope) {
-      widget.info.scope = _scope;
-      setup();
+    widget.info._onChildPoped = ([value]) async {
+      await setup();
+      rasterize();
+    };
+
+    if (_initialized != true && _initializing != true) {
+      _initializing = true;
+      await init();
+      if (info.state.matchedLocation == info.state.location) {
+        setup().then((value) {
+          rasterize();
+        });
+      }
+      _initialized = true;
+      _initializing = false;
+    } else if (_initialized == true && _postinitialized != true) {
+      postinit();
+      _postinitialized = true;
     }
   }
 
@@ -180,11 +200,6 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
 
   @override
   Widget build(BuildContext context) {
-    if (widget.info.scope != _scope) {
-      widget.info.scope = _scope;
-      setup();
-    }
-
     prebuild();
     var $drawer = drawer();
 
@@ -222,7 +237,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
                 _scope.unfocus();
                 _scope.alerts.dispose();
               },
-              child: _initializeContent(),
+              child: (_initialized == true ? content() : null) ?? Container(),
             );
           }),
         ),
@@ -264,7 +279,7 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
   Future<bool> submit([value]) async => await pop(result: value, force: true);
 
   Future<bool> pop({dynamic result, bool force}) async {
-    scope.idle();
+    await scope.idle();
     await scope.alerts.dispose(quick: true);
 
     if (force == true) {
@@ -282,14 +297,14 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
     return false;
   }
 
-  void go(String route, {bool force, Map<String, String> params, Map<String, dynamic> query}) async {
+  void go(String route, {bool force, Map<String, String> params, Map<String, dynamic> query, void Function(M info) preload}) async {
     await scope.idle();
 
     var value = force == true ? true : await beforePop();
     if (value == true) {
       await scope.alerts.dispose(quick: true);
       if (params != null) {
-        scope.context.goNamed(route, params: params, queryParams: query ?? Map());
+        scope.context.goNamed(route, pathParameters: params, queryParameters: query ?? Map(), extra: {'preload': preload});
       } else {
         scope.context.go(route);
       }
@@ -303,40 +318,17 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
     if (value == true) {
       await scope.alerts.dispose(quick: true);
       if (params != null) {
-        scope.context.pushNamed(route, params: params, queryParams: query ?? Map());
+        scope.context.pushNamed(route, pathParameters: params, queryParameters: query ?? Map());
       } else {
         scope.context.push(route);
       }
     }
   }
 
-  Widget _initializeContent() {
-    var contentResult;
-    var $content = (_initialized == true ? content() : null) ?? Container();
-    contentResult = $content;
-
-    if (_initialized != true && _initializing != true) {
-      _initializing = true;
-      Future.delayed(Duration(milliseconds: 0), () async {
-        await init();
-        _initialized = true;
-        _initializing = false;
-        rasterize();
-      });
-    } else if (_initialized == true && _postinitialized != true) {
-      Future.delayed(Duration(milliseconds: 0), () async {
-        postinit();
-        _postinitialized = true;
-        rasterize();
-      });
-    }
-    return contentResult;
-  }
-
   Future _beginPop(result) async {
     await closing();
-    if (result != null) {
-      info.value = result;
+    if (info?.parent != null) {
+      info?.parent?._onChildPoped?.call(result);
     }
     _scope.context.pop();
     await closed();
@@ -359,49 +351,45 @@ class PageView<T extends PageWidget, A extends Application, M> extends PageState
 
   String get path => widget.path;
 
-  String get title => widget.title();
-
-  PageScope<A> get scope => _scope;
+  PageScope<A, M> get scope => _scope;
 
   Window get window => _scope.window;
 
-  A get application => widget.middleware.application as A;
+  A get application => widget.middleware.application;
 
   Settings get settings => application?.settings;
 
-  M get meta => info?.meta;
-
-  PageInfo<A, M> get info => widget.info;
+  M get info => widget.info;
 
   PageContainer<A, M> get container => info.container;
 
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
 }
 
-class _PageArgs<A extends Application, M> {
-  PageInfo<A, M> info;
+class _PageArgs<A extends Application, M extends PageInfo> {
+  M info;
 
   PageMiddleware<A, M> middleware;
 }
 
-class PageInfo<A extends Application, M> {
-  final String name;
-  final String title;
-  final BuildContext context;
-  final GoRouterState state;
-  final PageContainer<A, M> container;
-  final PageInfo<A, M> parent;
-  M meta;
-  PageScope<A> scope;
-  dynamic value;
+class PageInfo {
+  String _name;
+  BuildContext _context;
+  GoRouterState _state;
+  PageContainer _container;
+  PageInfo _parent;
+  PageScope _scope;
+  Function([dynamic value]) _onChildPoped;
 
-  PageInfo({
-    @required this.name,
-    @required this.title,
-    @required this.context,
-    @required this.state,
-    this.container,
-    this.parent,
-    this.meta,
-  });
+  String get name => _name;
+
+  BuildContext get context => _context;
+
+  GoRouterState get state => _state;
+
+  PageContainer get container => _container;
+
+  PageInfo get parent => _parent;
+
+  PageScope get scope => _scope;
 }

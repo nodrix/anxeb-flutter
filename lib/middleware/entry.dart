@@ -59,12 +59,12 @@ class EntryScreen extends StatelessWidget {
   }
 }
 
-class EntryPage<A extends Application, M> extends StatefulWidget {
+class EntryPage<A extends Application, M extends PageInfo> extends StatefulWidget {
   final ThemeData theme;
   final String title;
   final PageMiddleware<A, M> middleware;
   final List<PageWidget Function()> pages;
-  final List<PageContainer Function()> containers;
+  final List<PageContainer<A, M> Function()> containers;
   final PageWidget Function() errorPage;
 
   EntryPage({

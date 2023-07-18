@@ -4,7 +4,7 @@ import '../middleware/application.dart';
 import 'page.dart';
 import 'scope.dart';
 
-class PageContainer<A extends Application, M> {
+class PageContainer<A extends Application, M extends PageInfo> {
   PageMiddleware<A, M> _middleware;
   BuildContext _context;
   GoRouterState _state;
@@ -68,11 +68,9 @@ class PageContainer<A extends Application, M> {
 
   A get application => _middleware.application;
 
-  PageScope<A> get scope => _middleware.scope;
+  PageScope<A, M> get scope => _middleware.scope;
 
-  PageInfo<A, M> get info => _middleware.info;
-
-  M get meta => info.meta;
+  M get info => _middleware.info;
 
   BuildContext get context => _context;
 
