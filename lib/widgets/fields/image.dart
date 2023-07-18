@@ -32,15 +32,15 @@ class ImageInputField extends FieldWidget<String> {
     bool readonly,
     bool visible,
     ValueChanged<String> onSubmitted,
-    ValueChanged<String> onValidSubmit,
+    ValueChanged<String> onApplied,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     ValueChanged<String> onChanged,
     FormFieldValidator<String> validator,
     String Function(String value) parser,
-    bool refocus,
-    String Function() fetcher,
+    FieldFocusType focusType,
+    Future<String> Function() fetcher,
     Function(String value) applier,
     FieldWidgetTheme theme,
     this.type,
@@ -68,14 +68,14 @@ class ImageInputField extends FieldWidget<String> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           onChanged: onChanged,
           validator: validator,
           parser: parser,
-          refocus: refocus,
+          focusType: focusType,
           fetcher: fetcher,
           applier: applier,
           theme: theme,
@@ -90,9 +90,10 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   String _imageSize;
 
   @override
-  void fetch() {
-    super.fetch();
+  Future<String> fetch([apply = true]) async {
+    await super.fetch();
     _loadImage();
+    return value;
   }
 
   Future _loadImage() async {
@@ -112,12 +113,12 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       );
       _imageData = Image.memory(req.data).image;
       _imageSize = Utils.convert.fromAnyToDataSize(req.data.length);
-      value = '';
     } catch (err) {
       _imageData = null;
       _imageSize = null;
     } finally {
       rasterize(() async {
+        value = '';
         busy = false;
       });
     }
@@ -236,7 +237,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   }
 
   Future _preview() async {
-    var image = _imageData; // ?? (widget.url != null ? NetworkImage(widget.url) : null);
+    var image = _imageData;
     if (image != null) {
       var result;
       if (widget.onPreview != null) {
@@ -266,4 +267,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
 
   @override
   bool get canClear => _imageData != null;
+
+  @override
+  bool get hasValue => value?.isNotEmpty == true;
 }

@@ -26,7 +26,7 @@ class FileInputValue {
 
   bool get isImage => ['jpg', 'png', 'jpeg'].contains(extension);
 
-  String get previewText => title ?? basename(path);
+  String get previewText => title ?? basename(path ?? '');
 
   Map<String, dynamic> toJSON() {
     return {'title': title, 'extension': extension};
@@ -50,15 +50,15 @@ class FileInputField extends FieldWidget<FileInputValue> {
     bool readonly,
     bool visible,
     ValueChanged<FileInputValue> onSubmitted,
-    ValueChanged<FileInputValue> onValidSubmit,
+    ValueChanged<FileInputValue> onApplied,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     ValueChanged<FileInputValue> onChanged,
-    FormFieldValidator<String> validator,
+    FormFieldValidator<FileInputValue> validator,
     FileInputValue Function(FileInputValue value) parser,
-    bool refocus,
-    FileInputValue Function() fetcher,
+    FieldFocusType focusType,
+    Future<FileInputValue> Function() fetcher,
     Function(FileInputValue value) applier,
     FieldWidgetTheme theme,
     this.allowedExtensions,
@@ -77,14 +77,14 @@ class FileInputField extends FieldWidget<FileInputValue> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           onChanged: onChanged,
           validator: validator,
           parser: parser,
-          refocus: refocus,
+          focusType: focusType,
           fetcher: fetcher,
           applier: applier,
           theme: theme,

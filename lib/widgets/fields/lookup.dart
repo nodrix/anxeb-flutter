@@ -19,15 +19,15 @@ class LookupInputField<V> extends FieldWidget<V> {
     bool readonly,
     bool visible,
     ValueChanged<V> onSubmitted,
-    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onApplied,
     ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    FormFieldValidator<String> validator,
+    FormFieldValidator<V> validator,
     V Function(dynamic value) parser,
-    bool refocus,
-    V Function() fetcher,
+    FieldFocusType focusType,
+    Future<V> Function() fetcher,
     Function(V value) applier,
     FieldWidgetTheme theme,
     this.onLookup,
@@ -46,14 +46,14 @@ class LookupInputField<V> extends FieldWidget<V> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
           parser: parser,
-          refocus: refocus,
+          focusType: focusType,
           fetcher: fetcher,
           applier: applier,
           theme: theme,
@@ -71,5 +71,6 @@ class _LookupInputFieldState<V> extends Field<V, LookupInputField<V>> {
   Future<V> lookup() => widget.onLookup?.call() ?? null;
 
   @override
-  Widget display([String text]) => super.display(widget?.displayText?.call(value));
+  Widget display([String text]) =>
+      super.display(widget?.displayText?.call(value));
 }

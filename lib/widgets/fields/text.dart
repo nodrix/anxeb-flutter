@@ -6,7 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 
-enum TextInputFieldType { digits, decimals, positive, integers, natural, text, email, date, phone, url, password, maskedDigits, pin }
+enum TextInputFieldType {
+  digits,
+  decimals,
+  positive,
+  integers,
+  natural,
+  text,
+  email,
+  date,
+  phone,
+  url,
+  password,
+  maskedDigits,
+  pin
+}
 
 class TextInputField<V> extends FieldWidget<V> {
   final TextEditingController controller;
@@ -41,17 +55,16 @@ class TextInputField<V> extends FieldWidget<V> {
     bool readonly,
     bool visible,
     ValueChanged<V> onSubmitted,
-    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onApplied,
     ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    FormFieldValidator<String> validator,
+    FormFieldValidator<V> validator,
     V Function(dynamic value) parser,
-    bool refocus,
-    bool focusOnlyEmpty,
+    FieldFocusType focusType,
     bool selected,
-    V Function() fetcher,
+    Future<V> Function() fetcher,
     Function(V value) applier,
     FieldWidgetTheme theme,
     this.controller,
@@ -86,15 +99,14 @@ class TextInputField<V> extends FieldWidget<V> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
           parser: parser,
-          refocus: refocus,
-          focusOnlyEmpty: focusOnlyEmpty,
+          focusType: focusType,
           initialSelected: selected,
           fetcher: fetcher,
           applier: applier,
@@ -128,13 +140,15 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   @override
   void focus({String warning}) {
+    print(widget.name);
     select();
     super.focus(warning: warning);
   }
 
   @override
   void select() {
-    _controller.selection = TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
+    _controller.selection =
+        TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
   }
 
   @override
@@ -146,7 +160,9 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   List<TextInputFormatter> get _formatters {
     if (widget.formatter != null) {
       return <TextInputFormatter>[widget.formatter];
-    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.pin || widget.type == TextInputFieldType.maskedDigits) {
+    } else if (widget.type == TextInputFieldType.digits ||
+        widget.type == TextInputFieldType.pin ||
+        widget.type == TextInputFieldType.maskedDigits) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
@@ -156,7 +172,8 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   }
 
   TextInputType get _keyboardType {
-    if (widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.password) {
+    if (widget.type == TextInputFieldType.text ||
+        widget.type == TextInputFieldType.password) {
       if (widget.maxLines != null && widget.maxLines > 1) {
         return TextInputType.multiline;
       }
@@ -168,7 +185,9 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return TextInputType.numberWithOptions(signed: false, decimal: true);
     } else if (widget.type == TextInputFieldType.natural) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
-    } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.maskedDigits || widget.type == TextInputFieldType.pin) {
+    } else if (widget.type == TextInputFieldType.digits ||
+        widget.type == TextInputFieldType.maskedDigits ||
+        widget.type == TextInputFieldType.pin) {
       return TextInputType.numberWithOptions(signed: false, decimal: false);
     } else if (widget.type == TextInputFieldType.integers) {
       return TextInputType.numberWithOptions(signed: true, decimal: false);
@@ -245,13 +264,18 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
     var result = TextField(
       autofocus: widget.autofocus ?? false,
-      obscureText: _obscureText == true && (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin),
+      obscureText: _obscureText == true &&
+          (widget.type == TextInputFieldType.password ||
+              widget.type == TextInputFieldType.pin),
       focusNode: focusNode,
       textInputAction: widget.action,
       textCapitalization: widget.capitalization ?? TextCapitalization.none,
-      controller: widget.displayText != null ? (focused && widget.readonly != true ? _controller : _controller2) : _controller,
+      controller: widget.displayText != null
+          ? (focused && widget.readonly != true ? _controller : _controller2)
+          : _controller,
       readOnly: widget.readonly == true,
-      enableInteractiveSelection: widget.canSelect != null ? widget.canSelect : true,
+      enableInteractiveSelection:
+          widget.canSelect != null ? widget.canSelect : true,
       autocorrect: false,
       inputFormatters: _formatters,
       maxLength: focused ? widget.maxLength : null,
@@ -292,23 +316,46 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         }
       },
       textAlign: TextAlign.left,
-      style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
+      style: widget.theme?.inputStyle ??
+          (widget.theme?.fontSize != null
+              ? TextStyle(fontSize: widget.theme?.fontSize)
+              : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
       decoration: InputDecoration(
         filled: true,
         counterText: widget.disableCounter == true ? '' : null,
-        contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+        contentPadding: (widget.icon != null
+                ? (widget.theme?.contentPaddingWithIcon ??
+                    widget.scope.application.settings.fields
+                        .contentPaddingWithIcon)
+                : (widget.theme?.contentPaddingNoIcon ??
+                    widget.scope.application.settings.fields
+                        .contentPaddingNoIcon)) ??
+            EdgeInsets.only(
+                left: widget.icon == null ? 10 : 0,
+                top: widget.label == null ? 12 : 7,
+                bottom: 7,
+                right: 0),
         prefixIcon: widget.icon != null
             ? Icon(
                 widget.icon,
                 size: widget.theme?.iconSize ?? widget.theme?.prefixIconSize,
-                color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
+                color: widget.theme?.prefixIconColor ??
+                    widget.scope.application.settings.colors.primary,
               )
             : null,
-        labelText: widget.label != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
+        labelText: widget.label != null
+            ? (widget.theme?.fixedLabel == true
+                ? widget.label.toUpperCase()
+                : widget.label)
+            : null,
         labelStyle: widget.theme?.fixedLabel == true
             ? TextStyle(
                 fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
-                color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
+                color: warning != null
+                    ? (widget.theme?.dangerColor ??
+                        widget.scope.application.settings.colors.danger)
+                    : (widget.theme?.labelColor ??
+                        widget.scope.application.settings.colors.primary),
                 letterSpacing: widget.theme?.labelLetterSpacing ?? 0.8,
                 fontSize: widget.theme?.labelFontSize ?? 15,
                 fontFamily: widget.theme?.labelFontFamily,
@@ -321,31 +368,79 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
                     fontSize: widget.theme?.labelSize,
                   )
                 : widget.theme?.labelStyle),
-        floatingLabelBehavior: widget.theme?.fixedLabel == true ? FloatingLabelBehavior.always : null,
+        floatingLabelBehavior: widget.theme?.fixedLabel == true
+            ? FloatingLabelBehavior.always
+            : null,
         hintText: widget.hint,
-        hintStyle: widget.theme?.hintStyle ?? widget.scope.application.settings.fields.hintStyle,
-        iconColor: widget.theme?.iconColor ?? widget.scope.application.settings.fields.iconColor,
-        suffixIconColor: widget.theme?.suffixIconColor ?? widget.scope.application.settings.fields.suffixIconColor,
-        prefixStyle: widget.theme?.prefixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
-        suffixStyle: widget.theme?.suffixStyle ?? TextStyle(color: widget.scope.application.settings.colors.text, fontSize: 16),
+        hintStyle: widget.theme?.hintStyle ??
+            widget.scope.application.settings.fields.hintStyle,
+        iconColor: widget.theme?.iconColor ??
+            widget.scope.application.settings.fields.iconColor,
+        suffixIconColor: widget.theme?.suffixIconColor ??
+            widget.scope.application.settings.fields.suffixIconColor,
+        prefixStyle: widget.theme?.prefixStyle ??
+            TextStyle(
+                color: widget.scope.application.settings.colors.text,
+                fontSize: 16),
+        suffixStyle: widget.theme?.suffixStyle ??
+            TextStyle(
+                color: widget.scope.application.settings.colors.text,
+                fontSize: 16),
         prefixText: widget.prefix,
         suffixText: widget.suffix,
         errorText: warning,
         errorMaxLines: widget.errorMaxLines,
-        border: widget.theme?.borderRadius != null ? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: widget.theme?.borderRadius) : (widget.theme?.border ?? widget.scope.application.settings.fields.border ?? UnderlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8)))),
-        disabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.disabledBorder ?? widget.scope.application.settings.fields.disabledBorder),
-        enabledBorder: widget.theme?.borderless == true ? null : (widget.theme?.enabledBorder ?? widget.scope.application.settings.fields.enabledBorder),
-        focusedBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedBorder ?? widget.scope.application.settings.fields.focusedBorder),
-        errorBorder: widget.theme?.borderless == true ? null : (widget.theme?.errorBorder ?? widget.scope.application.settings.fields.errorBorder),
-        focusedErrorBorder: widget.theme?.borderless == true ? null : (widget.theme?.focusedErrorBorder ?? widget.scope.application.settings.fields.focusedErrorBorder),
-        fillColor: focused ? (widget.theme?.focusColor ?? widget.scope.application.settings.fields.focusColor ?? widget.scope.application.settings.colors.focus) : (widget.theme?.fillColor ?? widget.scope.application.settings.fields.fillColor ?? widget.scope.application.settings.colors.input),
-        hoverColor: widget.theme?.hoverColor ?? widget.scope.application.settings.fields.hoverColor,
-        errorStyle: widget.theme?.errorStyle ?? widget.scope.application.settings.fields.errorStyle,
-        isDense: widget.theme?.isDense != null ? widget.theme?.isDense : (widget.scope.application.settings.fields.isDense != null ? widget.scope.application.settings.fields.isDense : false),
+        border: widget.theme?.borderRadius != null
+            ? UnderlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: widget.theme?.borderRadius)
+            : (widget.theme?.border ??
+                widget.scope.application.settings.fields.border ??
+                UnderlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.all(Radius.circular(8)))),
+        disabledBorder: widget.theme?.borderless == true
+            ? null
+            : (widget.theme?.disabledBorder ??
+                widget.scope.application.settings.fields.disabledBorder),
+        enabledBorder: widget.theme?.borderless == true
+            ? null
+            : (widget.theme?.enabledBorder ??
+                widget.scope.application.settings.fields.enabledBorder),
+        focusedBorder: widget.theme?.borderless == true
+            ? null
+            : (widget.theme?.focusedBorder ??
+                widget.scope.application.settings.fields.focusedBorder),
+        errorBorder: widget.theme?.borderless == true
+            ? null
+            : (widget.theme?.errorBorder ??
+                widget.scope.application.settings.fields.errorBorder),
+        focusedErrorBorder: widget.theme?.borderless == true
+            ? null
+            : (widget.theme?.focusedErrorBorder ??
+                widget.scope.application.settings.fields.focusedErrorBorder),
+        fillColor: focused
+            ? (widget.theme?.focusColor ??
+                widget.scope.application.settings.fields.focusColor ??
+                widget.scope.application.settings.colors.focus)
+            : (widget.theme?.fillColor ??
+                widget.scope.application.settings.fields.fillColor ??
+                widget.scope.application.settings.colors.input),
+        hoverColor: widget.theme?.hoverColor ??
+            widget.scope.application.settings.fields.hoverColor,
+        errorStyle: widget.theme?.errorStyle ??
+            widget.scope.application.settings.fields.errorStyle,
+        isDense: widget.theme?.isDense != null
+            ? widget.theme?.isDense
+            : (widget.scope.application.settings.fields.isDense != null
+                ? widget.scope.application.settings.fields.isDense
+                : false),
         suffixIcon: widget.suffixActions == false
             ? null
             : MouseRegion(
-                cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+                cursor: widget.readonly == true
+                    ? SystemMouseCursors.basic
+                    : SystemMouseCursors.click,
                 child: GestureDetector(
                   dragStartBehavior: DragStartBehavior.down,
                   behavior: HitTestBehavior.opaque,
@@ -355,7 +450,8 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
                     }
                     _tabbed = true;
 
-                    if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
+                    if (widget.type == TextInputFieldType.password ||
+                        widget.type == TextInputFieldType.pin) {
                       if (_controller.text.length == 0) {
                         focus();
                       } else {
@@ -396,9 +492,14 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
     } else {
       dynamic result;
       if (text?.isNotEmpty == true) {
-        if (widget.type == TextInputFieldType.maskedDigits || widget.type == TextInputFieldType.text || widget.type == TextInputFieldType.email || widget.type == TextInputFieldType.url || widget.type == TextInputFieldType.password) {
+        if (widget.type == TextInputFieldType.maskedDigits ||
+            widget.type == TextInputFieldType.text ||
+            widget.type == TextInputFieldType.email ||
+            widget.type == TextInputFieldType.url ||
+            widget.type == TextInputFieldType.password) {
           result = Utils.convert.fromStringToTrimedString(text);
-        } else if (widget.type == TextInputFieldType.digits || widget.type == TextInputFieldType.pin) {
+        } else if (widget.type == TextInputFieldType.digits ||
+            widget.type == TextInputFieldType.pin) {
           result = Utils.convert.fromStringToDigits(text);
         } else if (widget.type == TextInputFieldType.date) {
           result = Utils.convert.fromStringToDate(text);
@@ -426,27 +527,53 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
 
   Icon _getIcon() {
     if (widget.readonly == true) {
-      return Icon(Icons.lock_outline, color: widget.theme?.suffixIconReadonlyColor ?? widget.theme?.suffixIconColor, size: widget.theme?.suffixIconSize);
+      return Icon(Icons.lock_outline,
+          color: widget.theme?.suffixIconReadonlyColor ??
+              widget.theme?.suffixIconColor,
+          size: widget.theme?.suffixIconSize);
     }
 
-    if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
+    if (widget.type == TextInputFieldType.password ||
+        widget.type == TextInputFieldType.pin) {
       if (_controller.text.length == 0) {
-        return Icon(Icons.keyboard_arrow_left, color: warning != null ? (widget.theme?.suffixIconDangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary));
+        return Icon(Icons.keyboard_arrow_left,
+            color: warning != null
+                ? (widget.theme?.suffixIconDangerColor ??
+                    widget.scope.application.settings.colors.danger)
+                : (widget.theme?.suffixIconColor ??
+                    widget.scope.application.settings.colors.primary));
       } else {
         if (focused) {
-          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off, semanticLabel: _obscureText ? translate('anxeb.widgets.fields.text.show_label') : translate('anxeb.widgets.fields.text.hide_label'), color: widget.theme?.suffixIconFocusedColor ?? widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
+          return Icon(_obscureText ? Icons.visibility : Icons.visibility_off,
+              semanticLabel: _obscureText
+                  ? translate('anxeb.widgets.fields.text.show_label')
+                  : translate('anxeb.widgets.fields.text.hide_label'),
+              color: widget.theme?.suffixIconFocusedColor ??
+                  widget.theme?.suffixIconColor ??
+                  widget.scope.application.settings.colors.primary);
         } else {
-          return Icon(Icons.clear, color: widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
+          return Icon(Icons.clear,
+              color: widget.theme?.suffixIconColor ??
+                  widget.scope.application.settings.colors.primary);
         }
       }
     } else {
       if (focused && warning == null) {
-        return Icon(Icons.done, color: widget.theme?.suffixIconSuccessColor ?? widget.scope.application.settings.colors.success);
+        return Icon(Icons.done,
+            color: widget.theme?.suffixIconSuccessColor ??
+                widget.scope.application.settings.colors.success);
       } else {
         if (_controller.text.length > 0) {
-          return Icon(Icons.clear, color: widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary);
+          return Icon(Icons.clear,
+              color: widget.theme?.suffixIconColor ??
+                  widget.scope.application.settings.colors.primary);
         } else {
-          return Icon(Icons.keyboard_arrow_left, color: warning != null ? (widget.theme?.suffixIconDangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.suffixIconColor ?? widget.scope.application.settings.colors.primary));
+          return Icon(Icons.keyboard_arrow_left,
+              color: warning != null
+                  ? (widget.theme?.suffixIconDangerColor ??
+                      widget.scope.application.settings.colors.danger)
+                  : (widget.theme?.suffixIconColor ??
+                      widget.scope.application.settings.colors.primary));
         }
       }
     }

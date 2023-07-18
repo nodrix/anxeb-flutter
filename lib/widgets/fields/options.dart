@@ -25,15 +25,15 @@ class OptionsInputField<V> extends FieldWidget<V> {
     bool readonly,
     bool visible,
     ValueChanged<V> onSubmitted,
-    ValueChanged<V> onValidSubmit,
+    ValueChanged<V> onApplied,
     ValueChanged<V> onChanged,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
-    FormFieldValidator<String> validator,
+    FormFieldValidator<V> validator,
     V Function(dynamic value) parser,
-    bool refocus,
-    V Function() fetcher,
+    FieldFocusType focusType,
+    Future<V> Function() fetcher,
     Function(V value) applier,
     @required this.options,
     FieldWidgetTheme theme,
@@ -55,14 +55,14 @@ class OptionsInputField<V> extends FieldWidget<V> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onChanged: onChanged,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           validator: validator,
           parser: parser,
-          refocus: refocus,
+          focusType: focusType,
           fetcher: fetcher,
           applier: applier,
           sufixIcon: Icons.keyboard_arrow_down_sharp,
@@ -100,7 +100,13 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
       var result = await widget.scope.dialogs
           .options<V>(
             widget.label,
-            options: options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
+            options: options
+                .map(($option) => DialogButton<V>(
+                    widget.displayText != null
+                        ? widget.displayText($option)
+                        : $option?.toString(),
+                    $option))
+                .toList(),
             selectedValue: value,
             icon: widget.icon,
           )
@@ -122,7 +128,8 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
 
   @override
   Widget display([String text]) {
-    if ((widget.type == null || widget.type == OptionsInputFieldType.dropdown)) {
+    if ((widget.type == null ||
+        widget.type == OptionsInputFieldType.dropdown)) {
       return DropdownButtonHideUnderline(
         child: GestureDetector(
           onTap: () {
@@ -141,7 +148,12 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
               enableFeedback: true,
               focusColor: Colors.transparent,
               iconSize: 0,
-              style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
+              style: widget.theme?.inputStyle ??
+                  (widget.theme?.fontSize != null
+                      ? TextStyle(fontSize: widget.theme?.fontSize)
+                      : (widget.label == null
+                          ? TextStyle(fontSize: 20.25)
+                          : null)),
               isDense: true,
               onChanged: (selectedValue) {
                 super.submit(selectedValue);
@@ -153,7 +165,9 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
               items: options.map((item) {
                 return DropdownMenuItem<V>(
                   value: item,
-                  child: Text(widget.displayText != null ? widget.displayText(item) : item?.toString()),
+                  child: Text(widget.displayText != null
+                      ? widget.displayText(item)
+                      : item?.toString()),
                 );
               }).toList(),
             ),
@@ -187,12 +201,13 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
   }
 
   @override
-  void fetch() async {
+  Future<V> fetch([apply = true]) async {
     if (widget.fetcher != null) {
       _options = [];
-      value = widget.fetcher();
+      value = await widget.fetcher();
       await _loadOptions();
     }
+    return value;
   }
 
   Future _loadOptions() async {
@@ -205,7 +220,11 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
         busy = true;
       });
       _options = await widget.options?.call();
-      value = _options.firstWhere((item) => (widget.comparer != null ? widget.comparer(item, value) : item == value), orElse: () => null);
+      value = _options.firstWhere(
+          (item) => (widget.comparer != null
+              ? widget.comparer(item, value)
+              : item == value),
+          orElse: () => null);
     } catch (err) {
       _options = null;
       warning = err.toString();

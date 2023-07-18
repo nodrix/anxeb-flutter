@@ -31,15 +31,15 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
     bool readonly,
     bool visible,
     ValueChanged<List<FileInputValue>> onSubmitted,
-    ValueChanged<List<FileInputValue>> onValidSubmit,
+    ValueChanged<List<FileInputValue>> onApplied,
     GestureTapCallback onTab,
     GestureTapCallback onBlur,
     GestureTapCallback onFocus,
     ValueChanged<List<FileInputValue>> onChanged,
-    FormFieldValidator<String> validator,
+    FormFieldValidator<List<FileInputValue>> validator,
     List<FileInputValue> Function(dynamic value) parser,
-    bool refocus,
-    List<FileInputValue> Function() fetcher,
+    FieldFocusType focusType,
+    Future<List<FileInputValue>> Function() fetcher,
     Function(List<FileInputValue> value) applier,
     FieldWidgetTheme theme,
     this.allowMultiples = false,
@@ -59,14 +59,14 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
           readonly: readonly,
           visible: visible,
           onSubmitted: onSubmitted,
-          onValidSubmit: onValidSubmit,
+          onApplied: onApplied,
           onTab: onTab,
           onBlur: onBlur,
           onFocus: onFocus,
           onChanged: onChanged,
           validator: validator,
           parser: parser,
-          refocus: refocus,
+          focusType: focusType,
           fetcher: fetcher,
           applier: applier,
           theme: theme,
@@ -115,6 +115,7 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         );
 
         if (picture != null) {
+          pathFiles = [];
           pathFiles.add(picture);
         }
       } else if (shouldUseCamera == false) {
@@ -216,6 +217,12 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         clear();
       }
     }
+  }
+
+  @override
+  void clear() {
+    files.clear();
+    super.clear();
   }
 
   Icon _getMimeIcon(FileInputValue value) {

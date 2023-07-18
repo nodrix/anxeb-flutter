@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:anxeb_flutter/parts/dialogs/date_time.dart';
 import 'package:anxeb_flutter/parts/dialogs/message.dart';
 import 'package:anxeb_flutter/parts/dialogs/options.dart';
@@ -17,6 +15,7 @@ import 'package:anxeb_flutter/widgets/fields/barcode.dart';
 import 'package:anxeb_flutter/widgets/fields/text.dart';
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:path_provider/path_provider.dart';
@@ -386,7 +385,7 @@ class ScopeDialogs {
         group: $formName,
         margin: const EdgeInsets.only(top: 20),
         label: label,
-        fetcher: () => value,
+        fetcher: () async => value,
         icon: null,
         validator: validator ?? Utils.validators.required,
         action: TextInputAction.done,
@@ -394,7 +393,7 @@ class ScopeDialogs {
         hint: hint,
         autofocus: true,
         selected: true,
-        onValidSubmit: (value) {
+        onApplied: (value) {
           var data = accept();
           if (data != null) {
             Navigator.of(context).pop(data);
@@ -476,9 +475,9 @@ class ScopeDialogs {
         group: $formName,
         margin: const EdgeInsets.only(top: 20),
         label: label,
-        fetcher: () => value,
+        fetcher: () async => value,
         theme: theme,
-        validator: validator ?? Utils.validators.required,
+        validator: validator ?? (value) => Utils.validators.required(value),
         action: TextInputAction.done,
         maxLines: lines,
         maxLength: maxLength,
@@ -538,7 +537,7 @@ class ScopeDialogs {
     return progress(title, icon: icon ?? Icons.file_download, controller: controller, cancelLabel: cancelLabel, successMessage: successMessage, failedMessage: failedMessage, busyMessage: busyMessage);
   }
 
-  MessageDialog upload(String title, {List<File> files, dynamic data, Map<String, dynamic> form, String url, IconData icon, String cancelLabel, String successMessage, String failedMessage, String busyMessage, bool silent}) {
+  MessageDialog upload(String title, {List<PlatformFile> files, dynamic data, Map<String, dynamic> form, String url, IconData icon, String cancelLabel, String successMessage, String failedMessage, String busyMessage, bool silent}) {
     final DialogProcessController controller = DialogProcessController();
     final CancelToken cancelToken = CancelToken();
 
@@ -548,7 +547,7 @@ class ScopeDialogs {
       }
     });
 
-    Map<String, File> $files = {};
+    Map<String, PlatformFile> $files = {};
     for (var i = 0; i < files.length; i++) {
       $files['file_$i'] = files[i];
     }

@@ -105,16 +105,15 @@ class FieldWidget<V> extends StatefulWidget {
   final bool readonly;
   final bool visible;
   final ValueChanged<V> onSubmitted;
-  final ValueChanged<V> onValidSubmit;
+  final ValueChanged<V> onApplied;
   final ValueChanged<V> onChanged;
   final GestureTapCallback onTab;
   final GestureTapCallback onBlur;
   final GestureTapCallback onFocus;
-  final FormFieldValidator<String> validator;
+  final FormFieldValidator<V> validator;
   final V Function(dynamic value) parser;
-  final bool refocus;
-  final bool focusOnlyEmpty;
-  final V Function() fetcher;
+  final FieldFocusType focusType;
+  final Future<V> Function() fetcher;
   final Function(V value) applier;
   final bool initialSelected;
   final FieldWidgetTheme theme;
@@ -131,15 +130,14 @@ class FieldWidget<V> extends StatefulWidget {
     this.readonly,
     this.visible,
     this.onSubmitted,
-    this.onValidSubmit,
+    this.onApplied,
     this.onChanged,
     this.onTab,
     this.onBlur,
     this.onFocus,
     this.validator,
     this.parser,
-    this.refocus,
-    this.focusOnlyEmpty,
+    this.focusType,
     @required this.fetcher,
     @required this.applier,
     this.initialSelected,
@@ -201,15 +199,21 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   String label() => null;
 
   @protected
+  bool get hasValue => value != null;
+
+  @protected
+  bool get canClear => false;
+
+  @protected
   Widget display([String text]) {
     return Padding(
-      padding: value == null ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
+      padding: !hasValue ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
       child: Text(
         text ?? value?.toString() ?? widget.label,
         style: widget?.theme?.displayStyle ??
             TextStyle(
               fontSize: widget.theme?.fontSize != null ? (widget.theme.fontSize * 0.9) : 16,
-              color: value != null ? widget.scope.application.settings.colors.text : Color(0x88000000),
+              color: hasValue ? widget.scope.application.settings.colors.text : Color(0x88000000),
             ),
       ),
     );
@@ -237,10 +241,12 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     if (_initialized != true) {
       _initialized = true;
       if (widget.fetcher != null) {
-        value = widget.fetcher();
-        if (widget.initialSelected == true) {
-          select();
-        }
+        widget.fetcher().then((fvalue) {
+          this.value = fvalue;
+          if (widget.initialSelected == true) {
+            select();
+          }
+        });
       }
     }
   }
@@ -274,10 +280,15 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
   }
 
-  void fetch() {
+  Future<V> fetch([bool apply = true]) async {
     if (widget.fetcher != null) {
-      value = widget.fetcher();
+      if (apply == true) {
+        value = await widget.fetcher();
+      } else {
+        return await widget.fetcher();
+      }
     }
+    return value;
   }
 
   void apply() {
@@ -285,9 +296,9 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       widget.applier(value);
     }
 
-    if (widget.onValidSubmit != null) {
+    if (widget.onApplied != null) {
       Future.delayed(new Duration(milliseconds: 150), () {
-        widget.onValidSubmit(value);
+        widget.onApplied(value);
         widget.scope.rasterize();
       });
     } else {
@@ -295,19 +306,21 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
   }
 
-  String validate({bool showMessage}) {
-    var validation = _getValidation();
+  String validate({bool showMessage, bool apply = true}) {
+    var validation = _getValidation(value);
     if (validation != null && showMessage != false) {
       warning = validation;
     } else {
       warning = null;
-      apply();
+      if (apply == true) {
+        this.apply();
+      }
     }
     return validation;
   }
 
   bool valid() {
-    final result = _getValidation() == null;
+    final result = _getValidation(value) == null;
     if (result == true) {
       apply();
     }
@@ -315,25 +328,31 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
   }
 
   @protected
-  String getValueString(V value) {
-    return value?.toString();
-  }
-
-  @protected
   void submit(V $value) {
-    if (this.value != $value && widget.onChanged != null) {
-      widget.onChanged($value);
-    }
-    this.value = $value;
-    var $warning = _getValidation();
+    var $warning = _getValidation($value);
     if ($warning == null) {
+      if (this.value != $value && widget.onChanged != null) {
+        this.value = $value;
+        widget.onChanged($value);
+      } else {
+        this.value = $value;
+      }
+
       warning = null;
       if (focusNode.hasFocus == true) {
-        if (widget.refocus == true) {
+        if (widget.focusType == FieldFocusType.refocus) {
           focus();
+        } else if (widget.focusType == FieldFocusType.next) {
+          unfocus();
+          form.focusFrom(index, onlyEmpty: false);
+        } else if (widget.focusType == FieldFocusType.unfocus) {
+          unfocus();
+        } else if (widget.focusType == FieldFocusType.empty) {
+          unfocus();
+          form.focusFrom(index, onlyEmpty: true);
         } else {
           unfocus();
-          form.focusFrom(index, onlyEmpty: widget.focusOnlyEmpty);
+          form.focusFrom(index);
         }
       }
       apply();
@@ -403,7 +422,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   @protected
   void clear() {
-    validate();
+    validate(apply: false);
     Future.delayed(Duration(milliseconds: 0), () {
       this.reset();
       if (widget.onChanged != null) {
@@ -465,7 +484,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
                             color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
                           )
                         : null),
-                labelText: label?.call() ?? (value != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null),
+                labelText: label?.call() ?? (hasValue ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null),
                 labelStyle: widget.theme?.labelSize != null
                     ? TextStyle(
                         fontWeight: widget.theme?.labelFontWeight,
@@ -503,7 +522,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
                             if (widget.readonly == true) {
                               return;
                             }
-                            if (value != null || canClear == true) {
+                            if (hasValue || canClear) {
                               clear();
                             } else {
                               _beginLookup();
@@ -553,15 +572,12 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       return Icon(Icons.lock_outline, color: widget.scope.application.settings.colors.primary);
     }
 
-    if (value != null || canClear == true) {
+    if (hasValue || canClear) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
       return Icon(widget.sufixIcon ?? Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);
     }
   }
-
-  @protected
-  bool get canClear => false;
 
   @protected
   setValueSilent(dynamic value) {
@@ -576,7 +592,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     }
   }
 
-  String _getValidation() => widget.visible != false && widget.validator != null ? widget.validator(getValueString(this.value)) : null;
+  String _getValidation(V value) => widget.visible != false && widget.validator != null ? widget.validator(value) : null;
 
   @protected
   String get warning => _warning;
@@ -612,3 +628,5 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
     return value?.toString()?.isNotEmpty != true;
   }
 }
+
+enum FieldFocusType { refocus, unfocus, next, empty }
