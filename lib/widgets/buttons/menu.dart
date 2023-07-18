@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../middleware/application.dart';
 import '../../page/scope.dart';
 import '../blocks/menu.dart';
 
 class MenuButton extends StatelessWidget {
-  final PageScope<Application> scope;
+  final PageScope scope;
   final String caption;
   final IconData icon;
   final bool visible;
@@ -264,7 +263,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
                     child: Container(
                       height: 34,
                       alignment: Alignment.centerRight,
-                      width: (MediaQuery.of(context).size.width) / 3,
+                      width: (!_active) ? 0 : (widget.width ?? 300) - 44,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -290,7 +289,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
                   duration: Duration(milliseconds: speed),
                   child: Container(
                     alignment: Alignment.centerLeft,
-                    width: (MediaQuery.of(context).size.width) / 3,
+                    width: (!_active) ? 0 : (widget.width ?? 300) - 44,
                     child: _textFormField(),
                   ),
                 ),
