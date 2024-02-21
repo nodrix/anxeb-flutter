@@ -40,6 +40,7 @@ class Model<T> {
     }
     _data = _data ?? Data();
     _fields = <_ModelField>[];
+    $updated = false;
     init();
 
     _initializeFields();
@@ -92,6 +93,7 @@ class Model<T> {
       _data = data != null ? (data is Data ? data : Data(data)) : Data();
       _pk = _primaryField != null ? _data[_primaryField] : null;
     }
+    $updated = true;
     _init(forcePush: data != null);
   }
 
@@ -126,6 +128,7 @@ class Model<T> {
       _pushFieldsToData();
       await _checkShared();
       await _shared?.setString(diskKey ?? _diskKey, _data.toJson());
+      $updated = true;
     } else {
       throw Exception('Persistance can be done only to disk instances');
     }
@@ -339,17 +342,21 @@ class _ModelField {
     } else if (propertyValue is Iterable) {
       var items = [];
       for (var item in propertyValue) {
-        if (usePrimaryKeys == true) {
-          items.add(item.toValue());
-        } else if (item is String) {
-          items.add(item);
+        if (item is Model) {
+          if (usePrimaryKeys == true) {
+            items.add(item.toValue());
+          } else {
+            items.add(item.toObjects());
+          }
         } else {
-          items.add(item.toObjects());
+          items.add(item);
         }
       }
       data[fieldName] = items;
     } else if (propertyValue is DateTime) {
       data[fieldName] = Utils.convert.fromDateToTick(propertyValue);
+    } else if (propertyValue is Duration) {
+      data[fieldName] = Utils.convert.fromDurationToTicks(propertyValue);
     } else if (propertyValue is Color) {
       data[fieldName] = Utils.convert.fromColorToHex(propertyValue);
     } else {

@@ -90,6 +90,14 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   String _imageSize;
 
   @override
+  void init() {
+    super.init();
+    if (widget.url?.isNotEmpty == true) {
+      _loadImage();
+    }
+  }
+
+  @override
   Future<String> fetch([apply = true]) async {
     await super.fetch();
     _loadImage();

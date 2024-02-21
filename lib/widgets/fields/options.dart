@@ -132,10 +132,8 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
         widget.type == OptionsInputFieldType.dropdown)) {
       return DropdownButtonHideUnderline(
         child: GestureDetector(
-          onTap: () {
-            if (widget.readonly == true) {
-              return;
-            }
+          onTap: widget.readonly == true ? null : () {
+
           },
           child: MouseRegion(
             onHover: (e) {},
@@ -145,7 +143,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
               borderRadius: BorderRadius.zero,
               elevation: 0,
               isExpanded: true,
-              enableFeedback: true,
+              enableFeedback: widget.readonly == true ? false : true,
               focusColor: Colors.transparent,
               iconSize: 0,
               style: widget.theme?.inputStyle ??
@@ -155,7 +153,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
                           ? TextStyle(fontSize: 20.25)
                           : null)),
               isDense: true,
-              onChanged: (selectedValue) {
+              onChanged: widget.readonly == true ? null : (selectedValue) {
                 super.submit(selectedValue);
               },
               hint: Container(

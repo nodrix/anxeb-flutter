@@ -56,7 +56,7 @@ class SnackAlert extends ScopeAlert {
     var $fill = fillColor ?? scope.application.settings.colors.navigation;
 
     if (scope is FormScope) {
-      (scope as FormScope).warning = FormWarning(
+        (scope as FormScope).warning = FormWarning(
         message: message,
         body: $message,
         icon: icon,

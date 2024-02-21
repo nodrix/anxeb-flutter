@@ -225,7 +225,7 @@ class Converters {
     if (date == null) {
       return null;
     }
-    Duration duration = DateTime.now().difference(date);
+    Duration duration = DateTime.now().difference(date.toLocal());
     return fromDurationToHumanCaption(duration);
   }
 
@@ -309,11 +309,11 @@ class Converters {
     }
 
     if (time == false) {
-      return DateFormat(_dateFormat).format(date);
+      return DateFormat(_dateFormat).format(date.toLocal());
     } else if (seconds == true) {
-      return DateFormat(_fullDateFormat).format(date);
+      return DateFormat(_fullDateFormat).format(date.toLocal());
     } else {
-      return DateFormat(_normalDateFormat).format(date);
+      return DateFormat(_normalDateFormat).format(date.toLocal());
     }
   }
 
@@ -343,7 +343,7 @@ class Converters {
     if (date == null) return null;
     final prefix = DateFormat.jms(translate('anxeb.formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
 
-    return duration == false ? prefix.toUpperCase() : translate('anxeb.formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date)}).toUpperCase();
+    return duration == false ? prefix.toUpperCase() : translate('anxeb.formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date.toLocal())}).toUpperCase();
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {
@@ -353,15 +353,15 @@ class Converters {
 
     if (withTime == true) {
       if (complete == true) {
-        return '${DateFormat.yMMMMd('es_DO').format(date)}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date)}'.replaceAll('.', '').toLowerCase();
+        return '${DateFormat.yMMMMd('es_DO').format(date.toLocal())}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date.toLocal())}'.replaceAll('.', '').toLowerCase();
       } else {
-        return '${DateFormat.yMMMd('es_DO').format(date)}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date)}'.replaceAll('.', '').toLowerCase();
+        return '${DateFormat.yMMMd('es_DO').format(date.toLocal())}${timeSeparator ?? ' '}${DateFormat(_timeFormat).format(date.toLocal())}'.replaceAll('.', '').toLowerCase();
       }
     } else {
       if (complete == true) {
-        return DateFormat.yMMMMd('es_DO').format(date);
+        return DateFormat.yMMMMd('es_DO').format(date.toLocal());
       } else {
-        return DateFormat.yMMMd('es_DO').format(date);
+        return DateFormat.yMMMd('es_DO').format(date.toLocal());
       }
     }
   }
@@ -402,7 +402,7 @@ class Converters {
     if (date == null) {
       return null;
     }
-    return DateFormat(_fileDateFormat).format(date);
+    return DateFormat(_fileDateFormat).format(date.toLocal());
   }
 
   DateTime fromTickToDate(int timestamp) {
@@ -427,6 +427,9 @@ class Converters {
   double fromStringToDouble(String value, {int decimals}) {
     if (value != null && value.isNotEmpty) {
       value = value.replaceAll(',', '');
+      if (value.startsWith('.')) {
+        value = '0$value';
+      }
       return decimals != null ? double.parse(double.parse(value).toStringAsFixed(decimals)) : double.parse(value);
     } else {
       return null;
@@ -438,7 +441,7 @@ class Converters {
   }
 
   TimeOfDay fromDateToTime(DateTime date) {
-    return TimeOfDay(hour: date.hour, minute: date.minute);
+    return TimeOfDay(hour: date.toLocal().hour, minute: date.toLocal().minute);
   }
 
   int fromDateToTick(DateTime date) {
@@ -516,11 +519,11 @@ class Converters {
     }
   }
 
-  fromStringToDate(String text) {
+  DateTime fromStringToDate(String text) {
     return DateTime.parse(text);
   }
 
-  fromIndexToMonth(int month) {
+  String fromIndexToMonth(int month) {
     switch (month) {
       case 1:
         return translate('anxeb.common.months.jan');
@@ -548,6 +551,10 @@ class Converters {
         return translate('anxeb.common.months.dec');
     }
     return null;
+  }
+
+  int fromDurationToTicks(Duration propertyValue) {
+    return propertyValue != null ? propertyValue.inMilliseconds : null;
   }
 }
 

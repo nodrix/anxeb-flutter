@@ -57,7 +57,7 @@ class ContextMenuBlock extends StatelessWidget {
 
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
-          if (item.onTap == null || item.visible == false) {
+          if (item.visible == false) {
             continue;
           }
 
@@ -67,7 +67,8 @@ class ContextMenuBlock extends StatelessWidget {
 
           result.add(PopupMenuItem<Function>(
             height: itemHeight ?? 35,
-            onTap: item.onTap ?? () {},
+            onTap: item.enabled == false ? () {} : (item.onTap ?? () {}),
+            enabled: item.enabled != false,
             child: Row(
               children: [
                 Container(
@@ -75,7 +76,12 @@ class ContextMenuBlock extends StatelessWidget {
                   width: 26,
                 ),
                 Container(
-                  child: Text(item.label, style: textStyle ?? TextStyle(color: scope.application.settings.colors.primary)),
+                  child: item.enabled == false
+                      ? Opacity(
+                          opacity: 0.5,
+                          child: Text(item.label, style: textStyle ?? TextStyle(color: scope.application.settings.colors.primary)),
+                        )
+                      : Text(item.label, style: textStyle ?? TextStyle(color: scope.application.settings.colors.primary)),
                   padding: EdgeInsets.only(left: 12),
                 ),
               ],
@@ -96,6 +102,7 @@ class ContextMenuItem {
   final Function onTap;
   final bool divided;
   final bool visible;
+  final bool enabled;
 
-  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.color, this.visible});
+  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.color, this.visible, this.enabled});
 }

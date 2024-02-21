@@ -106,7 +106,7 @@ class ScopeDialogs {
     );
   }
 
-  PanelDialog panel({String title, List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale}) {
+  PanelDialog panel({String title, List<PanelMenuItem> items, bool horizontal, double iconScale, double textScale, double buttonRadius}) {
     return PanelDialog(
       _scope,
       title: title,
@@ -114,6 +114,7 @@ class ScopeDialogs {
       horizontal: horizontal,
       iconScale: iconScale,
       textScale: textScale,
+      buttonRadius: buttonRadius,
     );
   }
 
@@ -153,8 +154,7 @@ class ScopeDialogs {
     );
   }
 
-  MultiOptionsDialog multi<V>(String title,
-      {IconData icon, List<DialogButton<V>> options, List<V> selectedValues, bool swap}) {
+  MultiOptionsDialog multi<V>(String title, {IconData icon, List<DialogButton<V>> options, List<V> selectedValues, bool swap}) {
     Function cancel = (context) {
       Navigator.of(context).pop();
     };
@@ -170,16 +170,16 @@ class ScopeDialogs {
         selectedValues: selectedValues,
         buttons: swap == true
             ? [
-          DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
-          DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
-        ]
+                DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+                DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
+              ]
             : [
-          DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
-          DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
-        ]);
+                DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept(context)),
+                DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
+              ]);
   }
 
-  MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
+  MessageDialog success(String title, {String message, List<DialogButton> buttons, IconData icon, double width, Widget Function(BuildContext context) body}) {
     _scope.application?.onEvent?.call(ApplicationEventType.success, reference: title, description: message);
     return MessageDialog(
       _scope,
@@ -191,10 +191,11 @@ class ScopeDialogs {
       iconColor: _scope.application.settings.colors.success,
       buttons: buttons,
       body: body,
+      width: width,
     );
   }
 
-  MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon, bool dismissible}) {
+  MessageDialog exception(String title, {String message, List<DialogButton> buttons, IconData icon, bool dismissible, double width}) {
     _scope.application?.onEvent?.call(ApplicationEventType.exception, reference: title, description: message);
     return MessageDialog(
       _scope,
@@ -206,10 +207,11 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.danger,
       iconColor: _scope.application.settings.colors.danger,
       buttons: buttons,
+      width: width,
     );
   }
 
-  MessageDialog error(err, {List<DialogButton> buttons, IconData icon}) {
+  MessageDialog error(err, {List<DialogButton> buttons, IconData icon, double width}) {
     final $title = err is FormatException ? err.message : err.toString();
     _scope.application?.onEvent?.call(ApplicationEventType.error, reference: $title, data: err);
 
@@ -221,6 +223,7 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.danger,
       iconColor: _scope.application.settings.colors.danger,
       buttons: buttons,
+      width: width,
     );
   }
 
@@ -293,8 +296,8 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog form(String title, {List<FieldWidget> Function(Scope scope, BuildContext context, String group, Function accept, Function cancel) fields, IconData icon, double width, String acceptLabel, String cancelLabel, bool swap, String group, bool dismissible}) {
-    var cancel = (BuildContext context) {
+  MessageDialog form(String title, {List<Widget> Function(Scope scope, BuildContext context, String group, Function accept, Function cancel) fields, IconData icon, double width, String acceptLabel, String cancelLabel, bool swap, String group, bool dismissible}) {
+    var cancel = (BuildContext context) async {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
       });
@@ -305,7 +308,7 @@ class ScopeDialogs {
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
-    var accept = (BuildContext context) {
+    var accept = (BuildContext context) async {
       if (form.valid() == true) {
         Future.delayed(Duration(milliseconds: 0)).then((value) {
           _scope.unfocus();
@@ -345,7 +348,7 @@ class ScopeDialogs {
   }
 
   MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group}) {
-    var cancel = (BuildContext context) {
+    var cancel = (BuildContext context) async {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
       });
@@ -358,7 +361,7 @@ class ScopeDialogs {
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
-    var accept = () {
+    var accept = () async {
       form.set('prompt_scan', _controller.text);
       var field = form.fields['prompt_scan'];
       if (field.validate(showMessage: true) == null) {
@@ -393,8 +396,8 @@ class ScopeDialogs {
         hint: hint,
         autofocus: true,
         selected: true,
-        onApplied: (value) {
-          var data = accept();
+        onApplied: (value) async {
+          var data = await accept();
           if (data != null) {
             Navigator.of(context).pop(data);
           }
@@ -434,7 +437,7 @@ class ScopeDialogs {
     double width,
   }) {
     T _value = value;
-    var cancel = (BuildContext context) {
+    var cancel = (BuildContext context) async {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
       });
@@ -445,7 +448,7 @@ class ScopeDialogs {
     FieldsForm form = _scope.forms[$formName];
     form.clear();
 
-    var accept = () {
+    var accept = () async {
       form.set('prompt', _value);
       var field = form.fields['prompt'];
 
@@ -459,6 +462,14 @@ class ScopeDialogs {
         return null;
       }
     };
+
+    String _typedRequired(T value) {
+      if (value == null || value.toString().length == 0) {
+        return translate('anxeb.utils.validators.required.default_error'); // TR 'Campo requirido';
+      } else {
+        return null;
+      }
+    }
 
     return MessageDialog(
       _scope,
@@ -477,7 +488,7 @@ class ScopeDialogs {
         label: label,
         fetcher: () async => value,
         theme: theme,
-        validator: validator ?? (value) => Utils.validators.required(value),
+        validator: (value) => _typedRequired(value),
         action: TextInputAction.done,
         maxLines: lines,
         maxLength: maxLength,
@@ -488,8 +499,8 @@ class ScopeDialogs {
         onChanged: (newValue) {
           _value = newValue;
         },
-        onActionSubmit: (value) {
-          var data = accept();
+        onActionSubmit: (value) async {
+          var data = await accept();
           if (data != null) {
             Navigator.of(context).pop(data);
           }
@@ -575,7 +586,7 @@ class ScopeDialogs {
   }
 
   MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessage, String busyMessage}) {
-    var cancel = (BuildContext context) {
+    var cancel = (BuildContext context) async {
       controller.cancel();
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -674,7 +685,7 @@ class DialogButton<T> {
   final Color fillColor;
   final Color textColor;
   final IconData icon;
-  final T Function(BuildContext context) onTap;
+  final Future<T> Function(BuildContext context) onTap;
   final bool swapIcon;
   final bool visible;
 
@@ -698,6 +709,7 @@ class FormButton {
   final Future Function(FormScope scope) onTap;
   final bool swapIcon;
   final bool visible;
+  final bool enabled;
   final bool rightDivisor;
   final bool leftDivisor;
 
@@ -709,6 +721,7 @@ class FormButton {
     this.icon,
     this.swapIcon,
     this.visible,
+    this.enabled,
     this.rightDivisor,
     this.leftDivisor,
   });

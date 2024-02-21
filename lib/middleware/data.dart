@@ -53,6 +53,10 @@ class Data {
     return _items is List;
   }
 
+  bool get isEmpty {
+    return _items == null || _items.isEmpty;
+  }
+
   void $print() {
     final pattern = RegExp('.{1,800}');
     pattern.allMatches(toJson(pretty: true)).forEach((match) => print(match.group(0)));

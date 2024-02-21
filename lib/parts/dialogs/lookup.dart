@@ -36,7 +36,7 @@ class LookupDialog<V> extends ScopeDialog {
 
   @override
   Widget build(BuildContext context) {
-    var cancel = (BuildContext context) {
+    var cancel = (BuildContext context) async {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         scope.unfocus();
       });

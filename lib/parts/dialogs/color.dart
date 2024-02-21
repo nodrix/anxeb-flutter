@@ -13,7 +13,7 @@ class ColorDialog extends ScopeDialog {
     this.title,
     this.icon,
   }) : super(scope) {
-    _value = value ?? Colors.transparent;
+    _value = value ?? Colors.black;
   }
 
   @override
@@ -70,10 +70,10 @@ class ColorDialog extends ScopeDialog {
                 children: TextButton.createList(
                   context,
                   [
-                    DialogButton(translate('anxeb.common.accept'), null, onTap: (context) {
+                    DialogButton(translate('anxeb.common.accept'), null, onTap: (context) async {
                       Navigator.of(context).pop(_value);
                     }),
-                    DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) {
+                    DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) async {
                       Navigator.of(context).pop();
                     })
                   ],

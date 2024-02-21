@@ -9,8 +9,9 @@ class PanelDialog<V> extends ScopeDialog {
   final bool horizontal;
   final double iconScale;
   final double textScale;
+  final double buttonRadius;
 
-  PanelDialog(Scope scope, {this.title, this.items, this.horizontal, this.iconScale, this.textScale}) : super(scope) {
+  PanelDialog(Scope scope, {this.title, this.items, this.horizontal, this.iconScale, this.textScale, this.buttonRadius}) : super(scope) {
     super.dismissible = true;
   }
 
@@ -36,7 +37,7 @@ class PanelDialog<V> extends ScopeDialog {
             horizontal: horizontal,
             iconScale: iconScale,
             textScale: textScale,
-            buttonRadius: scope.application.settings.panels.buttonRadius,
+            buttonRadius: buttonRadius ?? scope.application.settings.panels.buttonRadius,
             context: context,
             collapse: () async {
               Navigator.of(context).pop();

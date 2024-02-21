@@ -78,7 +78,7 @@ class _DateInputFieldState extends Field<DateTime, DateInputField> {
   }
 
   @override
-  Widget display([String text]) => super.display(value != null && _dateFormat != null ? _dateFormat.format(value) : value?.toString());
+  Widget display([String text]) => super.display(value != null && _dateFormat != null ? _dateFormat.format(value) : (widget?.displayText?.call(value) ?? value?.toString()));
 
   @override
   dynamic data() => widget.dataValue?.call(value) ?? value;

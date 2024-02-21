@@ -33,7 +33,9 @@ class FieldsForm {
   }
 
   void set(String fieldName, dynamic value) {
-    fields[fieldName].value = value;
+    if (fields[fieldName] != null) {
+      fields[fieldName].value = value;
+    }
   }
 
   dynamic get(String fieldName, {bool raw}) {
@@ -190,6 +192,11 @@ class FieldsForm {
 
         if (field.widget.visible != false) {
           if (((images == null) || (images == true && isImage) || (images == false && !isImage)) && ((files == null) || (files == true && isFile) || (files == false && !isFile))) {
+            if (isFile == true || isImage == true) {
+              if (field.data() == '') {
+                continue;
+              }
+            }
             data[field.widget.name] = field.data();
           }
         }

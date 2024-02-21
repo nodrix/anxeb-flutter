@@ -59,6 +59,8 @@ class MenuPanel extends BoardPanel {
               var button;
 
               var buttonContent = Container(
+                width: $item.width?.call() ?? null,
+                padding: $item.padding?.call() ?? null,
                 alignment: Alignment.center,
                 child: horizontal == true
                     ? Row(
@@ -182,7 +184,7 @@ class MenuPanel extends BoardPanel {
     return super.content(
       Container(
         margin: EdgeInsets.only(top: 5),
-        child: getButtons(items: items, horizontal: horizontal, iconScale: iconScale, collapse: super.collapse, textScale: textScale),
+        child: getButtons(items: items, horizontal: horizontal, iconScale: iconScale, collapse: super.collapse, textScale: textScale, buttonRadius: buttonRadius),
       ),
     );
   }
@@ -207,8 +209,10 @@ class PanelMenuItem {
   final List<PanelMenuAction> actions;
   final Function() isVisible;
   final double Function() height;
+  final double Function() width;
+  final EdgeInsets Function() padding;
 
-  PanelMenuItem({this.actions, this.isVisible, this.height});
+  PanelMenuItem({this.actions, this.isVisible, this.height, this.width, this.padding});
 }
 
 class PanelMenuAction {

@@ -107,10 +107,10 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
                 children: TextButton.createList(
                   context,
                   [
-                    DialogButton(translate('anxeb.parts.dialogs.referencer.start_button'), null, onTap: (context) {
+                    DialogButton(translate('anxeb.parts.dialogs.referencer.start_button'), null, onTap: (context) async {
                       referencer.start();
                     }),
-                    DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) {
+                    DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) async {
                       Navigator.of(context).pop();
                     })
                   ],

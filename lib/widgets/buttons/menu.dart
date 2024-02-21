@@ -8,7 +8,9 @@ class MenuButton extends StatelessWidget {
   final String caption;
   final IconData icon;
   final bool visible;
+  final bool enabled;
   final Color color;
+  final Color fill;
   final GestureTapCallback onTap;
   final EdgeInsets margin;
   final ContextMenu contextMenu;
@@ -18,7 +20,9 @@ class MenuButton extends StatelessWidget {
     this.caption,
     this.icon,
     this.visible,
+    this.enabled,
     this.color,
+    this.fill,
     this.onTap,
     this.margin,
     this.contextMenu,
@@ -30,16 +34,15 @@ class MenuButton extends StatelessWidget {
       return Container();
     }
 
-
     Widget button = Container(
       padding: EdgeInsets.only(left: icon != null ? 6 : 12, right: 12, top: 6, bottom: 6),
       child: Row(
         children: [
           icon != null
               ? Container(
-            margin: EdgeInsets.only(right: 4),
-            child: Icon(icon, color: color ?? scope.application.settings.colors.primary),
-          )
+                  margin: EdgeInsets.only(right: 4),
+                  child: Icon(icon, color: color ?? scope.application.settings.colors.primary),
+                )
               : Container(),
           Text(
             caption,
@@ -54,13 +57,20 @@ class MenuButton extends StatelessWidget {
       ),
     );
 
-    if (contextMenu?.items?.isNotEmpty == true ) {
+    if (enabled == false) {
+      button = Opacity(
+        opacity: 0.5,
+        child: button,
+      );
+    }
+
+    if (contextMenu?.items?.isNotEmpty == true && enabled != false) {
       return Container(
         margin: margin,
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
           child: Material(
-            color: Colors.transparent,
+            color: fill ?? Colors.transparent,
             borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
             child: ContextMenuBlock(
               scope: scope,
@@ -76,11 +86,11 @@ class MenuButton extends StatelessWidget {
     return Container(
       margin: margin,
       child: Material(
-        color: Colors.transparent,
+        color: fill ?? Colors.transparent,
         borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
         child: InkWell(
-          onTap: onTap,
-          enableFeedback: true,
+          onTap: enabled == false ? null : onTap,
+          enableFeedback: enabled != false,
           borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.buttonRadius)),
           child: button,
         ),

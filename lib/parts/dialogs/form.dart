@@ -25,6 +25,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
   EdgeInsets _headerPadding;
   FocusNode _focusNode = FocusNode();
   GlobalKey _tabsKey = GlobalKey();
+  int _index;
 
   FormDialog(
     Scope scope, {
@@ -96,7 +97,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
           focusNode: _focusNode,
           onKey: (value) {
             if (value.isKeyPressed(LogicalKeyboardKey.escape)) {
-              pop();
+              Navigator.of(_context).pop(null);
             }
           },
           child: GestureDetector(
@@ -141,6 +142,11 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                     indicatorPadding: EdgeInsets.zero,
                     padding: EdgeInsets.zero,
                     labelPadding: EdgeInsets.zero,
+                    onTap: (index) {
+                      _scope.rasterize(() {
+                        _index = index;
+                      });
+                    },
                     tabs: $tabs
                         .map(($tab) => Tab(
                               child: Container(
@@ -273,6 +279,7 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
                   padding: $button.icon != null ? (scope.application.settings.dialogs.buttonPaddingWithIcon ?? EdgeInsets.only(left: 14, right: 18, top: 6, bottom: 6)) : (scope.application.settings.dialogs.buttonPaddingWithoutIcon ?? EdgeInsets.only(left: 14, right: 14, top: 6, bottom: 6)),
                   radius: scope.application.settings.dialogs.buttonRadius,
                   icon: $button.icon,
+                  enabled: $button.enabled,
                   swapIcon: $button.swapIcon,
                   color: $button.fillColor ?? scope.application.settings.colors.primary,
                   textColor: $button.textColor ?? Colors.white,
@@ -424,10 +431,12 @@ class FormDialog<V, A extends Application> extends ScopeDialog<V> {
     );
   }
 
+  int get index => _index;
+
   bool get exists => model != null;
 
   BuildContext get _context => _scope.context;
-  
+
   FormScope<A> get formScope => _scope;
 
   @protected
@@ -592,7 +601,9 @@ class FormRowContainer extends StatelessWidget {
         child != null
             ? child
             : Container(
-                height: height ?? (latest == true ? null : 64),
+                constraints: BoxConstraints(
+                  minHeight: height ?? (latest == true ? 0 : 64),
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: fields ?? [],

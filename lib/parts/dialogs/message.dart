@@ -48,32 +48,36 @@ class MessageDialog extends ScopeDialog {
       insetPadding: insetPadding ?? EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
       contentTextStyle: TextStyle(fontSize: title != null ? 16.4 : 20, color: messageColor ?? scope.application.settings.colors.text, fontWeight: FontWeight.w400),
       title: title != null
-          ? Row(
-              children: <Widget>[
-                icon != null
-                    ? Container(
-                        padding: EdgeInsets.only(right: 7),
-                        margin: EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+          ? Container(
+              width: width,
+              child: Row(
+                children: <Widget>[
+                  icon != null
+                      ? Container(
+                          padding: EdgeInsets.only(right: 7),
+                          margin: EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              right: BorderSide(width: 1.0, color: scope.application.settings.colors.separator),
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          icon,
-                          size: iconSize ?? 72,
-                          color: iconColor ?? scope.application.settings.colors.primary,
-                        ),
-                      )
-                    : Container(),
-                Expanded(
-                  child: Text(
-                    title.toUpperCase(),
-                    textAlign: icon == null ? TextAlign.center : TextAlign.left,
-                    style: TextStyle(fontSize: 16.2, color: titleColor ?? scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
+                          child: Icon(
+                            icon,
+                            size: iconSize ?? 72,
+                            color: iconColor ?? scope.application.settings.colors.primary,
+                          ),
+                        )
+                      : Container(),
+                  Expanded(
+                    child: Text(
+                      title.toUpperCase(),
+                      softWrap: width != null,
+                      textAlign: icon == null ? TextAlign.center : TextAlign.left,
+                      style: TextStyle(fontSize: 16.2, color: titleColor ?? scope.application.settings.colors.primary, fontWeight: FontWeight.w500, letterSpacing: 0.4),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             )
           : icon != null
               ? Container(
@@ -92,9 +96,16 @@ class MessageDialog extends ScopeDialog {
             message != null
                 ? Container(
                     padding: EdgeInsets.only(bottom: 4, top: 4),
-                    child: new Text(
-                      message,
-                      textAlign: textAlign ?? (title != null ? TextAlign.left : TextAlign.center),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: new Text(
+                            message,
+                            softWrap: true,
+                            textAlign: textAlign ?? (title != null ? TextAlign.left : TextAlign.center),
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : Container(),

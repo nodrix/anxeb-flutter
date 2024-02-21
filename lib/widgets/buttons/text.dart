@@ -3,6 +3,7 @@ import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart';
 
 enum ButtonType { primary, secundary, link, frame }
+
 enum ButtonSize { normal, small, medium, chip }
 
 const Color _BASE_COLOR = Color(0xff2e7db2);
@@ -98,8 +99,7 @@ class TextButton extends StatefulWidget {
     }).toList();
   }
 
-  static List<Widget> createMultiOptions<V>(BuildContext context, List<DialogButton<V>> options,
-      {List<V> selectedValues, Function(DialogButton<V>, bool) onChanged}) {
+  static List<Widget> createMultiOptions<V>(BuildContext context, List<DialogButton<V>> options, {List<V> selectedValues, Function(DialogButton<V>, bool) onChanged}) {
     return options.where(($option) => $option.visible != false).map(($option) {
       return CheckboxListTile(
         controlAffinity: ListTileControlAffinity.leading,
@@ -125,9 +125,9 @@ class TextButton extends StatefulWidget {
         textColor: $button.textColor ?? Colors.white,
         width: width,
         margin: EdgeInsets.only(top: 10, left: buttons.first == $button ? 0 : 4, right: buttons.last == $button ? 0 : 4),
-        onPressed: () {
+        onPressed: () async {
           if ($button.onTap != null) {
-            var tabResult = $button.onTap(context);
+            var tabResult = await $button.onTap(context);
             if (tabResult != null) {
               Navigator.of(context).pop(tabResult);
             }
@@ -140,7 +140,6 @@ class TextButton extends StatefulWidget {
       );
 
       var isLast = buttons.last.value == $button.value;
-
 
       if (width == null) {
         return Expanded(

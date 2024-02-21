@@ -22,7 +22,7 @@ class ScreenTabs {
   }
 
   PreferredSize header({Widget bottomBody, double Function() height}) {
-    var tabs = items.where(($tab) => $tab.isVisible?.call() != false).map((item) => item.build()).toList();
+    var tabs = _filteredItems.map((item) => item.build()).toList();
     return PreferredSize(
       preferredSize: new Size(0.0, height ?? 30.0),
       child: Column(
@@ -43,7 +43,7 @@ class ScreenTabs {
 
   Widget build(bool initialized) {
     return TabBarView(
-      children: items.map((item) {
+      children: _filteredItems.map((item) {
         var $content = initialized == true ? item.body() : Container();
         $content = scope.view.parts.refresher != null ? scope.view.parts.refresher.wrap($content) : $content;
         $content = scope.view.parts.panel != null ? scope.view.parts.panel.wrap($content) : $content;
@@ -55,7 +55,7 @@ class ScreenTabs {
 
   Widget setup(Scaffold scaffold) {
     return DefaultTabController(
-      length: items.length,
+      length: _filteredItems.length,
       initialIndex: initial ?? 0,
       child: Builder(builder: (BuildContext context) {
         _context = context;
@@ -80,7 +80,9 @@ class ScreenTabs {
 
   get currentData => current?.data;
 
-  TabItem get current => currentIndex != null && items != null ? items[currentIndex] : null;
+  List<TabItem> get _filteredItems => items != null ? items.where(($tab) => $tab.isVisible?.call() != false).toList() : null;
+
+  TabItem get current => currentIndex != null && _filteredItems != null ? _filteredItems[currentIndex] : null;
 
   int get currentIndex => _controller?.index;
 }
