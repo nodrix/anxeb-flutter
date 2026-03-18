@@ -1,6 +1,5 @@
 import 'package:anxeb_flutter/anxeb.dart';
 import 'package:flutter/material.dart' hide Navigator, Overlay;
-import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'disk.dart';
 import 'printer.dart';
 
@@ -10,8 +9,6 @@ class Application {
   String _title;
   Disk _disk;
   AuthProviders _auths;
-  Analytics _analytics;
-  bool _badgesSupport;
   LocalizationDelegate _localization;
   Printer _printer;
   DeviceInfo _info;
@@ -24,40 +21,18 @@ class Application {
     _printer = Printer(this);
     init();
     _auths = AuthProviders(this);
-    if (_settings.analytics.available == true) {
-      _analytics = Analytics();
-    }
     _info = Device.info;
-  }
-
-  void setBadge(int value) {
-    if (_badgesSupport == true) {
-      if (value != null && value > 0) {
-        FlutterAppBadger.updateBadgeCount(value);
-      } else {
-        FlutterAppBadger.removeBadge();
-      }
-    }
   }
 
   Future setup({List<String> locales}) async {
     if (locales != null) {
       _localization = await LocalizationDelegate.create(fallbackLocale: locales[0], supportedLocales: locales);
     }
-    _badgesSupport = _settings.general.badges == true && await FlutterAppBadger.isAppBadgeSupported();
-    if (_settings.analytics.available == true) {
-      await _analytics.init(onMessage: onMessage);
-    }
     await Device.info.init();
   }
 
   @protected
   void init() {}
-
-  @protected
-  void onMessage(RemoteMessage message, MessageEventType event) {
-    setBadge(analytics.notifications.length);
-  }
 
   void onEvent(ApplicationEventType type, {String reference, String description, dynamic data}) {}
 
@@ -82,8 +57,6 @@ class Application {
   set title(value) {
     _title = value;
   }
-
-  Analytics get analytics => _analytics;
 
   Widget drawer(Scope scope) => null;
 

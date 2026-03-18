@@ -135,6 +135,7 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
   GlobalKey<ScaffoldState> _scaffold;
   PageScope<A, M> _scope;
   bool _initialized;
+  bool _loaded;
   bool _initializing;
   bool _postinitialized;
 
@@ -150,6 +151,11 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
         fn?.call();
       });
     }
+    _rasterizeContainer();
+  }
+
+  void _rasterizeContainer() {
+    this.info.root?.rasterize?.call();
   }
 
   @protected
@@ -180,8 +186,16 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
     if (_initialized != true && _initializing != true) {
       _initializing = true;
       await init();
-      if (info.state.matchedLocation == info.state.location) {
-        setup().then((value) {
+
+      var slocation = info.state.location;
+      if (slocation?.contains('?') == true) {
+        slocation = slocation.substring(0, slocation.indexOf('?'));
+      }
+
+      if (info.state.matchedLocation == slocation) {
+        setup().then((value) async {
+          _loaded = true;
+          await widget.info.init();
           rasterize();
         });
       }
@@ -195,6 +209,7 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
 
   @override
   dispose() {
+    _scope.dispose();
     super.dispose();
   }
 
@@ -208,8 +223,8 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
       resizeToAvoidBottomInset: true,
       drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer ? $drawer : null),
       backgroundColor: application.settings.colors.background,
-      extendBody: _scope.window.overlay.extendBody,
-      extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
+      extendBody: _scope.window.overlay.extendScaffoldBottom,
+      extendBodyBehindAppBar: _scope.window.overlay.extendScaffoldTop,
       body: WillPopScope(
         onWillPop: () async {
           if (_scope.isBusy) {
@@ -364,6 +379,8 @@ class PageView<T extends PageWidget, A extends Application, M extends PageInfo> 
   PageContainer<A, M> get container => info.container;
 
   GlobalKey<ScaffoldState> get scaffold => _scaffold;
+
+  bool get loaded => _loaded == true;
 }
 
 class _PageArgs<A extends Application, M extends PageInfo> {
@@ -380,6 +397,23 @@ class PageInfo {
   PageInfo _parent;
   PageScope _scope;
   Function([dynamic value]) _onChildPoped;
+
+  PageContainer get root {
+    var $c = this;
+    PageContainer $r;
+
+    while ($c != null) {
+      if ($c.container != null) {
+        $r = $c.container;
+      }
+      $c = $c.parent;
+    }
+
+    return $r;
+  }
+
+  @protected
+  Future init() async {}
 
   String get name => _name;
 

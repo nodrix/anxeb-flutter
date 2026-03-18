@@ -18,6 +18,11 @@ class LookupDialog<V> extends ScopeDialog {
   final FieldWidgetTheme theme;
   final String initialLookup;
   final String Function(V value) subtitleText;
+  final Widget Function(V item, Function(V item) select) itemWidget;
+  final bool autofocus;
+  final double width;
+  final double maxHeight;
+  final Future<V> Function() create;
 
   LookupDialog(
     Scope scope, {
@@ -29,9 +34,24 @@ class LookupDialog<V> extends ScopeDialog {
     this.theme,
     this.initialLookup,
     this.subtitleText,
+    this.itemWidget,
+    this.autofocus,
+    this.width,
+    this.maxHeight,
+    this.create,
   })  : assert(title != null),
         super(scope) {
     super.dismissible = true;
+  }
+
+  bool _canCreate;
+
+  @override
+  Future<V> alternative() async {
+    if (_canCreate == true) {
+      return await create();
+    }
+    return null;
   }
 
   @override
@@ -44,8 +64,16 @@ class LookupDialog<V> extends ScopeDialog {
     };
 
     List<DialogButton> buttons = [
+      //TODO: translate('anxeb.common.add')
+      if (create != null)
+        DialogButton('Nuevo', null, icon: Icons.add, fillColor: scope.application.settings.colors.success, onTap: (context) async {
+          Future.delayed(Duration(milliseconds: 0)).then((value) {
+            scope.unfocus();
+          });
+          _canCreate = true;
+          Navigator.of(context).pop(null);
+        }),
       DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
-      //DialogButton(translate('anxeb.common.accept'), null, onTap: (context) => accept()),
     ];
 
     return AlertDialog(
@@ -80,34 +108,40 @@ class LookupDialog<V> extends ScopeDialog {
                 textAlign: TextAlign.center,
               ),
             ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          LookupListBlock<V>(
-            scope: scope,
-            list: list,
-            displayText: displayText,
-            subtitleText: subtitleText,
-            label: label,
-            theme: theme,
-            initialLookup: initialLookup,
-            onSelect: (V item) {
-              Future.delayed(Duration(milliseconds: 0)).then((value) {
-                scope.unfocus();
-              });
-              Navigator.of(context).pop(item);
-            },
-          ),
-          buttons != null
-              ? Container(
-                  padding: EdgeInsets.only(top: 10),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: TextButton.createList(context, buttons, settings: scope.application.settings),
-                  ),
-                )
-              : Container()
-        ],
+      content: Container(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LookupListBlock<V>(
+              scope: scope,
+              list: list,
+              displayText: displayText,
+              subtitleText: subtitleText,
+              label: label,
+              theme: theme,
+              initialLookup: initialLookup,
+              itemWidget: itemWidget,
+              autofocus: autofocus,
+              maxHeight: maxHeight,
+              onSelect: (V item) {
+                Future.delayed(Duration(milliseconds: 0)).then((value) {
+                  scope.unfocus();
+                });
+                Navigator.of(context).pop(item);
+              },
+            ),
+            buttons != null
+                ? Container(
+                    padding: EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: TextButton.createList(context, buttons, settings: scope.application.settings),
+                    ),
+                  )
+                : Container()
+          ],
+        ),
       ),
     );
   }
@@ -122,6 +156,9 @@ class LookupListBlock<V> extends StatefulWidget {
   final Function(V item) onSelect;
   final String Function(V value) subtitleText;
   final String initialLookup;
+  final Widget Function(V item, Function(V item) select) itemWidget;
+  final bool autofocus;
+  final double maxHeight;
 
   const LookupListBlock({
     @required this.scope,
@@ -132,6 +169,9 @@ class LookupListBlock<V> extends StatefulWidget {
     @required this.onSelect,
     this.subtitleText,
     this.initialLookup,
+    this.itemWidget,
+    this.autofocus,
+    this.maxHeight,
   });
 
   @override
@@ -157,7 +197,9 @@ class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
             _items = value;
           });
         });
-        form.focus('lookup', force: true);
+        if (widget.autofocus != false) {
+          form.focus('lookup', force: true);
+        }
         setState(() {});
       } catch (err) {
         _items = null;
@@ -194,10 +236,12 @@ class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: _items?.isNotEmpty == true
                     ? _items
-                        .map((e) => ListTitleBlock(
+                        .map((e) =>
+                            widget.itemWidget?.call(e, widget.onSelect) ??
+                            ListTitleBlock(
                               scope: widget.scope,
                               iconTrail: Icons.chevron_right,
-                              iconTrailPadding: widget.subtitleText != null ? const EdgeInsets.only(top: 10) : null,
+                              iconTrailPadding: widget.subtitleText?.call(e)?.isNotEmpty == true ? const EdgeInsets.only(top: 10) : null,
                               iconTrailScale: 0.4,
                               busy: false,
                               iconScale: 0.6,
@@ -215,44 +259,48 @@ class _LookupListBlockState<V> extends State<LookupListBlock<V>> {
                     : []),
           );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextInputField<String>(
-          scope: widget.scope,
-          name: 'lookup',
-          group: _formName,
-          label: widget.label,
-          theme: widget.theme,
-          action: TextInputAction.done,
-          margin: const EdgeInsets.only(bottom: 10),
-          type: TextInputFieldType.text,
-          autofocus: true,
-          selected: true,
-          onChanged: (newValue) {},
-          onActionSubmit: (text) async {
-            setState(() {
-              _busy = true;
-            });
-            try {
-              _items = await widget.list(text);
-              form.focus('lookup', force: true);
-              setState(() {});
-            } catch (err) {
-              _items = null;
-            } finally {
+    return Container(
+      height: widget.scope.window.available.height * .7,
+      constraints: BoxConstraints(maxHeight: widget.maxHeight ?? 530),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextInputField<String>(
+            scope: widget.scope,
+            name: 'lookup',
+            group: _formName,
+            label: widget.label,
+            theme: widget.theme,
+            action: TextInputAction.done,
+            margin: const EdgeInsets.only(bottom: 10),
+            type: TextInputFieldType.text,
+            autofocus: widget.autofocus ?? true,
+            selected: widget.autofocus ?? true,
+            onChanged: (newValue) {},
+            onActionSubmit: (text) async {
               setState(() {
-                _busy = false;
+                _busy = true;
               });
-            }
-          },
-        ),
-        Container(
-          height: 200,
-          width: 400,
-          child: body,
-        ),
-      ],
+              try {
+                _items = await widget.list(text);
+                if (widget.autofocus != false) {
+                  form.focus('lookup', force: true);
+                }
+                setState(() {});
+              } catch (err) {
+                _items = null;
+              } finally {
+                setState(() {
+                  _busy = false;
+                });
+              }
+            },
+          ),
+          Expanded(
+            child: body,
+          ),
+        ],
+      ),
     );
   }
 

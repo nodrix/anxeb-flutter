@@ -103,7 +103,7 @@ class ReferencerDialog<V> extends ScopeDialog<List<V>> {
               padding: EdgeInsets.only(top: 10, left: 4, right: 4),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: buttonsWidth == null ? null : MainAxisAlignment.end,
+                mainAxisAlignment: buttonsWidth == null ? MainAxisAlignment.center : MainAxisAlignment.end,
                 children: TextButton.createList(
                   context,
                   [

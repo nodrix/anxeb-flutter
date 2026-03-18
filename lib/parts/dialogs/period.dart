@@ -11,8 +11,10 @@ class PeriodDialog extends ScopeDialog {
   final IconData icon;
   final PeriodValue selectedValue;
   final bool allowAllMonths;
+  final Color selectedFillColor;
+  final Color selectedTextColor;
 
-  PeriodDialog(Scope scope, {this.title, this.icon, this.selectedValue, this.allowAllMonths})
+  PeriodDialog(Scope scope, {this.title, this.icon, this.selectedValue, this.allowAllMonths, this.selectedFillColor, this.selectedTextColor})
       : assert(title != null),
         super(scope) {
     super.dismissible = true;
@@ -61,6 +63,8 @@ class PeriodDialog extends ScopeDialog {
           scope: scope,
           selected: selectedValue,
           allowAllMonths: allowAllMonths,
+          selectedFillColor: selectedFillColor ?? Colors.blue,
+          selectedTextColor: selectedTextColor ?? Colors.white,
           onTap: (value) {
             Navigator.of(context).pop(value);
           },
@@ -75,8 +79,17 @@ class PeriodSelector extends StatefulWidget {
   final PeriodValue selected;
   final Function(PeriodValue value) onTap;
   final bool allowAllMonths;
+  final Color selectedFillColor;
+  final Color selectedTextColor;
 
-  PeriodSelector({@required this.scope, this.selected, this.onTap, this.allowAllMonths});
+  PeriodSelector({
+    @required this.scope,
+    this.selected,
+    this.onTap,
+    this.allowAllMonths,
+    this.selectedFillColor,
+    this.selectedTextColor,
+  });
 
   @override
   _PeriodSelectorState createState() => _PeriodSelectorState();
@@ -90,7 +103,7 @@ class _PeriodSelectorState extends State<PeriodSelector> {
   int _selectedMonth;
 
   @override
-  void setState(fn) {
+  initState() {
     for (var i = currentYear - 3; i <= currentYear; i++) {
       _years.add(i);
     }
@@ -101,6 +114,11 @@ class _PeriodSelectorState extends State<PeriodSelector> {
     if (_selectedYear == null) {
       _selectedYear = widget.selected?.year ?? currentYear;
     }
+    super.initState();
+  }
+
+  @override
+  void setState(fn) {
     super.setState(fn);
   }
 
@@ -119,8 +137,8 @@ class _PeriodSelectorState extends State<PeriodSelector> {
               return TextButton(
                 caption: $year.toString(),
                 radius: settings.dialogs.buttonRadius,
-                textColor: _selectedYear == $year ? settings.colors.active : null,
-                color: _selectedYear == $year ? settings.colors.primary : settings.colors.secudary,
+                textColor: _selectedYear == $year ? widget.selectedTextColor ?? settings.colors.active : null,
+                color: _selectedYear == $year ? widget.selectedFillColor ?? settings.colors.primary : settings.colors.secudary,
                 margin: EdgeInsets.symmetric(vertical: 5),
                 onPressed: () {
                   setState(() {
@@ -130,6 +148,7 @@ class _PeriodSelectorState extends State<PeriodSelector> {
                 },
                 type: ButtonType.primary,
                 size: ButtonSize.small,
+                textStyle: widget.scope.application.settings.dialogs.buttonTextStyle,
               );
             }).toList()),
         Container(
@@ -169,6 +188,7 @@ class _PeriodSelectorState extends State<PeriodSelector> {
                         },
                         type: ButtonType.primary,
                         size: ButtonSize.small,
+                        textStyle: widget.scope.application.settings.dialogs.buttonTextStyle,
                       ),
                     ),
                   )
@@ -185,8 +205,8 @@ class _PeriodSelectorState extends State<PeriodSelector> {
                       child: TextButton(
                         caption: Utils.convert.fromIndexToMonth($month),
                         radius: settings.dialogs.buttonRadius,
-                        textColor: activeMonth && _selectedMonth == $month ? settings.colors.active : null,
-                        color: activeMonth && _selectedMonth == $month ? settings.colors.primary : settings.colors.secudary,
+                        textColor: activeMonth && _selectedMonth == $month ? widget.selectedTextColor ?? settings.colors.active : null,
+                        color: activeMonth && _selectedMonth == $month ? widget.selectedFillColor ?? settings.colors.primary : settings.colors.secudary,
                         margin: EdgeInsets.symmetric(vertical: 5),
                         onPressed: () {
                           setState(() {
@@ -199,6 +219,7 @@ class _PeriodSelectorState extends State<PeriodSelector> {
                         },
                         type: ButtonType.primary,
                         size: ButtonSize.small,
+                        textStyle: widget.scope.application.settings.dialogs.buttonTextStyle,
                       ),
                     ),
                   );
@@ -237,6 +258,16 @@ class PeriodValue {
       'year': _year,
       'month': _month,
     };
+  }
+
+  String toYYYYMM() {
+    if (_year != null) {
+      if (_month != null) {
+        return '${_year.toString().padLeft(4, '0')}${_month.toString().padLeft(2, '0')}';
+      }
+      return '${_year.toString().padLeft(4, '0')}';
+    }
+    return null;
   }
 
   @override

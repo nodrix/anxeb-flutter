@@ -46,6 +46,9 @@ class FieldWidgetTheme {
   final bool borderless;
   final bool fixedLabel;
   final BorderRadius borderRadius;
+  final TextAlign textAlign;
+  final double heightWithValue;
+  final double heightWithoutValue;
 
   FieldWidgetTheme({
     this.isDense,
@@ -89,6 +92,9 @@ class FieldWidgetTheme {
     this.borderless,
     this.fixedLabel,
     this.borderRadius,
+    this.textAlign,
+    this.heightWithValue,
+    this.heightWithoutValue,
   });
 }
 
@@ -117,6 +123,8 @@ class FieldWidget<V> extends StatefulWidget {
   final Function(V value) applier;
   final bool initialSelected;
   final FieldWidgetTheme theme;
+  final bool keepLookingUp;
+  final double height;
 
   FieldWidget({
     @required this.scope,
@@ -143,6 +151,8 @@ class FieldWidget<V> extends StatefulWidget {
     this.initialSelected,
     this.theme,
     this.sufixIcon,
+    this.keepLookingUp,
+    this.height,
   })  : assert(scope != null && name != null),
         super(key: key ?? scope.forms.key(group ?? scope.key, name));
 
@@ -206,8 +216,9 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   @protected
   Widget display([String text]) {
-    return Padding(
-      padding: !hasValue ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
+    return Container(
+      //padding: !hasValue ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
+      margin: hasValue ? EdgeInsets.only(top: 3) : EdgeInsets.zero,
       child: Text(
         text ?? value?.toString() ?? widget.label,
         style: widget?.theme?.displayStyle ??
@@ -448,6 +459,11 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
 
   @protected
   Widget field() {
+    var height = (hasValue ? widget.theme?.heightWithValue : (widget.theme?.heightWithoutValue ?? 40.0));
+    if (widget.height != null) {
+      height = widget.height + (hasValue ? 0 : 16);
+    }
+
     return MouseRegion(
       cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
       onHover: (event) {
@@ -522,7 +538,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
                             if (widget.readonly == true) {
                               return;
                             }
-                            if (hasValue || canClear) {
+                            if ((hasValue || canClear) && widget.keepLookingUp != true) {
                               clear();
                             } else {
                               _beginLookup();
@@ -532,7 +548,14 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
                         ),
                       ),
               ),
-              child: display(),
+              child: Container(
+                height: height,
+                //color: hasValue ? Colors.red : Colors.transparent ,
+                alignment: Alignment.centerLeft,
+                //padding: EdgeInsets.all(2),
+                //color: Colors.red,
+                child: display(),
+              ),
             );
           },
         ),
@@ -572,7 +595,7 @@ class Field<V, F extends FieldWidget<V>> extends FieldState<V, F> with AfterInit
       return Icon(Icons.lock_outline, color: widget.scope.application.settings.colors.primary);
     }
 
-    if (hasValue || canClear) {
+    if ((hasValue || canClear) && widget.keepLookingUp != true) {
       return Icon(Icons.clear, color: widget.scope.application.settings.colors.primary);
     } else {
       return Icon(widget.sufixIcon ?? Icons.search, color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary);

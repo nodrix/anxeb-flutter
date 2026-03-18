@@ -24,6 +24,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../parts/dialogs/color.dart';
 import '../parts/dialogs/form.dart';
 import '../parts/dialogs/lookup.dart';
+import '../parts/dialogs/periods.dart';
 import '../parts/dialogs/slider.dart';
 import 'application.dart';
 import 'field.dart';
@@ -46,13 +47,16 @@ class ScopeDialog<V> {
   @protected
   Future setup() => null;
 
+  @protected
+  Future<V> alternative() => null;
+
   Future<V> show() async {
     try {
       scope.unfocus();
       scope.rasterize();
       await scope.idle();
       await setup();
-      return showDialog<V>(
+      var result = await showDialog<V>(
         context: scope.context,
         barrierDismissible: dismissible,
         builder: (BuildContext context) {
@@ -61,6 +65,10 @@ class ScopeDialog<V> {
           );
         },
       );
+      if (result == null) {
+        result = await alternative();
+      }
+      return result;
     } catch (err) {
       scope.alerts.error(err).show();
       return null;
@@ -128,7 +136,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body}) {
+  MessageDialog information(String title, {String message, List<DialogButton> buttons, IconData icon, Widget Function(BuildContext context) body, double width}) {
     _scope.application?.onEvent?.call(ApplicationEventType.information, reference: title, description: message);
 
     return MessageDialog(
@@ -141,20 +149,32 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.primary,
       iconColor: _scope.application.settings.colors.primary,
       buttons: buttons,
+      width: width,
     );
   }
 
-  PeriodDialog period(String title, {IconData icon, PeriodValue selectedValue, bool allowAllMonths}) {
+  PeriodDialog period(String title, {IconData icon, PeriodValue selectedValue, bool allowAllMonths, Color selectedFillColor, Color selectedTextColor}) {
     return PeriodDialog(
       _scope,
       title: title,
       icon: icon ?? CommunityMaterialIcons.calendar_week,
       selectedValue: selectedValue,
       allowAllMonths: allowAllMonths,
+      selectedFillColor: selectedFillColor,
+      selectedTextColor: selectedTextColor,
     );
   }
 
-  MultiOptionsDialog multi<V>(String title, {IconData icon, List<DialogButton<V>> options, List<V> selectedValues, bool swap}) {
+  PeriodsDialog periods(String title, {IconData icon, List<PeriodValue> values}) {
+    return PeriodsDialog(
+      _scope,
+      title: title,
+      icon: icon ?? CommunityMaterialIcons.calendar_week,
+      selectedValues: values,
+    );
+  }
+
+  MultiOptionsDialog multi<V>(String title, {IconData icon, List<DialogButton<V>> options, List<V> selectedValues, bool swap, double height}) {
     Function cancel = (context) {
       Navigator.of(context).pop();
     };
@@ -168,6 +188,7 @@ class ScopeDialogs {
         icon: icon,
         options: options,
         selectedValues: selectedValues,
+        height: height,
         buttons: swap == true
             ? [
                 DialogButton(translate('anxeb.common.cancel'), null, onTap: (context) => cancel(context)),
@@ -227,7 +248,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget Function(BuildContext context) body, bool swap}) {
+  MessageDialog confirm(String message, {String title, String yesLabel, String noLabel, Widget Function(BuildContext context) body, bool swap, double width}) {
     _scope.application?.onEvent?.call(ApplicationEventType.prompt, reference: title ?? message, description: title == null ? null : message);
     return MessageDialog(
       _scope,
@@ -240,6 +261,7 @@ class ScopeDialogs {
       titleColor: _scope.application.settings.colors.info,
       body: body,
       iconColor: _scope.application.settings.colors.info,
+      width: width,
       buttons: swap == true
           ? [
               DialogButton(noLabel ?? translate('anxeb.common.no'), false),
@@ -252,7 +274,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog qr(String value, {IconData icon, String title, List<DialogButton> buttons, String tip, double size}) {
+  MessageDialog qr(String value, {Color color, bool showValueText, IconData icon, String title, List<DialogButton> buttons, String tip, Widget bottom, double size, double width}) {
     final $size = size ?? _scope.window.available.width * 0.6;
 
     return MessageDialog(
@@ -261,15 +283,27 @@ class ScopeDialogs {
       title: title,
       iconSize: 65,
       messageColor: _scope.application.settings.colors.text,
-      titleColor: _scope.application.settings.colors.info,
+      titleColor: color ?? _scope.application.settings.colors.info,
+      iconColor: color ?? _scope.application.settings.colors.primary,
       buttons: buttons,
+      width: width,
       body: (context) {
         return Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             Container(
               width: $size,
               height: $size,
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.only(top: 20, bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _scope.application.settings.colors.primary,
+                  width: 1,
+                ),
+              ),
               child: QrImage(
                 data: value,
                 version: QrVersions.auto,
@@ -277,21 +311,35 @@ class ScopeDialogs {
                 size: $size,
               ),
             ),
-            tip != null
+            if (showValueText == true)
+              TextInputField(
+                name: 'qr_value',
+                scope: _scope,
+                margin: const EdgeInsets.only(top: 12, bottom: 28),
+                icon: Icons.qr_code,
+                label: 'Valor',
+                type: TextInputFieldType.text,
+                readonly: true,
+                autofocus: true,
+                selected: true,
+                fetcher: () async => value,
+                action: TextInputAction.next,
+              ),
+            tip != null || bottom != null
                 ? Container(
-                    width: $size,
+                    //width: $size,
                     padding: EdgeInsets.all(6),
-                    child: Text(
-                      tip ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _scope.application.settings.colors.primary),
-                    ),
+                    child: bottom ??
+                        Text(
+                          tip ?? '',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: _scope.application.settings.colors.primary),
+                        ),
                   )
                 : Container(),
           ],
         );
       },
-      iconColor: _scope.application.settings.colors.primary,
       dismissible: true,
     );
   }
@@ -347,7 +395,7 @@ class ScopeDialogs {
     );
   }
 
-  MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group}) {
+  MessageDialog promptScan(String title, {String value, BarcodeInputFieldType type, String label, FormFieldValidator<String> validator, String hint, IconData icon, String acceptLabel, String cancelLabel, bool swap, String group, double width}) {
     var cancel = (BuildContext context) async {
       Future.delayed(Duration(milliseconds: 0)).then((value) {
         _scope.unfocus();
@@ -381,6 +429,7 @@ class ScopeDialogs {
       iconSize: 48,
       messageColor: _scope.application.settings.colors.text,
       titleColor: _scope.application.settings.colors.info,
+      width: width,
       body: (context) => BarcodeInputField(
         scope: _scope,
         controller: _controller,
@@ -428,6 +477,7 @@ class ScopeDialogs {
     FormFieldValidator<String> validator,
     String hint,
     IconData icon,
+    bool suffixActions,
     String acceptLabel,
     String cancelLabel,
     bool swap,
@@ -488,6 +538,7 @@ class ScopeDialogs {
         label: label,
         fetcher: () async => value,
         theme: theme,
+        suffixActions: suffixActions,
         validator: (value) => _typedRequired(value),
         action: TextInputAction.done,
         maxLines: lines,
@@ -585,7 +636,7 @@ class ScopeDialogs {
     return progress(title, icon: icon ?? Icons.file_upload, controller: controller, cancelLabel: cancelLabel, successMessage: successMessage, failedMessage: failedMessage, busyMessage: busyMessage);
   }
 
-  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessage, String busyMessage}) {
+  MessageDialog progress<T>(String title, {T value, IconData icon, String cancelLabel, DialogProcessController controller, bool isDownload, String successMessage, String failedMessage, String busyMessage, double width}) {
     var cancel = (BuildContext context) async {
       controller.cancel();
       Future.delayed(Duration(milliseconds: 0)).then((value) {
@@ -594,13 +645,15 @@ class ScopeDialogs {
       Navigator.of(context).pop(null);
     };
 
-    return MessageDialog(_scope, title: title, icon: icon ?? Icons.edit, iconSize: 48, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.info, body: (context) {
-      controller.onCompleted((result) {
-        Future.delayed(Duration(milliseconds: 0)).then((value) {
-          _scope.unfocus();
-        });
-        Navigator.of(context).pop(result);
-      });
+    return MessageDialog(_scope, title: title, icon: icon ?? Icons.edit, iconSize: 48, messageColor: _scope.application.settings.colors.text, titleColor: _scope.application.settings.colors.info, width: width, body: (context) {
+      controller.onCompleted(
+        (result) {
+          Future.delayed(Duration(milliseconds: 0)).then((value) {
+            _scope.unfocus();
+          });
+          Navigator.of(context).pop(result);
+        },
+      );
 
       return DialogProgress(
         controller: controller,
@@ -615,7 +668,7 @@ class ScopeDialogs {
     ]);
   }
 
-  LookupDialog lookup<V>({String title, IconData icon, String listing, Future<List<V>> Function(String text) list, String Function(V value) displayText, String Function(V value) subtitleText, String label, FieldWidgetTheme theme, String initialLookup}) {
+  LookupDialog lookup<V>({String title, IconData icon, bool autofocus, double width, double maxHeight, String listing, Future<V> Function() create, Future<List<V>> Function(String text) list, String Function(V value) displayText, String Function(V value) subtitleText, String label, FieldWidgetTheme theme, String initialLookup, Widget Function(V item, Function(V item) onSelect) itemWidget}) {
     return LookupDialog<V>(
       _scope,
       title: title,
@@ -626,6 +679,11 @@ class ScopeDialogs {
       theme: theme,
       initialLookup: initialLookup,
       subtitleText: subtitleText,
+      itemWidget: itemWidget,
+      width: width,
+      maxHeight: maxHeight,
+      autofocus: autofocus,
+      create: create,
     );
   }
 
@@ -644,6 +702,7 @@ class ScopeDialogs {
     EdgeInsets contentPadding,
     EdgeInsets insetPadding,
     BorderRadius borderRadius,
+    double width,
   }) {
     return MessageDialog(
       _scope,
@@ -660,11 +719,12 @@ class ScopeDialogs {
       contentPadding: contentPadding,
       insetPadding: insetPadding,
       borderRadius: borderRadius,
+      width: width,
     );
   }
 
-  DateTimeDialog dateTime({DateTime value, bool pickTime}) {
-    return DateTimeDialog(_scope, value: value, pickTime: pickTime);
+  DateTimeDialog dateTime({DateTime value, bool pickTime, DateTime firstDate, DateTime lastDate, bool onlyMondays}) {
+    return DateTimeDialog(_scope, value: value, pickTime: pickTime, firstDate: firstDate, lastDate: lastDate, onlyMondays: onlyMondays);
   }
 
   SliderDialog slider({List<SliderItem> slides}) {
@@ -684,6 +744,7 @@ class DialogButton<T> {
   final T value;
   final Color fillColor;
   final Color textColor;
+  final FontWeight fontWeight;
   final IconData icon;
   final Future<T> Function(BuildContext context) onTap;
   final bool swapIcon;
@@ -695,6 +756,7 @@ class DialogButton<T> {
     this.onTap,
     this.fillColor,
     this.textColor,
+    this.fontWeight,
     this.icon,
     this.swapIcon,
     this.visible,

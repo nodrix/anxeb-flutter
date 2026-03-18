@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
-
 import 'middleware/window_manager.dart';
 
 class AndroidMiddleware {

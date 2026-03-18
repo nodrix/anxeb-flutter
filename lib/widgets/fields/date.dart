@@ -9,6 +9,8 @@ class DateInputField extends FieldWidget<DateTime> {
   final dynamic Function(DateTime value) dataValue;
   final String locale;
   final bool pickTime;
+  final DateTime firstDate;
+  final DateTime lastDate;
 
   DateInputField({
     @required Scope scope,
@@ -38,6 +40,8 @@ class DateInputField extends FieldWidget<DateTime> {
     this.dataValue,
     this.locale,
     this.pickTime,
+    this.firstDate,
+    this.lastDate,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -84,5 +88,12 @@ class _DateInputFieldState extends Field<DateTime, DateInputField> {
   dynamic data() => widget.dataValue?.call(value) ?? value;
 
   @override
-  Future<DateTime> lookup() async => await widget.scope.dialogs.dateTime(value: value, pickTime: widget.pickTime).show();
+  Future<DateTime> lookup() async => await widget.scope.dialogs
+      .dateTime(
+        value: value,
+        pickTime: widget.pickTime,
+        firstDate: widget.firstDate,
+        lastDate: widget.lastDate,
+      )
+      .show();
 }

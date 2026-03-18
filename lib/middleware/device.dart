@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:camera/camera.dart';
+import 'package:device_information/device_information.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info/device_info.dart';
 import 'package:file_picker/file_picker.dart';
@@ -41,6 +42,12 @@ class Device {
 
   static bool isWeb = kIsWeb == true;
 
+  /*static Future<ActiveWifiNetwork> get wifi => AndroidFlutterWifi.getActiveWifiInfo();
+
+  static Future<DhcpInfo> get network => AndroidFlutterWifi.getDhcpInfo();
+
+  static Future<List<ConfiguredNetwork>> get networks => AndroidFlutterWifi.getConfiguredNetworks();*/
+
   static Future launchStore({String appStoreId, String androidAppBundleId}) async {
     OpenStore.instance.open(
       appStoreId: appStoreId,
@@ -48,11 +55,15 @@ class Device {
     );
   }
 
-  static Future launchUrl({@required Scope scope, @required String url, UL.LaunchMode mode = UL.LaunchMode.platformDefault}) async {
+  static Future launchUrl({@required Scope scope, @required String url, UL.LaunchMode mode = UL.LaunchMode.platformDefault, Map<String, String> headers}) async {
     try {
-      await UL.launchUrl(Uri.parse(url), mode: mode);
+      await UL.launchUrl(Uri.parse(url), mode: mode, webViewConfiguration: UL.WebViewConfiguration(headers: headers ?? {}));
     } catch (err) {
-      scope.dialogs.exception(translate('anxeb.exceptions.navigator_init')).show(); //Error iniciando navegador web
+      try {
+        await UL.launchUrl(Uri.parse(url), webViewConfiguration: UL.WebViewConfiguration(headers: headers ?? {}));
+      } catch (err) {
+        scope.dialogs.exception(translate('anxeb.exceptions.navigator_init'), message: err.toString()).show(); //Error iniciando navegador web
+      }
     }
   }
 
@@ -93,7 +104,7 @@ class Device {
     return result;
   }
 
-  static Future<String> scan({@required Scope scope, FileSourceOption option, String title, bool autoflash}) async {
+  static Future<String> scan({@required Scope scope, FileSourceOption option, String title, bool autoflash, bool useAltCamera}) async {
     String value;
     bool useCameraHelper;
 
@@ -110,6 +121,7 @@ class Device {
       try {
         var scanResult = await BarcodeScanner.scan(
           options: ScanOptions(
+            useCamera: useAltCamera == true ? 1 : 0,
             strings: {
               'cancel': 'X',
               'flash_on': translate('anxeb.device.camera.flash_on_label'), //TR Encender Luz
@@ -202,16 +214,10 @@ class Device {
         }
       } else if (err.code == 'already_active') {
         //THIS IS A LIBRARY ISSUE
-        await scope?.alerts?.error
-            ?.call(err)
-            ?.show
-            ?.call();
+        await scope?.alerts?.error?.call(err)?.show?.call();
       } else {
         print('Not registered file browser code: ${err.code}');
-        await scope?.alerts?.error
-            ?.call(err)
-            ?.show
-            ?.call();
+        await scope?.alerts?.error?.call(err)?.show?.call();
       }
     } catch (err) {
       await Future.delayed(Duration(milliseconds: 500));
@@ -220,10 +226,7 @@ class Device {
         await scope?.idle?.call();
         _isBusy = false;
       }
-      await scope?.alerts?.error
-          ?.call(err)
-          ?.show
-          ?.call();
+      await scope?.alerts?.error?.call(err)?.show?.call();
     }
 
     if (picker?.files?.isNotEmpty == true) {
@@ -238,7 +241,7 @@ class Device {
 }
 
 class DevicePermissions {
-  Permission get calendar => Permission.calendar;
+  Permission get calendar => Permission.calendarReadOnly;
 
   Permission get camera => Permission.camera;
 
@@ -362,8 +365,17 @@ class DeviceInfo {
       }
     }
     _package = await PackageInfo.fromPlatform();
+
     return this;
   }
+
+  Future<String> get imei => DeviceInformation.deviceIMEINumber;
+
+  /*Future<String> get ipAddress async {
+    var network = await AndroidFlutterWifi.getDhcpInfo();
+    String ipString = AndroidFlutterWifi.toIp(network.gateway);
+    return AndroidFlutterWifi.getFormedIp(ipString);
+  }*/
 
   bool get isAndroid => kIsWeb != true && Platform.isAndroid;
 

@@ -112,7 +112,6 @@ class _FileInputFieldState extends Field<FileInputValue, FileInputField> {
           return files.single;
         },
       );
-
       if (dataFile != null) {
         return FileInputValue(
           data: dataFile.bytes,

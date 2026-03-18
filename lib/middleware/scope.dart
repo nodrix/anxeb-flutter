@@ -8,7 +8,6 @@ import 'application.dart';
 import 'auth.dart';
 import 'dialog.dart';
 import 'disk.dart';
-import 'analytics.dart';
 import 'form.dart';
 import 'alert.dart';
 import 'sheet.dart';
@@ -85,17 +84,10 @@ class Scope {
   }
 
   Future setup() async {
-    if (application.settings.analytics.available == true) {
-      application.analytics.setup(scope: this);
-    }
     application?.onEvent?.call(ApplicationEventType.view, reference: key);
   }
 
-  void dispose() {
-    if (application.settings.analytics.available == true) {
-      application.analytics.reset();
-    }
-  }
+  void dispose() {}
 
   Future busy({int timeout, String text, bool dismissable = true}) {
     var busyPromise = Completer();
@@ -161,19 +153,22 @@ class Scope {
                                     strokeWidth: 3,
                                     valueColor: AlwaysStoppedAnimation<Color>(application.settings.colors.foreground ?? Color(0xffefefef)),
                                   ),
-                                  height: 32,
-                                  width: 32,
+                                  height: application.settings.dialogs.busyBoxIndicatorSize ?? 32,
+                                  width: application.settings.dialogs.busyBoxIndicatorSize ?? 32,
                                 ),
                                 Container(
                                   padding: EdgeInsets.only(top: 16),
-                                  child: Text(text ?? translate('anxeb.common.loading'), //TR 'Cargando'
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w200,
-                                        color: application.settings.colors.foreground ?? Colors.white,
-                                        decoration: TextDecoration.none,
-                                      )),
+                                  child: Text(
+                                    text ?? translate('anxeb.common.loading'), //TR 'Cargando'
+                                    textAlign: TextAlign.center,
+                                    style: application.settings.dialogs.busyBoxTextStyle ??
+                                        TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w200,
+                                          color: application.settings.colors.foreground ?? Colors.white,
+                                          decoration: TextDecoration.none,
+                                        ),
+                                  ),
                                 )
                               ],
                             ),
@@ -252,8 +247,6 @@ class Scope {
   BuildContext get context => _context;
 
   Window get window => _window;
-
-  Analytics get analytics => application.analytics;
 
   Api get api => application.api;
 

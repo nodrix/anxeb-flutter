@@ -2,7 +2,6 @@ import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:anxeb_flutter/widgets/actions/float.dart';
 import 'package:flutter/material.dart';
 import '../screen/scope.dart';
-import 'device.dart';
 
 class ScreenAction {
   final ScreenScope scope;
@@ -59,6 +58,7 @@ class ScreenAction {
     if (_hidden == true || isVisible?.call() == false) {
       return null;
     }
+
     return FloatAction(
       scope: scope,
       onPressed: onPressed,
@@ -67,9 +67,10 @@ class ScreenAction {
       disabled: isDisabled?.call(),
       alternates: alternates,
       separation: separation,
-      topOffset: offset,
+      bottomOffset: offset,
       mini: mini,
-      bottomOffset: Device.isAndroid && scope.window.overlay.extendBodyFullScreen == true ? 60.0 : 0.0,
+
+      //bottomOffset: Device.isAndroid && scope.window.overlay.fullScreen == true ? 60.0 : 0.0,
     );
   }
 

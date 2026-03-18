@@ -97,6 +97,10 @@ class _ScreenNavigatorState extends State<ScreenNavigator> {
       return Container();
     }
 
+    var items = _groups.map(($group) => _buildItem($group)).toList() + (_footer != null ? [_footer] : []);
+
+    items.add(SizedBox(height: 50));
+
     return Drawer(
       elevation: 20.0,
       child: Column(
@@ -108,7 +112,7 @@ class _ScreenNavigatorState extends State<ScreenNavigator> {
             child: Container(
               child: ListView(
                 padding: EdgeInsets.zero,
-                children: _groups.map(($group) => _buildItem($group)).toList() + (_footer != null ? [_footer] : []),
+                children: items,
               ),
             ),
           ),

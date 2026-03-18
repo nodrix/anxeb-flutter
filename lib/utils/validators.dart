@@ -143,8 +143,21 @@ class Validators {
     return translate('anxeb.utils.validators.credit_card.mmyy_date_error'); // TR 'Usar formato válido MMYY';
   }
 
+  String numberRequired(value) {
+    if (value == null || value.toString().isEmpty == true) {
+      return translate('anxeb.utils.validators.required.numeric_error'); // TR 'Valor numérico requirido';
+    } else {
+      var numb = Utils.convert.fromStringToDouble(value.toString());
+      if (numb == null) {
+        return translate('anxeb.utils.validators.required.numeric_error'); // TR 'Valor numérico requirido';
+      } else {
+        return null;
+      }
+    }
+  }
+
   String required(value) {
-    if (value == null || value.toString().length == 0) {
+    if (value == null || value.toString() == null || value.toString().length == 0) {
       return translate('anxeb.utils.validators.required.default_error'); // TR 'Campo requirido';
     } else {
       return null;
@@ -255,8 +268,8 @@ class Validators {
       if (value.contains(' ')) {
         return translate('anxeb.utils.validators.password.space_error'); // TR 'Ingrese una contraseña sin espacios';
       }
-      if (value.length < 5 || value.length > 16) {
-        return translate('anxeb.utils.validators.password.length_error'); // TR 'Ingrese una contraseña entre 5 y 16 caracteres';
+      if (value.length < 5 || value.length > 20) {
+        return translate('anxeb.utils.validators.password.length_error'); // TR 'Ingrese una contraseña entre 5 y 20 caracteres';
       }
     }
     return null;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
-
-import '../blocks/menu.dart';
+import '../../anxeb.dart';
 
 class IconButton extends StatefulWidget {
   final bool keyless;
@@ -27,7 +26,7 @@ class IconButton extends StatefulWidget {
   final double contextMenuIconSize;
   final Offset contextMenuOffset;
   final TextStyle contextMenuTextStyle;
-  final List<ContextMenuItem> contextMenuItems;
+  final Future<List<ContextMenuItem>> Function() contextMenuItems;
   final Color contextMenuTextColor;
   final Widget tooltipContent;
   final String tooltipText;
@@ -42,6 +41,7 @@ class IconButton extends StatefulWidget {
   final Color splashColor;
   final Color hoverColor;
   final bool visible;
+  final bool reloadContextMenuEachTap;
 
   IconButton({
     this.keyless,
@@ -82,6 +82,7 @@ class IconButton extends StatefulWidget {
     this.splashColor,
     this.hoverColor,
     this.visible,
+    this.reloadContextMenuEachTap = true,
   });
 
   @override
@@ -91,6 +92,36 @@ class IconButton extends StatefulWidget {
 class _IconButtonState extends State<IconButton> {
   bool _busy = false;
   bool _enableAction = true;
+  List<ContextMenuItem> _items;
+
+  Future _retrieveContextItems() async {
+    if (widget.contextMenuItems != null) {
+      try {
+        if (mounted) {
+          setState(() {
+            _busy = true;
+          });
+        }
+        _items = await widget.contextMenuItems();
+        setState(() {
+          _busy = false;
+        });
+        await Future.delayed(Duration(milliseconds: 5));
+        PopupMenuButtonState<Function> state = _menu.currentState;
+        state.showButtonMenu();
+      } catch (err) {
+        //ignore
+      } finally {
+        setState(() {
+          _busy = false;
+        });
+      }
+    } else {
+      _items = [];
+    }
+  }
+
+  GlobalKey _menu = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -102,8 +133,9 @@ class _IconButtonState extends State<IconButton> {
     var $fore = widget.innerColor ?? Colors.white;
     PopupMenuButton<Function> contextMenu;
 
-    if (widget.contextMenuItems?.isNotEmpty == true) {
+    if (widget.contextMenuItems != null) {
       contextMenu = PopupMenuButton<Function>(
+        key: _menu,
         icon: Icon(
           widget.icon ?? Icons.more_vert,
           size: widget.iconSize ?? (30 * (widget.scale ?? 1.0)),
@@ -116,13 +148,46 @@ class _IconButtonState extends State<IconButton> {
           func?.call();
         },
         padding: EdgeInsets.all(0),
+        constraints: BoxConstraints(minWidth: 0),
         itemBuilder: (BuildContext context) {
           var result = <PopupMenuEntry<Function>>[];
+          if ((_items == null && widget.contextMenuItems != null)) {
+            if (_busy != true) {
+              _retrieveContextItems();
+            }
+            return [];
+          }
 
-          for (var i = 0; i < widget.contextMenuItems.length; i++) {
-            var item = widget.contextMenuItems[i];
+          for (var i = 0; i < _items.length; i++) {
+            var item = _items[i];
             if (item.onTap == null || item.visible == false) {
               continue;
+            }
+
+            if (item.title != null) {
+              result.add(
+                PopupMenuItem<Function>(
+                  height: 20,
+                  enabled: false,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          child: Text(item.title.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: const Color(0xff333333))),
+                          margin: EdgeInsets.only(bottom: 9, top: 6),
+                          padding: EdgeInsets.only(bottom: 2),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(width: 0.7, color: const Color(0xff333333)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }
 
             if (item.divided == true) {
@@ -131,20 +196,32 @@ class _IconButtonState extends State<IconButton> {
 
             result.add(PopupMenuItem<Function>(
               height: widget.contextMenuItemHeight ?? 35,
-              onTap: item.onTap ?? () {},
-              child: Row(
-                children: [
-                  Container(
-                    child: Icon(item.icon, size: widget.contextMenuIconSize, color: item.color ?? widget.contextMenuTextColor ?? const Color(0xff333333)),
-                    width: 26,
-                  ),
-                  Container(
-                    child: Text(item.label, style: widget.contextMenuTextStyle ?? TextStyle(color: widget.contextMenuTextColor ?? const Color(0xff333333))),
-                    padding: EdgeInsets.only(left: 12),
-                  ),
-                ],
+              onTap: () {
+                if (item.enabled == false) {
+                  return;
+                }
+                item.onTap?.call();
+              },
+              enabled: item.enabled != false,
+              child: Opacity(
+                opacity: item.enabled == false ? 0.6 : 1.0,
+                child: Row(
+                  children: [
+                    Container(
+                      child: Icon(item.icon, size: widget.contextMenuIconSize, color: item.iconColor ?? widget.contextMenuTextColor ?? const Color(0xff333333)),
+                      width: 26,
+                    ),
+                    Container(
+                      child: Text(item.label, style: widget.contextMenuTextStyle ?? TextStyle(color: item.textColor ?? widget.contextMenuTextColor ?? const Color(0xff333333))),
+                      padding: EdgeInsets.only(left: 12),
+                    ),
+                  ],
+                ),
               ),
             ));
+          }
+          if (widget.reloadContextMenuEachTap == true) {
+            _items = null;
           }
           return result;
         },
@@ -181,10 +258,11 @@ class _IconButtonState extends State<IconButton> {
       child: Material(
         key: widget.keyless == true ? null : GlobalKey(),
         color: $fill,
-        child: widget.enabled != false
+        child: widget.enabled != false && (widget.action != null || contextMenu != null)
             ? InkWell(
                 splashColor: widget.splashColor ?? Colors.white,
                 hoverColor: widget.hoverColor,
+                splashFactory: InkSplash.splashFactory,
                 onTap: _enableAction == true
                     ? () async {
                         if (mounted) {
@@ -226,7 +304,7 @@ class _IconButtonState extends State<IconButton> {
                       },
                 child: iconBody,
               )
-            : iconBody,
+            : Opacity(opacity: 0.6, child: iconBody),
       ),
     );
 
@@ -261,6 +339,7 @@ class _IconButtonState extends State<IconButton> {
                     hoverShowDuration: Duration.zero,
                     fadeOutDuration: widget.tooltipFadeDuration ?? Duration(milliseconds: 500),
                     enableFeedback: false,
+                    waitDuration: const Duration(milliseconds: 500),
                     child: Opacity(opacity: widget.opaque == true ? 0.6 : 1.0, child: body),
                   )
                 : Opacity(opacity: widget.opaque == true ? 0.6 : 1.0, child: body),

@@ -3,7 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../anxeb.dart';
 
-class Model<T> {
+abstract class IModel {
+  String toJson();
+
+  dynamic toObjects({bool usePrimaryKeys});
+
+  Data toData();
+}
+
+class Model<T> extends IModel {
   Data _data;
   dynamic _pk;
   String _diskKey;
@@ -81,12 +89,14 @@ class Model<T> {
     }
   }
 
-  void update([data]) {
+  void update(data, {bool useRawData}) {
     if (data is String || data is int) {
       _data = Data();
       _pk = data;
     } else if (data is Model) {
-      data._pushFieldsToData();
+      if (useRawData != true) {
+        data._pushFieldsToData();
+      }
       _data = data.data;
       _pk = _primaryField != null ? _data[_primaryField] : null;
     } else {

@@ -100,13 +100,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
       var result = await widget.scope.dialogs
           .options<V>(
             widget.label,
-            options: options
-                .map(($option) => DialogButton<V>(
-                    widget.displayText != null
-                        ? widget.displayText($option)
-                        : $option?.toString(),
-                    $option))
-                .toList(),
+            options: options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
             selectedValue: value,
             icon: widget.icon,
           )
@@ -128,46 +122,45 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
 
   @override
   Widget display([String text]) {
-    if ((widget.type == null ||
-        widget.type == OptionsInputFieldType.dropdown)) {
+    if ((widget.type == null || widget.type == OptionsInputFieldType.dropdown)) {
       return DropdownButtonHideUnderline(
         child: GestureDetector(
-          onTap: widget.readonly == true ? null : () {
-
-          },
+          onTap: widget.readonly == true ? null : () {},
           child: MouseRegion(
             onHover: (e) {},
-            child: DropdownButton<V>(
-              key: _fieldKey,
-              value: value,
-              borderRadius: BorderRadius.zero,
-              elevation: 0,
-              isExpanded: true,
-              enableFeedback: widget.readonly == true ? false : true,
-              focusColor: Colors.transparent,
-              iconSize: 0,
-              style: widget.theme?.inputStyle ??
-                  (widget.theme?.fontSize != null
-                      ? TextStyle(fontSize: widget.theme?.fontSize)
-                      : (widget.label == null
-                          ? TextStyle(fontSize: 20.25)
-                          : null)),
-              isDense: true,
-              onChanged: widget.readonly == true ? null : (selectedValue) {
-                super.submit(selectedValue);
-              },
-              hint: Container(
-                padding: EdgeInsets.only(top: 1),
-                child: super.display(),
+            child: Container(
+              //height: 14,
+              //color: Colors.blue,
+              //padding: !hasValue ? EdgeInsets.only(top: 5) : EdgeInsets.zero,
+              child: DropdownButton<V>(
+                key: _fieldKey,
+                value: value,
+                borderRadius: BorderRadius.zero,
+                elevation: 0,
+                isExpanded: true,
+                enableFeedback: widget.readonly == true ? false : true,
+                focusColor: Colors.transparent,
+                iconSize: 0,
+                style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
+                /*style: widget?.theme?.displayStyle ??
+                    TextStyle(
+                      fontSize: widget.theme?.fontSize != null ? (widget.theme.fontSize * 0.9) : 16,
+                      color: hasValue ? widget.scope.application.settings.colors.text : Color(0x88000000),
+                    ),*/
+                isDense: true,
+                onChanged: widget.readonly == true
+                    ? null
+                    : (selectedValue) {
+                        super.submit(selectedValue);
+                      },
+                hint: super.display(widget?.displayText?.call(value)),
+                items: options.map((item) {
+                  return DropdownMenuItem<V>(
+                    value: item,
+                    child: Text(widget.displayText != null ? widget.displayText(item) : item?.toString()),
+                  );
+                }).toList(),
               ),
-              items: options.map((item) {
-                return DropdownMenuItem<V>(
-                  value: item,
-                  child: Text(widget.displayText != null
-                      ? widget.displayText(item)
-                      : item?.toString()),
-                );
-              }).toList(),
             ),
           ),
         ),
@@ -193,9 +186,10 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
     }
 
     searchForGestureDetector(_fieldKey.currentContext);
-    assert(detector != null);
 
-    detector.onTap();
+    if (detector?.onTap != null) {
+      detector.onTap();
+    }
   }
 
   @override
@@ -218,11 +212,7 @@ class _OptionsInputFieldState<V> extends Field<V, OptionsInputField<V>> {
         busy = true;
       });
       _options = await widget.options?.call();
-      value = _options.firstWhere(
-          (item) => (widget.comparer != null
-              ? widget.comparer(item, value)
-              : item == value),
-          orElse: () => null);
+      value = _options.firstWhere((item) => (widget.comparer != null ? widget.comparer(item, value) : item == value), orElse: () => null);
     } catch (err) {
       _options = null;
       warning = err.toString();

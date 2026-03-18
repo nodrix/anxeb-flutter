@@ -18,6 +18,10 @@
       <excludeFolder url="file://$MODULE_DIR$/plugins/android_middleware/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/plugins/android_middleware/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/plugins/android_middleware/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/android_kiosk/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/android_kiosk/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/android_kiosk/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/android_kiosk" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 27 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

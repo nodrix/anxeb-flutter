@@ -101,7 +101,16 @@ class Api {
 
   Future<Data> put(String route, data, {Function(int count, int total) progress, CancelToken cancelToken}) => _process(ApiMethods.PUT, route, data: data, progress: progress, cancelToken: cancelToken);
 
-  Future<Data> get(String route, [query]) => _process(ApiMethods.GET, route, query: query);
+  Future<Data> get(String route, {Duration timeout, query, String contentType, ResponseType responseType}) => _process(
+        ApiMethods.GET,
+        route,
+        query: query,
+        options: Options(
+          receiveTimeout: timeout,
+          contentType: contentType ?? 'application/json',
+          responseType: responseType ?? ResponseType.json,
+        ),
+      );
 
   Future<Uint8List> download(String route, {Function(int count, int total) progress, CancelToken cancelToken, query}) async {
     try {

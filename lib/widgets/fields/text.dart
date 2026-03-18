@@ -72,32 +72,33 @@ class TextInputField<V> extends FieldWidget<V> {
     this.selectOnFocus,
     this.formatter,
     this.disableCounter,
-  })  : assert(name != null),
+  })
+      : assert(name != null),
         super(
-          scope: scope,
-          key: key,
-          name: name,
-          group: group,
-          label: label,
-          icon: icon,
-          margin: margin,
-          padding: padding,
-          readonly: readonly,
-          visible: visible,
-          onSubmitted: onSubmitted,
-          onApplied: onApplied,
-          onChanged: onChanged,
-          onTab: onTab,
-          onBlur: onBlur,
-          onFocus: onFocus,
-          validator: validator,
-          parser: parser,
-          focusType: focusType,
-          initialSelected: selected,
-          fetcher: fetcher,
-          applier: applier,
-          theme: theme,
-        );
+        scope: scope,
+        key: key,
+        name: name,
+        group: group,
+        label: label,
+        icon: icon,
+        margin: margin,
+        padding: padding,
+        readonly: readonly,
+        visible: visible,
+        onSubmitted: onSubmitted,
+        onApplied: onApplied,
+        onChanged: onChanged,
+        onTab: onTab,
+        onBlur: onBlur,
+        onFocus: onFocus,
+        validator: validator,
+        parser: parser,
+        focusType: focusType,
+        initialSelected: selected,
+        fetcher: fetcher,
+        applier: applier,
+        theme: theme,
+      );
 
   @override
   _TextInputFieldState createState() => _TextInputFieldState<V>();
@@ -109,6 +110,7 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   TextEditingController _controller2 = TextEditingController();
   bool _editing;
   bool _tabbed;
+  bool _pendingSelect;
 
   _TextInputFieldState() {
     _obscureText = true;
@@ -148,6 +150,12 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     } else if (widget.type == TextInputFieldType.integers) {
       return <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
+    } else if (widget.type == TextInputFieldType.positive) {
+      return <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))];
+    } else if (widget.type == TextInputFieldType.natural) {
+      return <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d*'))];
+    } else if (widget.type == TextInputFieldType.decimals) {
+      return <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))];
     } else {
       return null;
     }
@@ -200,7 +208,11 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   void onFocus() {
     _editing = false;
     if (warning != null || widget.selectOnFocus != false) {
-      select();
+      if (_controller.text.length == 0) {
+        _pendingSelect = true;
+      } else {
+        select();
+      }
     }
     super.onFocus();
   }
@@ -227,6 +239,12 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
   @override
   void present() {
     _controller.text = value != null ? value.toString() : '';
+
+    if (_pendingSelect == true) {
+      select();
+      _pendingSelect = false;
+    }
+
     if (widget.displayText != null) {
       _controller2.text = widget.displayText(value) ?? '';
     }
@@ -292,36 +310,42 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
           widget.onChanged(_convertValue(text));
         }
       },
-      textAlign: TextAlign.left,
+      textAlign: widget.theme?.textAlign != null ? widget.theme?.textAlign : TextAlign.left,
       style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
       decoration: InputDecoration(
         filled: true,
         counterText: widget.disableCounter == true ? '' : null,
-        contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ?? EdgeInsets.only(left: widget.icon == null ? 10 : 0, top: widget.label == null ? 12 : 7, bottom: 7, right: 0),
+        contentPadding: (widget.icon != null ? (widget.theme?.contentPaddingWithIcon ?? widget.scope.application.settings.fields.contentPaddingWithIcon) : (widget.theme?.contentPaddingNoIcon ?? widget.scope.application.settings.fields.contentPaddingNoIcon)) ??
+            EdgeInsets.only(
+              left: widget.icon == null ? 10 : 0,
+              top: widget.label == null ? 12 : 7,
+              bottom: 7,
+              right: 0,
+            ),
         prefixIcon: widget.icon != null
             ? Icon(
-                widget.icon,
-                size: widget.theme?.iconSize ?? widget.theme?.prefixIconSize,
-                color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
-              )
+          widget.icon,
+          size: widget.theme?.iconSize ?? widget.theme?.prefixIconSize,
+          color: widget.theme?.prefixIconColor ?? widget.scope.application.settings.colors.primary,
+        )
             : null,
         labelText: widget.label != null ? (widget.theme?.fixedLabel == true ? widget.label.toUpperCase() : widget.label) : null,
         labelStyle: widget.theme?.fixedLabel == true
             ? TextStyle(
-                fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
-                color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
-                letterSpacing: widget.theme?.labelLetterSpacing ?? 0.8,
-                fontSize: widget.theme?.labelFontSize ?? 15,
-                fontFamily: widget.theme?.labelFontFamily,
-              )
+          fontWeight: widget.theme?.labelFontWeight ?? FontWeight.w500,
+          color: warning != null ? (widget.theme?.dangerColor ?? widget.scope.application.settings.colors.danger) : (widget.theme?.labelColor ?? widget.scope.application.settings.colors.primary),
+          letterSpacing: widget.theme?.labelLetterSpacing ?? 0.8,
+          fontSize: widget.theme?.labelFontSize ?? 15,
+          fontFamily: widget.theme?.labelFontFamily,
+        )
             : (widget.theme?.labelSize != null
-                ? TextStyle(
-                    fontWeight: widget.theme?.labelFontWeight,
-                    color: widget.theme?.labelColor,
-                    letterSpacing: widget.theme?.labelLetterSpacing,
-                    fontSize: widget.theme?.labelSize,
-                  )
-                : widget.theme?.labelStyle),
+            ? TextStyle(
+          fontWeight: widget.theme?.labelFontWeight,
+          color: widget.theme?.labelColor,
+          letterSpacing: widget.theme?.labelLetterSpacing,
+          fontSize: widget.theme?.labelSize,
+        )
+            : widget.theme?.labelStyle),
         floatingLabelBehavior: widget.theme?.fixedLabel == true ? FloatingLabelBehavior.always : null,
         hintText: widget.hint,
         hintStyle: widget.theme?.hintStyle ?? widget.scope.application.settings.fields.hintStyle,
@@ -346,45 +370,45 @@ class _TextInputFieldState<V> extends Field<V, TextInputField<V>> {
         suffixIcon: widget.suffixActions == false
             ? null
             : MouseRegion(
-                cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
-                child: GestureDetector(
-                  dragStartBehavior: DragStartBehavior.down,
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    if (widget.readonly == true) {
-                      return;
-                    }
-                    _tabbed = true;
+          cursor: widget.readonly == true ? SystemMouseCursors.basic : SystemMouseCursors.click,
+          child: GestureDetector(
+            dragStartBehavior: DragStartBehavior.down,
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (widget.readonly == true) {
+                return;
+              }
+              _tabbed = true;
 
-                    if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
-                      if (_controller.text.length == 0) {
-                        focus();
-                      } else {
-                        if (focused) {
-                          _editing = false;
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        } else {
-                          clear();
-                        }
-                      }
-                    } else {
-                      if (focused && warning == null) {
-                        _editing = false;
-                        _convertAndSubmit(_controller.text);
-                      } else {
-                        if (_controller.text.length > 0) {
-                          clear();
-                        } else {
-                          focus();
-                        }
-                      }
-                    }
-                  },
-                  child: _getIcon(),
-                ),
-              ),
+              if (widget.type == TextInputFieldType.password || widget.type == TextInputFieldType.pin) {
+                if (_controller.text.length == 0) {
+                  focus();
+                } else {
+                  if (focused) {
+                    _editing = false;
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  } else {
+                    clear();
+                  }
+                }
+              } else {
+                if (focused && warning == null) {
+                  _editing = false;
+                  _convertAndSubmit(_controller.text);
+                } else {
+                  if (_controller.text.length > 0) {
+                    clear();
+                  } else {
+                    focus();
+                  }
+                }
+              }
+            },
+            child: _getIcon(),
+          ),
+        ),
       ),
     );
 

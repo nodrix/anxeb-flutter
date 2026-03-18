@@ -1,5 +1,5 @@
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart' hide Dialog, TextButton;
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../anxeb.dart';
 
 class ColorDialog extends ScopeDialog {
@@ -52,16 +52,58 @@ class ColorDialog extends ScopeDialog {
             ),
       content: Container(
         child: Column(
-          mainAxisSize: MainAxisSize.min  ,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              child: ColorPicker(
+              /*child: ColorPicker(
                 pickerColor: _value ?? Colors.transparent,
                 hexInputBar: true,
                 displayThumbColor: true,
                 onColorChanged: (color) {
                   _value = color;
                 },
+              ),*/
+              child: SizedBox(
+                //constraints: Device.info.isWeb ? null : BoxConstraints(maxWidth: 432),
+                width: Device.info.isWeb ? 432 : null,
+                child: ColorPicker(
+                  color: _value ?? Colors.transparent,
+                  onColorChanged: (Color color) => _value = color,
+                  width: 37,
+                  height: 37,
+                  borderRadius: 22,
+                  wheelDiameter:189,
+                  showColorCode: true,
+                  enableTonalPalette: true,
+                  pickersEnabled: <ColorPickerType, bool>{
+                    ColorPickerType.both: true,
+                    ColorPickerType.primary: false,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.bw: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                  pickerTypeLabels: {
+                    ColorPickerType.both: 'Predefinidos',
+                    ColorPickerType.primary: 'Primario',
+                    ColorPickerType.accent: 'Secundario',
+                    ColorPickerType.custom: 'Personalizado',
+                    ColorPickerType.wheel: 'Rueda',
+                    ColorPickerType.bw: 'Blanco y Negro',
+                  },
+                  subheading: Container(
+                    padding: EdgeInsets.only(bottom: 10),
+                    margin: EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: scope.application.settings.colors.separator,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
             Container(

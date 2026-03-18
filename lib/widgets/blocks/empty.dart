@@ -5,7 +5,7 @@ import 'paragraph.dart';
 class EmptyBlock extends StatelessWidget {
   const EmptyBlock({
     @required this.scope,
-    @required this.message,
+    this.message,
     this.icon,
     this.loading,
     this.actionCallback,
@@ -16,6 +16,7 @@ class EmptyBlock extends StatelessWidget {
     this.tight,
     this.margin,
     this.fillColor,
+    this.height,
   });
 
   final Scope scope;
@@ -30,6 +31,7 @@ class EmptyBlock extends StatelessWidget {
   final bool tight;
   final EdgeInsets margin;
   final Color fillColor;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -44,22 +46,30 @@ class EmptyBlock extends StatelessWidget {
     var $message = Container();
     var $action = Container();
     Widget $icon = Container(
-      height: 110,
+      height: height ?? 110,
       child: Icon(
         icon,
-        size: 110 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
+        size: (height ?? 110) * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
         color: fillColor ?? scope.application.settings.colors.navigation.withOpacity(0.1),
       ),
     );
 
     if (loading == true) {
       $icon = Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        height: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
-        width: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
-        child: CircularProgressIndicator(
-          strokeWidth: 4,
-          valueColor: AlwaysStoppedAnimation<Color>(fillColor ?? scope.application.settings.colors.primary.withOpacity(0.8)),
+
+        //margin: const EdgeInsets.only(bottom: 10),
+        child: SizedBox(
+          height: ((height ?? 110) * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0)),
+          width: ((height ?? 110) * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0)),
+          /*height: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),
+          width: 50 * (iconScale ?? 1.0) * (fawIcon == true ? 0.8 : 1.0),*/
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: CircularProgressIndicator(
+              strokeWidth: 4,
+              valueColor: AlwaysStoppedAnimation<Color>(fillColor ?? scope.application.settings.colors.primary.withOpacity(0.8)),
+            ),
+          ),
         ),
       );
     }

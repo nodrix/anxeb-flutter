@@ -39,8 +39,9 @@ class ScreenHeader {
       title: body?.call() ?? this.title?.call() ?? (scope.view.title != null ? Text(scope.view.title) : null),
       elevation: elevation?.call(),
       automaticallyImplyLeading: (back == null && dismiss == null && leading == null) ? true : false,
+      systemOverlayStyle: scope.window.overlay.style,
       leading: leading ?? (back != null ? BackButton(onPressed: back) : (dismiss != null ? CloseButton(onPressed: dismiss) : null)),
-      backgroundColor: scope.window?.overlay?.background ?? fill?.call() ?? scope.application.settings.colors.primary,
+      backgroundColor: scope.window?.overlay?.appBarBackgroundColor ?? fill?.call() ?? scope.application.settings.colors.primary,
       bottom: scope?.view?.parts?.tabs?.header?.call(bottomBody: bottom?.call(), height: height) ?? bottom?.call(),
       actions: isVisible?.call() != false ? content() : [],
     );

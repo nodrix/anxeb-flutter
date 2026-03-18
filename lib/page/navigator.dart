@@ -4,6 +4,7 @@ import '../middleware/application.dart';
 import '../middleware/menu.dart';
 
 class PageNavigator extends StatefulWidget {
+  final NavigatorController controller;
   final Application application;
   final bool Function(Anxeb.MenuItem item) isActive;
   final bool Function() isVisible;
@@ -25,6 +26,7 @@ class PageNavigator extends StatefulWidget {
     this.header,
     this.footer,
     this.backgroundColor,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -43,6 +45,11 @@ class _PageNavigatorState extends State<PageNavigator> {
 
   @override
   void initState() {
+    widget.controller?.refresh = () async {
+      if (mounted == true) {
+        setState(() {});
+      }
+    };
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       final showTop = _scrollController.offset > 0;
@@ -71,7 +78,6 @@ class _PageNavigatorState extends State<PageNavigator> {
     _header = widget.header?.call();
     _footer = widget.footer?.call();
 
-    Future.delayed(Duration(milliseconds: 0)).then((value) => mounted == true ? setState(() {}) : null);
     if (_showDownButton == null && _scrollController.hasClients == true) {
       _showDownButton = _scrollController.offset < _scrollController.position.maxScrollExtent - 5;
     }
@@ -285,4 +291,8 @@ class _PageNavigatorState extends State<PageNavigator> {
     }
     return result;
   }
+}
+
+class NavigatorController {
+  Future Function() refresh;
 }

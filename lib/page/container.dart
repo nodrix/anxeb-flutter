@@ -21,6 +21,8 @@ class PageContainer<A extends Application, M extends PageInfo> {
     return [];
   }
 
+  Future rasterize() async {}
+
   Future init(PageMiddleware<A, M> middleware) async {
     _middleware = middleware;
     await setup();

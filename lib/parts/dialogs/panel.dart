@@ -21,12 +21,14 @@ class PanelDialog<V> extends ScopeDialog {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(scope.application.settings.dialogs.dialogRadius ?? 20.0))),
       contentPadding: EdgeInsets.only(bottom: 8, left: 10, right: 10, top: title != null ? 4 : 8),
+      contentTextStyle: scope.application.settings.dialogs.panelContentTextStyle,
       title: title != null
           ? Container(
               padding: EdgeInsets.only(bottom: 10),
               child: new Text(
                 title,
                 textAlign: TextAlign.center,
+                style: scope.application.settings.dialogs.panelTitleTextStyle,
               ),
             )
           : null,

@@ -1,6 +1,7 @@
 import 'package:anxeb_flutter/middleware/dialog.dart';
 import 'package:anxeb_flutter/middleware/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 enum ButtonType { primary, secundary, link, frame }
 
@@ -25,6 +26,8 @@ class TextButton extends StatefulWidget {
   final Color color;
   final Color iconColor;
   final Color textColor;
+  final FontWeight fontWeight;
+  final Color borderColor;
   final double fontSize;
   final double radius;
   final double iconSize;
@@ -37,6 +40,8 @@ class TextButton extends StatefulWidget {
   final double width;
   final TextStyle textStyle;
   final bool visible;
+  final bool busy;
+  final double height;
 
   const TextButton({
     this.padding,
@@ -49,6 +54,8 @@ class TextButton extends StatefulWidget {
     this.color,
     this.iconColor,
     this.textColor,
+    this.fontWeight,
+    this.borderColor,
     this.fontSize,
     this.radius,
     this.iconSize,
@@ -61,6 +68,8 @@ class TextButton extends StatefulWidget {
     this.width,
     this.textStyle,
     this.visible,
+    this.busy,
+    this.height,
   });
 
   @override
@@ -77,6 +86,7 @@ class TextButton extends StatefulWidget {
                 caption: $option.caption,
                 radius: settings.dialogs.buttonRadius,
                 textColor: $option.textColor ?? (selectedValue == $option.value ? $settings.colors.active : null),
+                fontWeight: $option.fontWeight ?? (selectedValue == $option.value ? FontWeight.w600 : null),
                 color: $option.fillColor ?? ($option.value == '*' ? $settings.colors.asterisk : ($option.value == '' ? $settings.colors.danger : (selectedValue == $option.value ? $settings.colors.secudary : $settings.colors.primary))),
                 icon: $option.icon,
                 swapIcon: $option.swapIcon,
@@ -123,6 +133,7 @@ class TextButton extends StatefulWidget {
         swapIcon: $button.swapIcon,
         color: $button.fillColor ?? $settings.colors.primary,
         textColor: $button.textColor ?? Colors.white,
+        fontWeight: $button.fontWeight,
         width: width,
         margin: EdgeInsets.only(top: 10, left: buttons.first == $button ? 0 : 4, right: buttons.last == $button ? 0 : 4),
         onPressed: () async {
@@ -137,6 +148,7 @@ class TextButton extends StatefulWidget {
         },
         type: ButtonType.primary,
         size: ButtonSize.small,
+        textStyle: settings.dialogs.buttonTextStyle,
       );
 
       var isLast = buttons.last.value == $button.value;
@@ -184,24 +196,24 @@ class _TextButtonState extends State<TextButton> {
       fontSize = widget.fontSize ?? _MEDIUM_SIZE;
     }
 
-    var textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.white, fontWeight: FontWeight.normal);
+    var textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.white, fontWeight: widget.fontWeight ?? FontWeight.normal);
     var subtitleStyle = TextStyle(fontSize: fontSize - 5, color: (widget.textColor ?? Colors.white).withOpacity(0.9), fontWeight: FontWeight.w300);
     var color = widget.color ?? _BASE_COLOR;
     var $shape;
 
     if (widget.type == ButtonType.secundary) {
-      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: FontWeight.normal);
+      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: widget.fontWeight ?? FontWeight.normal);
       color = widget.color ?? Colors.white.withOpacity(0.5);
     } else if (widget.type == ButtonType.link) {
-      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? _LINK_COLOR, fontWeight: FontWeight.normal);
+      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? _LINK_COLOR, fontWeight: widget.fontWeight ?? FontWeight.normal);
       color = widget.color ?? Colors.transparent;
       $padding = EdgeInsets.all(5);
     } else if (widget.type == ButtonType.frame) {
-      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: FontWeight.normal);
+      textStyle = TextStyle(fontSize: fontSize, color: widget.textColor ?? Colors.black, fontWeight: widget.fontWeight ?? FontWeight.normal);
       color = widget.color ?? Colors.transparent;
       $shape = RoundedRectangleBorder(
         borderRadius: $borderRadius,
-        side: BorderSide(color: widget.textColor ?? Colors.black, width: 1.5),
+        side: BorderSide(color: widget.borderColor ?? widget.textColor ?? Colors.black, width: 1.5),
       );
     }
 
@@ -212,6 +224,7 @@ class _TextButtonState extends State<TextButton> {
     final $buttonContent = Padding(
       padding: widget.padding ?? $padding ?? EdgeInsets.only(left: 8, right: 8),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           widget.icon != null
               ? Row(
@@ -269,7 +282,23 @@ class _TextButtonState extends State<TextButton> {
 
     Widget button;
 
-    if (widget.enabled == false) {
+    if (widget.busy == true) {
+      button = Container(
+        decoration: BoxDecoration(
+          color: color,
+          boxShadow: widget.type == ButtonType.frame ? null : widget.shadow,
+          borderRadius: $borderRadius,
+        ),
+        child: Container(
+            padding: widget.padding ?? $padding ?? EdgeInsets.only(left: 8, right: 8),
+            margin: widget.subtitle != null ? EdgeInsets.only(top: 2, bottom: 2) : EdgeInsets.zero,
+            alignment: Alignment.center,
+            child: SpinKitThreeBounce(
+              color: widget.textColor ?? Colors.white,
+              size: 20,
+            )),
+      );
+    } else if (widget.enabled == false) {
       button = Container(
         decoration: BoxDecoration(
           color: color,
@@ -285,7 +314,7 @@ class _TextButtonState extends State<TextButton> {
         shape: $shape,
         borderRadius: $shape == null ? $borderRadius : null,
         child: InkWell(
-          onTap: widget.enabled != false ? widget.onPressed : () {},
+          onTap: widget.enabled != false && widget.busy != true ? widget.onPressed : () {},
           borderRadius: $borderRadius,
           child: $buttonContent,
         ),
@@ -295,6 +324,7 @@ class _TextButtonState extends State<TextButton> {
     return Container(
       margin: widget.margin,
       width: widget.width,
+      height: widget.height,
       decoration: BoxDecoration(
         boxShadow: widget.type == ButtonType.frame ? null : widget.shadow,
         borderRadius: $borderRadius,

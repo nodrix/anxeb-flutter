@@ -64,6 +64,7 @@ class Printer {
   Future<BluetoothDevice> _lookupDevice(String address, [timeout = 2000]) async {
     var a = DateTime.now().millisecondsSinceEpoch;
     var completer = Completer<BluetoothDevice>();
+    print('starting bt scan');
     _manager.startScan(timeout: Duration(milliseconds: timeout)).then((value) {
       _manager.scanResults.listen((event) async {
         _lastFoundLength = event.length;

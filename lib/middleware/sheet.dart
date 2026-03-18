@@ -2,12 +2,17 @@ import 'package:anxeb_flutter/parts/sheets/notification.dart';
 import 'package:anxeb_flutter/parts/sheets/tip.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter/material.dart';
+import '../parts/sheets/form.dart';
 import 'scope.dart';
 
 class ScopeSheet {
-  final Scope scope;
+  final GlobalKey dialogKey = GlobalKey();
+  SheetScope _scope;
+  Scope _parentScope;
 
-  ScopeSheet(this.scope);
+  ScopeSheet(Scope scope) {
+    _parentScope = scope;
+  }
 
   @protected
   Widget build(BuildContext context) {
@@ -16,16 +21,24 @@ class ScopeSheet {
 
   Future show() async {
     return showModalBottomSheet<void>(
-      context: scope.context,
+      context: _parentScope.context,
       elevation: elevation,
       barrierColor: barrierColor,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return build(context);
+        return StatefulBuilder(
+          key: dialogKey,
+          builder: (context, setState) {
+            _scope = _scope ?? SheetScope(context, parent: _parentScope, setState: setState, key: dialogKey);
+            return build(context);
+          },
+        );
       },
     );
   }
+
+  SheetScope get scope => _scope;
 
   @protected
   double get elevation => 10.0;

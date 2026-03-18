@@ -45,29 +45,26 @@ class _FloatActionState extends State<FloatAction> {
 
     List<Widget> $actions = [];
     if (widget.alternates != null) {
-      for (var i = 0; i < widget.alternates.length; i++) {
-        var $action = widget.alternates[i];
+      var visibleAlternates = widget.alternates.where((element) => element.isVisible?.call() != false).toList();
+      for (var i = 0; i < visibleAlternates.length; i++) {
+        var $action = visibleAlternates[i];
         var $disabled = $action.isDisabled?.call() == true;
-        var $visible = $action.isVisible?.call() != false;
         var $icon = $action.icon?.call() ?? Icons.keyboard_arrow_left;
         var $color = $action.color?.call() ?? Colors.blue;
         var $sepOffset = $separation * (i + 1);
-
-        if ($visible) {
-          $actions.add(Positioned(
-            bottom: $sepOffset + $offset,
-            child: Opacity(
-              opacity: $disabled == true ? 0.6 : 1,
-              child: FloatingActionButton(
-                heroTag: i,
-                mini: $action.isMini != null ? $action.isMini() : true,
-                onPressed: $disabled == true ? null : $action.onPressed,
-                backgroundColor: $color,
-                child: Icon($icon),
-              ),
+        $actions.add(Positioned(
+          bottom: $sepOffset + $offset,
+          child: Opacity(
+            opacity: $disabled == true ? 0.6 : 1,
+            child: FloatingActionButton(
+              heroTag: i,
+              mini: $action.isMini != null ? $action.isMini() : true,
+              onPressed: $disabled == true ? null : $action.onPressed,
+              backgroundColor: $color,
+              child: Icon($icon),
             ),
-          ));
-        }
+          ),
+        ));
       }
     }
 

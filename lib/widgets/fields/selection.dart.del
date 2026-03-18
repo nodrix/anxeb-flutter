@@ -1,0 +1,182 @@
+import 'package:anxeb_flutter/middleware/dialog.dart';
+import 'package:anxeb_flutter/middleware/field.dart';
+import 'package:anxeb_flutter/middleware/scope.dart';
+import 'package:flutter/material.dart';
+
+class SelectionInputField<V> extends FieldWidget<List<V>> {
+  final Future<List<V>> Function() options;
+  final String Function(V value) displayText;
+  final IconData Function(V value) displayIcon;
+  final dynamic Function(List<V> value) dataValue;
+  final bool Function(V option, V value) comparer;
+
+  SelectionInputField({
+    @required Scope scope,
+    Key key,
+    @required String name,
+    String group,
+    String label,
+    IconData icon,
+    EdgeInsets margin,
+    EdgeInsets padding,
+    bool readonly,
+    bool visible,
+    ValueChanged<List<V>> onSubmitted,
+    ValueChanged<List<V>> onApplied,
+    ValueChanged<List<V>> onChanged,
+    GestureTapCallback onTab,
+    GestureTapCallback onBlur,
+    GestureTapCallback onFocus,
+    FormFieldValidator<List<V>> validator,
+    List<V> Function(dynamic value) parser,
+    FieldFocusType focusType,
+    Future<List<V>> Function() fetcher,
+    Function(List<V> value) applier,
+    @required this.options,
+    FieldWidgetTheme theme,
+    this.displayText,
+    this.displayIcon,
+    this.dataValue,
+    this.comparer,
+  })  : assert(name != null),
+        super(
+          scope: scope,
+          key: key,
+          name: name,
+          group: group,
+          label: label,
+          icon: icon,
+          margin: margin,
+          padding: padding,
+          readonly: readonly,
+          visible: visible,
+          onSubmitted: onSubmitted,
+          onApplied: onApplied,
+          onChanged: onChanged,
+          onTab: onTab,
+          onBlur: onBlur,
+          onFocus: onFocus,
+          validator: validator,
+          parser: parser,
+          focusType: focusType,
+          fetcher: fetcher,
+          applier: applier,
+          sufixIcon: Icons.keyboard_arrow_down_sharp,
+          theme: theme,
+        );
+
+  @override
+  _SelectionInputFieldState createState() => _SelectionInputFieldState<List<V>>();
+}
+
+class _SelectionInputFieldState<V> extends Field<List<V>, SelectionInputField<V>> {
+  List<V> _options;
+
+  @override
+  void init() {
+    _loadOptions();
+  }
+
+  @override
+  dynamic data() {
+    return widget.dataValue != null ? widget.dataValue(value) : value;
+  }
+
+  @override
+  Future<List<V>> lookup() async {
+    await _loadOptions();
+    focus();
+
+    var result = await widget.scope.dialogs
+        .options<V>(
+          widget.label,
+          options: options.map(($option) => DialogButton<V>(widget.displayText != null ? widget.displayText($option) : $option?.toString(), $option)).toList(),
+          //selectedValue: value,
+          icon: widget.icon,
+        )
+        .show();
+
+    if (result != null) {
+      if (result == '') {
+        clear();
+      } else {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
+  @override
+  Widget display([String text]) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: value.where((element) => element != null).map((item) {
+        return Container(
+            decoration: BoxDecoration(
+              color: widget.scope.application.settings.colors.primary,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            margin: EdgeInsets.only(right: 5),
+            child: Row(
+              children: [
+                if (widget.displayIcon != null)
+                  Icon(
+                    widget.displayIcon(item),
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                if (widget.displayText != null)
+                  Text(
+                    widget.displayText(item),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
+            ));
+      }).toList(),
+    );
+  }
+
+  @override
+  Future<List<V>> fetch([apply = true]) async {
+    if (widget.fetcher != null) {
+      _options = [];
+      value = await widget.fetcher();
+      await _loadOptions();
+    }
+    return value;
+  }
+
+  Future _loadOptions() async {
+    if (_options?.isNotEmpty == true) {
+      return;
+    }
+
+    try {
+      rasterize(() async {
+        busy = true;
+      });
+      _options = await widget.options?.call();
+
+      for (var i = 0; i < value.length; i++) {
+        var item = value[i];
+        if (widget.comparer != null) {
+          value[i] = _options.firstWhere((option) => widget.comparer(item, option), orElse: () => null);
+        }
+      }
+      //value = _options.firstWhere((item) => (widget.comparer != null ? widget.comparer(item, value) : item == value), orElse: () => null);
+    } catch (err) {
+      _options = null;
+      warning = err.toString();
+    } finally {
+      rasterize(() async {
+        busy = false;
+      });
+    }
+  }
+
+  List<V> get options => _options ?? [];
+}

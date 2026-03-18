@@ -22,7 +22,9 @@ class Window {
     _keyboardVisibilityController.onChange.listen((bool visible) {
       _isKeyboardActive = visible;
       _scope.alerts.dispose(quick: true);
-      _scope.rasterize();
+      if (_scope?.mounted == true) {
+        _scope.rasterize();
+      }
     });
 
     _available = constraints != null ? Size(constraints.maxWidth, constraints.maxHeight + (insets?.bottom ?? 0)) : size;

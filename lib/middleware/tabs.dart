@@ -53,7 +53,7 @@ class ScreenTabs {
     );
   }
 
-  Widget setup(Scaffold scaffold) {
+  Widget setup(Widget scaffold) {
     return DefaultTabController(
       length: _filteredItems.length,
       initialIndex: initial ?? 0,

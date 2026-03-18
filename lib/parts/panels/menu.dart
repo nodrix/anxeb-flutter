@@ -77,8 +77,10 @@ class MenuPanel extends BoardPanel {
                           ),
                           $action.label != null
                               ? Container(
-                                  alignment: Alignment.center,
+                                  alignment: $item.width != null ? Alignment.centerLeft : Alignment.center,
                                   padding: EdgeInsets.all(5),
+                                  margin: EdgeInsets.only(left: 10),
+                                  width: $item.width?.call() ?? null,
                                   child: Text(
                                     $action.label().toUpperCase(),
                                     textAlign: TextAlign.left,

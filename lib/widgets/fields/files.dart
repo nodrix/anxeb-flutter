@@ -42,6 +42,7 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
     Future<List<FileInputValue>> Function() fetcher,
     Function(List<FileInputValue> value) applier,
     FieldWidgetTheme theme,
+    bool keepLookingUp,
     this.allowMultiples = false,
     this.allowedExtensions,
     this.launchUrlPrefix,
@@ -70,6 +71,8 @@ class FilesInputField extends FieldWidget<List<FileInputValue>> {
           fetcher: fetcher,
           applier: applier,
           theme: theme,
+          keepLookingUp: keepLookingUp,
+          sufixIcon: Icons.add,
         );
 
   @override
@@ -136,7 +139,7 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
             .map((file) => FileInputValue(
                   path: file.path,
                   title: basename(file.path),
-                  extension: (extension(file.path ?? '') ?? '').replaceFirst('.', ''),
+                  extension: (extension(file.path ?? '') ?? '').replaceFirst('.', '').toLowerCase(),
                   url: null,
                   id: null,
                 ))
@@ -154,21 +157,31 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
       return Column(
         children: value
             .map(
-              (file) => GestureDetector(
-                onTap: () async {
-                  _preview(file);
-                },
-                child: Container(
-                  padding: EdgeInsets.only(top: 2),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 4, bottom: 2),
-                        child: _getMimeIcon(file),
+              (file) => Container(
+                padding: EdgeInsets.only(top: file == value.first ? 2 : 6, bottom: 1),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4, bottom: 2),
+                      //child: _getMimeIcon(file),
+                      child: GestureDetector(
+                        onTap: () {
+                          _remove(file);
+                        },
+                        child: Icon(
+                          Icons.delete,
+                          color: widget.scope.application.settings.colors.danger,
+                          size: 16,
+                        ),
                       ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 1),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: GestureDetector(
+                          onTap: () async {
+                            _preview(file);
+                          },
                           child: Text(
                             file.previewText,
                             overflow: TextOverflow.ellipsis,
@@ -179,9 +192,9 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
                             ),
                           ),
                         ),
-                      )
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -192,6 +205,13 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
         padding: EdgeInsets.only(top: 2),
         child: super.display(widget.label),
       );
+    }
+  }
+
+  Future _remove(FileInputValue file) async {
+    if (widget.readonly != true) {
+      files.remove(file);
+      super.submit(files);
     }
   }
 
@@ -223,16 +243,5 @@ class _FilesInputFieldState extends Field<List<FileInputValue>, FilesInputField>
   void clear() {
     files.clear();
     super.clear();
-  }
-
-  Icon _getMimeIcon(FileInputValue value) {
-    var ext = value?.extension ?? (value?.path != null ? extension(value.path).replaceFirst('.', '') : null) ?? 'txt';
-    var meta = icons.getFileMeta(ext);
-
-    return Icon(
-      meta?.icon ?? Icons.insert_drive_file,
-      color: meta?.color ?? Color(0x88000000),
-      size: 12,
-    );
   }
 }

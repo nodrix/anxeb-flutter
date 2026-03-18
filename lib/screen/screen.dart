@@ -4,6 +4,7 @@ import 'package:anxeb_flutter/middleware/window.dart';
 import 'package:anxeb_flutter/misc/view_action_locator.dart';
 import 'package:anxeb_flutter/parts/headers/search.dart';
 import 'package:flutter/material.dart' hide Overlay;
+import 'package:flutter/services.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import '../misc/after_init.dart';
 import '../middleware/action.dart';
@@ -26,6 +27,7 @@ enum ScreenTransitionType {
   fromRight,
   fromTop,
   fade,
+  none,
 }
 
 class ScreenWidget<A extends Application> extends StatefulWidget implements IView {
@@ -56,7 +58,7 @@ abstract class ScreenState<T extends ScreenWidget> extends State<T> {
 
   Future<bool> submit([value]);
 
-  Future<bool> pop({dynamic result, bool force});
+  Future<bool> pop({dynamic result, bool force, bool first});
 
   GlobalKey<ScaffoldState> get scaffold;
 }
@@ -137,11 +139,10 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
   Widget build(BuildContext context) {
     _checkParts();
     _locator = _locator ?? _action?.locator ?? ScreenActionLocator();
-
     prebuild();
     var $drawer = drawer();
 
-    var scaffoldContent = Scaffold(
+    var $scaffold = Scaffold(
       key: _scaffold,
       appBar: _header?.build(),
       drawer: $drawer == true ? application.drawer(scope) : ($drawer is Drawer || $drawer is ScreenNavigator ? $drawer : null),
@@ -149,9 +150,9 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
       floatingActionButton: _action?.build(),
       floatingActionButtonLocation: _locator,
       bottomNavigationBar: _footer?.build(),
-      backgroundColor: _scope.window.overlay.background ?? _scope.application.settings.colors.background,
-      extendBody: _scope.window.overlay.extendBody,
-      extendBodyBehindAppBar: _scope.window.overlay.extendBodyBehindAppBar,
+      backgroundColor: _scope.window.overlay.scaffoldBackgroundColor ?? _scope.application.settings.colors.background,
+      extendBody: _scope.window.overlay.extendScaffoldTop,
+      extendBodyBehindAppBar: _scope.window.overlay.extendScaffoldBottom,
       body: WillPopScope(
         onWillPop: () async {
           if (_scope.isBusy) {
@@ -187,6 +188,11 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
           }),
         ),
       ),
+    );
+
+    Widget scaffoldContent = AnnotatedRegion<SystemUiOverlayStyle>(
+      value: window.overlay.style,
+      child: $scaffold,
     );
 
     if (_tabs != null) {
@@ -245,18 +251,18 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
 
   Future<bool> submit([value]) async => await pop(result: value, force: true);
 
-  Future<bool> pop({dynamic result, bool force}) async {
+  Future<bool> pop({dynamic result, bool force, bool first}) async {
     scope.idle();
     await scope.alerts.dispose(quick: true);
 
     if (force == true) {
-      await _beginPop(result);
+      await _beginPop(result, first: first);
       return true;
     } else {
       try {
         var value = await beforePop();
         if (value == true) {
-          await _beginPop(result);
+          await _beginPop(result, first: first);
           return true;
         }
       } catch (err) {}
@@ -267,6 +273,9 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
   Future<T> push<T>(ScreenWidget screen, {ScreenTransitionType transition, int delay, ScreenPushAction action}) async {
     scope.idle();
     await scope.alerts.dispose(quick: true);
+
+    transition = transition ?? application.settings.screen.transition;
+    delay = delay ?? application.settings.screen.delay;
 
     var settings = RouteSettings(
       name: screen.name,
@@ -288,6 +297,8 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
               opacity: Tween<double>(begin: 0, end: 1).animate(animation),
               child: FadeTransition(opacity: Tween<double>(begin: 1, end: .5).animate(secondaryAnimation), child: child),
             );
+          } else if (transition == ScreenTransitionType.none) {
+            return child;
           } else {
             Offset from = Offset.zero;
             Offset to = Offset.zero;
@@ -309,6 +320,10 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
                 from = Offset(0, -1);
                 to = Offset(0, .5);
                 break;
+              case ScreenTransitionType.none:
+                from = Offset.zero;
+                to = Offset.zero;
+                break;
               case ScreenTransitionType.fade:
             }
 
@@ -328,20 +343,15 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
     } else {
       $route = MaterialPageRoute(builder: (BuildContext context) => screen, settings: settings);
     }
-
     var result;
     if (action == ScreenPushAction.replace) {
       result = await Navigator.of(_scope.context).pushReplacement($route);
     } else {
       result = await Navigator.of(_scope.context).push($route);
     }
-
     await _scope.setup();
     if (mounted) {
       setup();
-      _scope.window.overlay.apply();
-      Future.delayed(Duration(milliseconds: 150), rasterize);
-      Future.delayed(Duration(milliseconds: 250), rasterize);
     }
     return result as T;
   }
@@ -393,14 +403,22 @@ class ScreenView<T extends ScreenWidget, A extends Application> extends ScreenSt
     return contentResult;
   }
 
-  Future _beginPop(result) async {
+  Future _beginPop(result, {bool first}) async {
+    if (_parent != null) {
+      _parent.window.overlay.apply();
+      rasterize();
+    }
     if (scaffold != null && scaffold.currentState != null && scaffold.currentState.isDrawerOpen) {
       scaffold.currentState.openEndDrawer();
     }
     value = result ?? value;
     await closing();
     if (widget.root != true) {
-      Navigator.of(_scope.context).pop(value);
+      if (first == true) {
+        Navigator.of(_scope.context).popUntil((route) => route.isFirst);
+      } else {
+        Navigator.of(_scope.context).pop(value);
+      }
     }
     await closed();
   }

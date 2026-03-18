@@ -1,5 +1,7 @@
+import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../middleware/scope.dart';
 import '../../page/scope.dart';
 import '../blocks/menu.dart';
 
@@ -77,6 +79,7 @@ class MenuButton extends StatelessWidget {
               offset: contextMenu.offset,
               child: button,
               items: contextMenu.items,
+              constraints: contextMenu.constraints,
             ),
           ),
         ),
@@ -108,15 +111,19 @@ class MenuSearchButton extends StatefulWidget {
   final Color hintTextColor;
   final TextStyle inputTextStyle;
   final TextInputType textInputType;
+  final bool unfousWhenClickOutbound;
   final List<TextInputFormatter> inputFormatters;
   final Function onSaved;
   final Function onChanged;
   final Function onFieldSubmitted;
   final Function onEditingComplete;
   final Function onExpansionComplete;
+  final Function onExpansionBegin;
   final Function onCollapseComplete;
+  final Function onCollapseBegin;
   final Function(bool isOpen) onPressButton;
   final int speed;
+  final MenuSearchController controller;
 
   const MenuSearchButton({
     this.width,
@@ -127,15 +134,19 @@ class MenuSearchButton extends StatefulWidget {
     this.hintTextColor,
     this.inputTextStyle,
     this.textInputType = TextInputType.text,
+    this.unfousWhenClickOutbound,
     this.inputFormatters,
     this.onSaved,
     this.onChanged,
     this.onFieldSubmitted,
     this.onEditingComplete,
     this.onExpansionComplete,
+    this.onExpansionBegin,
     this.onCollapseComplete,
+    this.onCollapseBegin,
     this.onPressButton,
     this.speed,
+    this.controller,
     Key key,
   }) : super(key: key);
 
@@ -147,6 +158,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
   TextEditingController _textEditingController;
   AnimationController _animationController;
   FocusNode _focusNode;
+  FocusNode _keyboardFocusNode;
   bool _animating = false;
   bool _active = false;
 
@@ -165,8 +177,17 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+    _keyboardFocusNode = FocusNode();
+    widget.controller?.toggle = (bool isOpen) {
+      if (mounted == true) {
+        _toogle(state: isOpen);
+      } else {
+        _active = isOpen;
+      }
+    };
+
     _focusNode.addListener(() {
-      if (mounted == true && _active == true) {
+      if (widget.unfousWhenClickOutbound == true && mounted == true && _active == true) {
         if (!_focusNode.hasFocus) {
           setState(() {
             _toogle(state: false);
@@ -317,6 +338,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
     }
     _animating = true;
     widget.onPressButton?.call(!_active);
+
     setState(
       () {
         if (!_active) {
@@ -325,6 +347,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
           setState(() {
             FocusScope.of(context).requestFocus(_focusNode);
           });
+          widget.onExpansionBegin?.call();
           _animationController.forward().then((value) {
             setState(() {
               _animating = true;
@@ -336,6 +359,7 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
           setState(() {
             _unFocusKeyboard();
           });
+          widget.onCollapseBegin?.call();
           _animationController.reverse().then((value) {
             setState(() {
               _animating = false;
@@ -348,54 +372,63 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
   }
 
   Widget _textFormField() {
-    return TextFormField(
-      controller: _textEditingController,
-      inputFormatters: widget.inputFormatters,
-      focusNode: _focusNode,
-      cursorWidth: 2.0,
-      textInputAction: TextInputAction.search,
-      onFieldSubmitted: (String value) {
-        setState(() {
-          _active = true;
-        });
+    return KeyboardListener(
+      focusNode: _keyboardFocusNode,
+      onKeyEvent: (event) {
+        //on esc
+        if (event is KeyUpEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+          _toogle(state: false);
+        }
+      },
+      child: TextFormField(
+        controller: _textEditingController,
+        inputFormatters: widget.inputFormatters,
+        focusNode: _focusNode,
+        cursorWidth: 2.0,
+        textInputAction: TextInputAction.search,
+        onFieldSubmitted: (String value) {
+          setState(() {
+            _active = true;
+          });
 
-        FocusScope.of(this.context).requestFocus(_focusNode);
-        _textEditingController.selection = TextSelection(baseOffset: 0, extentOffset: _textEditingController.text.length);
-        widget.onFieldSubmitted?.call(_textEditingController.text);
-      },
-      onEditingComplete: () {
-        _unFocusKeyboard();
-        setState(() {
-          _active = false;
-        });
-        widget.onEditingComplete?.call();
-      },
-      keyboardType: widget.textInputType,
-      onChanged: (var value) {
-        widget.onChanged?.call(value);
-      },
-      onSaved: (var value) {
-        widget.onSaved?.call(value);
-      },
-      style: widget.inputTextStyle ?? const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w300),
-      cursorColor: Colors.black,
-      textAlign: TextAlign.left,
-      decoration: InputDecoration(
-        contentPadding: EdgeInsets.zero,
-        isDense: true,
-        icon: Icon(Icons.search),
-        floatingLabelBehavior: FloatingLabelBehavior.never,
-        hintText: widget.hintText,
-        hintStyle: TextStyle(
-          fontSize: 15,
-          letterSpacing: 0.15,
-          fontWeight: FontWeight.w300,
-          color: widget.hintTextColor,
-          height: 1.4,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
+          FocusScope.of(this.context).requestFocus(_focusNode);
+          _textEditingController.selection = TextSelection(baseOffset: 0, extentOffset: _textEditingController.text.length);
+          widget.onFieldSubmitted?.call(_textEditingController.text);
+        },
+        onEditingComplete: () {
+          _unFocusKeyboard();
+          setState(() {
+            _active = false;
+          });
+          widget.onEditingComplete?.call();
+        },
+        keyboardType: widget.textInputType,
+        onChanged: (var value) {
+          widget.onChanged?.call(value);
+        },
+        onSaved: (var value) {
+          widget.onSaved?.call(value);
+        },
+        style: widget.inputTextStyle ?? const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w300),
+        cursorColor: Colors.black,
+        textAlign: TextAlign.left,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
+          icon: Icon(Icons.search),
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          hintText: widget.hintText,
+          hintStyle: TextStyle(
+            fontSize: 15,
+            letterSpacing: 0.15,
+            fontWeight: FontWeight.w300,
+            color: widget.hintTextColor,
+            height: 1.4,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
     );
@@ -409,4 +442,37 @@ class _MenuSearchButtonState extends State<MenuSearchButton> with SingleTickerPr
   }
 
   int get speed => widget.speed ?? 200;
+}
+
+class MenuSearchController {
+  Function(bool isOpen) toggle;
+
+  MenuSearchController({
+    this.toggle,
+  });
+}
+
+class MenuSeparator extends StatelessWidget {
+  final Scope scope;
+
+  const MenuSeparator({
+    @required this.scope,
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 30,
+      margin: const EdgeInsets.only(right: 7, left: 3),
+      child: DottedLine(
+        direction: Axis.vertical,
+        lineThickness: 1,
+        dashLength: 1,
+        dashColor: scope.application.settings.colors.primary.withOpacity(0.2),
+        dashRadius: 0.0,
+        dashGapLength: 0.0,
+      ),
+    );
+  }
 }

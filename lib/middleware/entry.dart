@@ -18,7 +18,7 @@ class EntryScreen extends StatelessWidget {
 
     var app = MaterialApp(
         home: this.home,
-        navigatorObservers: this.home.application.settings.analytics.available == true ? [this.home.application.analytics.observer] : [],
+        navigatorObservers: [],
         theme: this.theme ??
             ThemeData(
               primaryColor: this.home.application.settings.colors.primary,

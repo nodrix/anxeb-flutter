@@ -1,7 +1,7 @@
 import 'package:anxeb_flutter/middleware/scope.dart';
 import 'package:anxeb_flutter/middleware/sheet.dart';
 import 'package:flutter/material.dart' hide Dialog;
-
+import '../../middleware/application.dart';
 import '../../middleware/device.dart';
 
 class FormSheet extends ScopeSheet {
@@ -26,6 +26,10 @@ class FormSheet extends ScopeSheet {
   @protected
   Widget content(BuildContext context, Scope scope) {
     return Container();
+  }
+
+  void pop([value]) {
+    Navigator.of(scope.context).pop(value);
   }
 
   @override
@@ -103,5 +107,35 @@ class FormSheet extends ScopeSheet {
         ),
       ),
     );
+  }
+}
+
+class SheetScope<A extends Application> extends Scope implements IScope {
+  GlobalKey _key;
+  Scope parent;
+  StateSetter _setState;
+
+  SheetScope(BuildContext context, {@required this.parent, @required StateSetter setState, @required GlobalKey key}) : super(context) {
+    _setState = setState;
+    _key = key;
+  }
+
+  @override
+  A get application => parent.application as A;
+
+  @override
+  String get key => parent.key;
+
+  @override
+  String get title => parent.title;
+
+  @override
+  bool get mounted => _key?.currentState?.mounted;
+
+  @override
+  void rasterize([VoidCallback fn]) {
+    if (mounted == true) {
+      _setState(fn ?? () {});
+    }
   }
 }

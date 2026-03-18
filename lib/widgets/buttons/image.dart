@@ -387,6 +387,7 @@ class _ImageButtonState extends State<ImageButton> {
       padding: widget.padding,
       margin: widget.margin,
       height: widget.outerHeight,
+      width: widget.width,
       child: failedWidget != null && widget.replaceFailedWidget == true ? failedWidget : Stack(
         alignment: Alignment.center,
         children: <Widget>[

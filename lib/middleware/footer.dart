@@ -11,7 +11,7 @@ class ScreenFooter {
   final double height;
   final double divisionBorderWidth;
   final bool rebuild;
-
+  final Clip clip;
 
   ScreenFooter({
     @required this.scope,
@@ -22,6 +22,7 @@ class ScreenFooter {
     this.height,
     this.divisionBorderWidth,
     this.rebuild = false,
+    this.clip = Clip.hardEdge,
   });
 
   @protected
@@ -36,7 +37,7 @@ class ScreenFooter {
       notchMargin: 8,
       height: height ?? null,
       elevation: elevation ?? 20,
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: clip,
       child: Container(
         decoration: Device.isAndroid
             ? BoxDecoration(

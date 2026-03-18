@@ -35,7 +35,7 @@ class ScreenActionLocator extends FloatingActionButtonLocation {
   double getDockedY(ScaffoldPrelayoutGeometry scaffoldGeometry) {
     final double bottomSheetHeight = scaffoldGeometry.bottomSheetSize.height;
     final double fabHeight = scaffoldGeometry.floatingActionButtonSize.height - (_altOffset ?? 0);
-    final double contentBottom = scaffoldGeometry.scaffoldSize.height - (fabHeight / 2) - 19;
+    final double contentBottom = scaffoldGeometry.scaffoldSize.height - (fabHeight / 2) - AppBar().preferredSize.height - 19;
     final double snackBarHeight = scaffoldGeometry.snackBarSize.height;
 
     double fabY = contentBottom - fabHeight / 2.0;

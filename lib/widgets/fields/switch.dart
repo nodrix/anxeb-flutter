@@ -65,12 +65,7 @@ class _SwitchFieldState extends Field<bool, SwitchField> {
           icon: widget.icon,
           text: Text(
             widget.label ?? '',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: warning != null ? widget.scope.application.settings.colors.danger : widget.scope.application.settings.colors.primary,
-              letterSpacing: 0.2,
-              fontSize: 15,
-            ),
+            style: widget.theme?.inputStyle ?? (widget.theme?.fontSize != null ? TextStyle(fontSize: widget.theme?.fontSize) : (widget.label == null ? TextStyle(fontSize: 20.25) : null)),
           ),
           readonly: widget.readonly,
           value: value ?? false,

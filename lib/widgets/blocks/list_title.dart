@@ -47,6 +47,7 @@ class ListTitleBlock extends StatelessWidget {
   final Decoration decoration;
   final Color chipColor;
   final Widget prefix;
+  final IconData inlineIcon;
 
   ListTitleBlock({
     @required this.scope,
@@ -94,6 +95,7 @@ class ListTitleBlock extends StatelessWidget {
     this.decoration,
     this.chipColor,
     this.prefix,
+    this.inlineIcon,
   });
 
   Widget _getMainIcons() {
@@ -158,9 +160,10 @@ class ListTitleBlock extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
+                            if (inlineIcon != null) Padding(padding: EdgeInsets.only(right: 2, top: 1), child: Icon(inlineIcon, size: 17, color: scope.application.settings.colors.primary)),
                             Expanded(
                               child: Text(
-                                title,
+                                title ?? '',
                                 overflow: titleOverflow ?? TextOverflow.ellipsis,
                                 style: titleStyle ??
                                     TextStyle(

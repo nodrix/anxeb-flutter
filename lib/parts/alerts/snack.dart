@@ -57,7 +57,7 @@ class SnackAlert extends ScopeAlert {
 
     if (scope is FormScope) {
         (scope as FormScope).warning = FormWarning(
-        message: message,
+        message: message ?? title,
         body: $message,
         icon: icon,
         iconColor: iconColor,

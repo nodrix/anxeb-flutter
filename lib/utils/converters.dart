@@ -95,6 +95,26 @@ class Converters {
     }
   }
 
+  IconData fromHexToIcon(String hexString, {String fontFamily = 'MaterialIcons'}) {
+    if (hexString == null) {
+      return null;
+    }
+
+    var fontPackage;
+    var parts = hexString.split(':');
+    if (parts.length > 2) {
+      hexString = parts[0];
+      fontFamily = parts[1];
+      fontPackage = parts[2];
+    }
+
+    final int iconCode = int.tryParse(hexString.replaceFirst('0x', '').replaceFirst('#', ''), radix: 16);
+    if (iconCode == null) {
+      return null;
+    }
+    return IconData(iconCode, fontFamily: fontFamily, fontPackage: fontPackage, matchTextDirection: true);
+  }
+
   Color fromHexToColor(String hexString) {
     if (hexString == null) {
       return null;
@@ -164,7 +184,11 @@ class Converters {
     return value != null ? value.trim() : null;
   }
 
-  String fromDurationToDetail(Duration duration, {bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, bool showZeros = false}) {
+  String fromDateToDetail(DateTime date, {bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, bool showZeros = false}) {
+    return fromDurationToDetail(DateTime.now().difference(date.toLocal()), showDays: showDays, showHours: showHours, showMinutes: showMinutes, showSeconds: showSeconds, showZeros: showZeros);
+  }
+
+  String fromDurationToDetail(Duration duration, {bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, bool showZeros = false, bool showMinuteSeconds = false}) {
     if (duration == null) {
       return null;
     }
@@ -172,6 +196,12 @@ class Converters {
     int hours = duration.inHours - (days * 24);
     int minutes = duration.inMinutes - (duration.inHours * 60);
     int seconds = duration.inSeconds - (duration.inMinutes * 60);
+
+    if (showMinuteSeconds == true) {
+      if (days == 0 && hours == 0 && minutes == 0) {
+        return '${seconds}s';
+      }
+    }
     return '${showDays && (showZeros || days > 0) ? '${days}d ' : ''}${showHours && (showZeros || hours > 0) ? '${hours}h ' : ''}${showMinutes && (showZeros || minutes > 0) ? '${minutes}m ' : ''}${showSeconds && (showZeros || seconds > 0) ? '${seconds}s' : ''}';
   }
 
@@ -289,18 +319,37 @@ class Converters {
     return '${fromAnyToNumber(value, comma: true, decimals: 0)} $sufix';
   }
 
-  String fromAnyToNumber(value, {int decimals, bool comma, String prefix, String sufix}) {
+  String retrieveDecimals(value, {int decimals}) {
+    decimals = decimals ?? 2;
+    if (value == null) {
+      return List.filled(decimals, '0').join('');
+    }
+    var normValue = fromAnyToNumber(value, decimals: decimals, comma: false);
+    if (normValue == null) {
+      return List.filled(decimals, '0').join('');
+    }
+
+    var parts = normValue.split('.');
+    return parts[1] ?? List.filled(decimals, '0').join('');
+  }
+
+  String fromAnyToNumber(value, {int decimals, bool comma, String prefix, String sufix, bool thousands}) {
     if (value == null) {
       return null;
     }
-    String $value = decimals != null ? (value is double ? value : double.parse(value.toString())).toStringAsFixed(decimals) : value.toString();
+    var dvalue = value is double ? value : double.parse(value.toString());
+    var useThousands = thousands == true && dvalue.abs() >= 1000;
+    if (useThousands == true) {
+      dvalue = dvalue / 1000.0;
+    }
+    String $value = decimals != null ? dvalue.toStringAsFixed(decimals) : value.toString();
     var result;
     if (comma == null || comma == true) {
       result = $value.replaceAllMapped(_commaRegex, (Match m) => '${m[1]},');
     } else {
       result = $value;
     }
-    return (prefix ?? '') + result + (sufix ?? '');
+    return (prefix ?? '') + result + (useThousands == true ? 'K' : '') + (sufix ?? '');
   }
 
   String fromDateToFullDateString(DateTime date, {bool seconds, bool time}) {
@@ -339,11 +388,41 @@ class Converters {
     }
   }
 
+  String fromDateRangeToLocalizedDate(DateTime from, DateTime to, {bool withTime}) {
+    if (from == null || to == null) {
+      return null;
+    }
+    if (from == to) {
+      return fromDateToLocalizedDate(from, withTime: withTime);
+    }
+    return '${fromDateToLocalizedDate(from, withTime: withTime)} - ${fromDateToLocalizedDate(to, withTime: withTime)}';
+  }
+
   String fromDateToLocalizedTime(DateTime date, {bool duration}) {
     if (date == null) return null;
     final prefix = DateFormat.jms(translate('anxeb.formats.date_locale')).format(date.toLocal()).replaceAll('.', '').replaceAll(' ', '').toUpperCase();
 
     return duration == false ? prefix.toUpperCase() : translate('anxeb.formats.date_duration', args: {"date": prefix, "duration": fromDateToDurationCaption(date.toLocal())}).toUpperCase();
+  }
+
+  String fromDateToTimeHumanString(DateTime date, {bool seconds}) {
+    if (date == null) {
+      return null;
+    }
+    if (seconds == true) {
+      return DateFormat(_timeFormat).format(date.toLocal()).replaceAll('.', '').toLowerCase();
+    } else {
+      return DateFormat.jm('es_DO').format(date.toLocal()).replaceAll('.', '').toLowerCase();
+    }
+  }
+
+  String fromIndexToAmPmString(int hour, {bool withZero = false}) {
+    final int displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final String period = hour < 12 ? 'AM' : 'PM';
+    if (withZero) {
+      return '${displayHour.toString()}:00 $period';
+    }
+    return '$displayHour $period';
   }
 
   String fromDateToHumanString(DateTime date, {bool complete, bool withTime, String timeSeparator}) {
@@ -364,6 +443,18 @@ class Converters {
         return DateFormat.yMMMd('es_DO').format(date.toLocal());
       }
     }
+  }
+
+  String fromDateRangeToHumanString(DateTime from, DateTime to, {bool complete, bool withTime, String timeSeparator, String datesSeparator, String prefix = ''}) {
+    if (from == null || to == null) {
+      return null;
+    }
+
+    if (from == to) {
+      return '${fromDateToHumanString(from, complete: complete, withTime: withTime, timeSeparator: timeSeparator)}';
+    }
+
+    return '$prefix${fromDateToHumanString(from, complete: complete, withTime: withTime, timeSeparator: timeSeparator)}${datesSeparator ?? ' - '}${fromDateToHumanString(to, complete: complete, withTime: withTime, timeSeparator: timeSeparator)}';
   }
 
   String fromTextToEllipsis(String value, int max) {
@@ -405,6 +496,15 @@ class Converters {
     return DateFormat(_fileDateFormat).format(date.toLocal());
   }
 
+  String from24HourToHumanString(int hour) {
+    if (hour == null) {
+      return null;
+    }
+    final int displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final String period = hour < 12 ? ':00 AM' : ':00 PM';
+    return '$displayHour$period';
+  }
+
   DateTime fromTickToDate(int timestamp) {
     if (timestamp != null) {
       return DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
@@ -430,7 +530,8 @@ class Converters {
       if (value.startsWith('.')) {
         value = '0$value';
       }
-      return decimals != null ? double.parse(double.parse(value).toStringAsFixed(decimals)) : double.parse(value);
+
+      return decimals != null ? double.parse(double.tryParse(value).toStringAsFixed(decimals)) : double.tryParse(value);
     } else {
       return null;
     }

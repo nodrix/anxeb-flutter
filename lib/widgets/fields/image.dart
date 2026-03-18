@@ -19,6 +19,7 @@ class ImageInputField extends FieldWidget<String> {
   final String url;
   final Future Function({String title, ImageProvider image, bool fullImage}) onPreview;
   final BoxFit fit;
+  final Color backgroundColor;
 
   ImageInputField({
     @required Scope scope,
@@ -55,6 +56,7 @@ class ImageInputField extends FieldWidget<String> {
     this.url,
     this.onPreview,
     this.fit,
+    this.backgroundColor,
   })  : assert(name != null),
         super(
           scope: scope,
@@ -119,14 +121,15 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
           responseType: ResponseType.bytes,
         ),
       );
+
       _imageData = Image.memory(req.data).image;
       _imageSize = Utils.convert.fromAnyToDataSize(req.data.length);
+      value = 'data:image/png;base64,${base64Encode(req.data)}';
     } catch (err) {
       _imageData = null;
       _imageSize = null;
     } finally {
       rasterize(() async {
-        value = '';
         busy = false;
       });
     }
@@ -186,7 +189,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
   Widget display([String text]) {
     if (super.busy == true || _imageData == null) {
       return Container(
-        padding: EdgeInsets.only(top: 2),
+        padding: widget.height == null ? EdgeInsets.only(top: 2) : null,
         child: super.display(widget.label),
       );
     }
@@ -197,7 +200,7 @@ class _ImageInputFieldState extends Field<String, ImageInputField> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: widget.backgroundColor ?? Colors.white,
           borderRadius: BorderRadius.circular(widget.scope.application.settings.dialogs.dialogRadius),
           image: DecorationImage(
             fit: widget.fit ?? BoxFit.cover,

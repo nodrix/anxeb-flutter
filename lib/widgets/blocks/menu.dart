@@ -7,6 +7,7 @@ class ContextMenu {
   final double itemHeight;
   final Offset offset;
   final TextStyle textStyle;
+  final BoxConstraints constraints;
 
   ContextMenu({
     this.items,
@@ -14,6 +15,7 @@ class ContextMenu {
     this.itemHeight,
     this.offset,
     this.textStyle,
+    this.constraints,
   });
 }
 
@@ -27,6 +29,7 @@ class ContextMenuBlock extends StatelessWidget {
   final TextStyle textStyle;
   final double iconSize;
   final ShapeBorder shape;
+  final BoxConstraints constraints;
 
   ContextMenuBlock({
     this.scope,
@@ -38,6 +41,7 @@ class ContextMenuBlock extends StatelessWidget {
     this.textStyle,
     this.iconSize,
     this.shape,
+    this.constraints,
   });
 
   @override
@@ -47,6 +51,7 @@ class ContextMenuBlock extends StatelessWidget {
       offset: offset ?? Offset(10, 50),
       child: child,
       tooltip: '',
+      constraints: constraints ?? const BoxConstraints(minWidth: 20),
       shape: shape ?? RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
       onSelected: (func) {
         func?.call();
@@ -61,6 +66,32 @@ class ContextMenuBlock extends StatelessWidget {
             continue;
           }
 
+          if (item.title != null) {
+            result.add(
+              PopupMenuItem<Function>(
+                height: 20,
+                enabled: false,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        child: Text(item.title.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: const Color(0xff333333))),
+                        margin: EdgeInsets.only(bottom: 9, top: 6),
+                        padding: EdgeInsets.only(bottom: 2),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(width: 0.7, color: const Color(0xff333333)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (item.divided == true) {
             result.add(PopupMenuDivider());
           }
@@ -72,14 +103,14 @@ class ContextMenuBlock extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  child: Icon(item.icon, size: iconSize, color: item.color ?? scope.application.settings.colors.primary),
+                  child: Icon(item.icon, size: iconSize, color: item.color ?? item.iconColor ?? scope.application.settings.colors.primary),
                   width: 26,
                 ),
                 Container(
                   child: item.enabled == false
                       ? Opacity(
                           opacity: 0.5,
-                          child: Text(item.label, style: textStyle ?? TextStyle(color: scope.application.settings.colors.primary)),
+                          child: Text(item.label, style: textStyle ?? TextStyle(color: item.color ?? item.textColor ?? scope.application.settings.colors.primary)),
                         )
                       : Text(item.label, style: textStyle ?? TextStyle(color: scope.application.settings.colors.primary)),
                   padding: EdgeInsets.only(left: 12),
@@ -97,12 +128,15 @@ class ContextMenuBlock extends StatelessWidget {
 
 class ContextMenuItem {
   final IconData icon;
-  final Color color;
+  final Color iconColor;
   final String label;
   final Function onTap;
   final bool divided;
   final bool visible;
   final bool enabled;
+  final String title;
+  final Color textColor;
+  final Color color;
 
-  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.color, this.visible, this.enabled});
+  ContextMenuItem({this.icon, this.label, this.onTap, this.divided, this.iconColor, this.visible, this.enabled, this.title, this.textColor, this.color});
 }

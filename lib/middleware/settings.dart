@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../screen/screen.dart';
 import 'api.dart';
 
 class _General {
   bool badges;
-}
-
-class _Analytics {
-  bool available;
 }
 
 class _Panels {
@@ -22,6 +19,18 @@ class _Dialogs {
   EdgeInsets buttonPaddingWithIcon;
   EdgeInsets buttonPaddingWithoutIcon;
   TextStyle buttonTextStyle;
+  double width;
+  TextStyle messageTitleTextStyle;
+  TextStyle messageContentTextStyle;
+  TextStyle panelTitleTextStyle;
+  TextStyle panelContentTextStyle;
+  TextStyle formContentTextStyle;
+  TextStyle formTitleTextStyle;
+  TextStyle formSubtitleTextStyle;
+  double iconScale;
+  EdgeInsets messageContentPadding;
+  TextStyle busyBoxTextStyle;
+  double busyBoxIndicatorSize;
 }
 
 class _Alerts {
@@ -132,8 +141,28 @@ class _Auths {
 }
 
 class _Overlay {
-  Brightness brightness;
-  Color fill;
+  Color statusBarColor;
+  Brightness statusBarBrightness;
+  bool systemNavigationBarContrastEnforced;
+  Color systemNavigationBarDividerColor;
+  bool systemStatusBarContrastEnforced;
+  Brightness statusBarIconBrightness;
+  Color systemNavigationBarColor;
+  Brightness systemNavigationBarIconBrightness;
+  bool keepScreenOn;
+  bool translucentNavigation;
+  bool translucentStatus;
+  bool fullScreen;
+  bool extendBodyFullScreen;
+  Color appBarBackgroundColor;
+  bool extendScaffoldTop;
+  bool extendScaffoldBottom;
+  Color scaffoldBackgroundColor;
+}
+
+class _Screen {
+  ScreenTransitionType transition;
+  int delay;
 }
 
 class Settings {
@@ -143,9 +172,9 @@ class Settings {
   _Alerts _alerts;
   _Fields _fields;
   _Panels _panels;
-  _Analytics _analytics;
   _General _general;
   _Overlay _overlay;
+  _Screen _screen;
 
   Settings() {
     _colors = _Colors();
@@ -154,9 +183,9 @@ class Settings {
     _alerts = _Alerts();
     _fields = _Fields();
     _panels = _Panels();
-    _analytics = _Analytics();
     _general = _General();
     _overlay = _Overlay();
+    _screen = _Screen();
   }
 
   _Colors get colors => _colors;
@@ -171,9 +200,9 @@ class Settings {
 
   _Panels get panels => _panels;
 
-  _Analytics get analytics => _analytics;
-
   _General get general => _general;
 
   _Overlay get overlay => _overlay;
+
+  _Screen get screen => _screen;
 }
